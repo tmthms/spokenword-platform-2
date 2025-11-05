@@ -465,17 +465,19 @@ export async function loadArtists() {
     const languageFilters = Array.from(languageCheckboxes).map(cb => cb.value);
     
     // Age range filter
-    const ageMin = parseInt(document.getElementById('filter-age-min')?.value) || 0;
-    const ageMax = parseInt(document.getElementById('filter-age-max')?.value) || 999;
+    const ageMinInput = document.getElementById('filter-age-min')?.value;
+    const ageMaxInput = document.getElementById('filter-age-max')?.value;
+    const ageMin = ageMinInput ? parseInt(ageMinInput) : null;
+    const ageMax = ageMaxInput ? parseInt(ageMaxInput) : null;
     
-    console.log("Filter values:", { 
-      nameFilter, 
-      locationFilter, 
-      genderFilter, 
+    console.log("Filter values:", {
+      nameFilter,
+      locationFilter,
+      genderFilter,
       paymentFilters,
-      genreFilters, 
-      languageFilters, 
-      ageRange: `${ageMin}-${ageMax}` 
+      genreFilters,
+      languageFilters,
+      ageRange: ageMin !== null || ageMax !== null ? `${ageMin || 'any'}-${ageMax || 'any'}` : 'not set'
     });
     
     // Build Firestore query
@@ -541,13 +543,17 @@ export async function loadArtists() {
       });
     }
     
-    // Filter by age (FIXED in v2.1)
-    artists = artists.filter(artist => {
-      if (!artist.dob) return false; // Exclude artists without birthdate
-      
-      const age = calculateAge(artist.dob);
-      return age >= ageMin && age <= ageMax;
-    });
+    // Filter by age (only if age filters are set)
+    if (ageMin !== null || ageMax !== null) {
+      artists = artists.filter(artist => {
+        if (!artist.dob) return false; // Exclude artists without birthdate when age filter is active
+
+        const age = calculateAge(artist.dob);
+        const meetsMin = ageMin === null || age >= ageMin;
+        const meetsMax = ageMax === null || age <= ageMax;
+        return meetsMin && meetsMax;
+      });
+    }
     
     console.log(`${artists.length} artists after all filtering`);
     
