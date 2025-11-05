@@ -1,0 +1,24 @@
+{
+  "name": "spoken-word-database",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "deploy": "npm run build && node deploy.js"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.19",
+    "ftp": "^0.3.10",
+    "ftp-deploy": "^2.4.7",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4",
+    "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "firebase": "^10.7.0",
+    "firebase-admin": "^13.5.0"
+  }
+}
