@@ -36,4 +36,4 @@ jobs:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
           channelId: live  # Deploy direct naar production
-          projectId: dans-dichter-dans-db  # ← VERVANG DIT!
+          projectId: dans-dichter-dans-db
