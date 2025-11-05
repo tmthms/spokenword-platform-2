@@ -28,9 +28,6 @@ jobs:
       - name: Build project
         run: npm run build
 
-      # Stap 5: Publiceer naar Firebase
-      - name: Deploy to Firebase Hosting
-        uses: FirebaseExtended/action-hosting-deploy@v0
         # Stap 5: Publiceer naar Firebase
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
