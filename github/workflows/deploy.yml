@@ -32,8 +32,18 @@ jobs:
       # Stap 5: Deploy to Firebase Hosting
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
+        # Stap 5: Publiceer naar Firebase
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
         with:
           repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
-          channelId: live  # Deploy direct naar production
-          projectId: dans-dichter-dans-db  # ← VERVANG DIT!
+          projectId: dans-dichter-db
+          
+          # 1. Vertel het om de 'dist' map te publiceren
+          #    (deze regel had je al, zorg dat hij er staat)
+          entryPoint: dist
+
+          # 2. VOEG DEZE REGEL TOE:
+          #    Vertel het om naar de 'live' site te publiceren
+          channelId: live
