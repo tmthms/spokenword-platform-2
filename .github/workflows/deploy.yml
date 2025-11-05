@@ -8,28 +8,27 @@ on:
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
-    
     steps:
-      # Stap 1: Checkout code
+      # Stap 1: Haal de code op uit je GitHub repo
       - name: Check out code
         uses: actions/checkout@v4
 
-      # Stap 2: Setup Node.js (VERPLICHT voor jouw project!)
+      # Stap 2: Setup Node.js (Nodig voor de build-stap)
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'  # Of '18' als je dat gebruikt
+          node-version: '20' # Of '18' als je dat liever hebt
           cache: 'npm'
 
-      # Stap 3: Install dependencies (VERPLICHT!)
+      # Stap 3: Installeer de dependencies
       - name: Install dependencies
         run: npm ci
 
-      # Stap 4: Build project (VERPLICHT!)
+      # Stap 4: Bouw het project (dit maakt de 'dist' map aan)
       - name: Build project
         run: npm run build
 
-      # Stap 5: Deploy to Firebase Hosting
+      # Stap 5: Publiceer naar Firebase
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         # Stap 5: Publiceer naar Firebase
