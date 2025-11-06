@@ -450,14 +450,17 @@ export async function loadArtists() {
     const locationFilter = document.getElementById('filter-location')?.value.toLowerCase().trim() || '';
     const genderFilter = document.getElementById('filter-gender')?.value || '';
     
-    // Payment filter (using select dropdown)
-    const paymentFilter = document.getElementById('filter-payment')?.value || '';
+    // Payment filter (using checkboxes)
+    const paymentCheckboxes = document.querySelectorAll('input[name="payment-filter"]:checked');
+    const paymentFilters = Array.from(paymentCheckboxes).map(cb => cb.value);
 
-    // Genre filter (using select dropdown)
-    const genreFilter = document.getElementById('filter-genre')?.value || '';
+    // Genre filter (using checkboxes)
+    const genreCheckboxes = document.querySelectorAll('input[name="genre-filter"]:checked');
+    const genreFilters = Array.from(genreCheckboxes).map(cb => cb.value);
 
-    // Language filter (using select dropdown)
-    const languageFilter = document.getElementById('filter-language')?.value || '';
+    // Language filter (using checkboxes)
+    const languageCheckboxes = document.querySelectorAll('input[name="language-filter"]:checked');
+    const languageFilters = Array.from(languageCheckboxes).map(cb => cb.value);
     
     // Age range filter
     const ageMinInput = document.getElementById('filter-age-min')?.value;
@@ -469,9 +472,9 @@ export async function loadArtists() {
       nameFilter,
       locationFilter,
       genderFilter,
-      paymentFilter,
-      genreFilter,
-      languageFilter,
+      paymentFilters,
+      genreFilters,
+      languageFilters,
       ageRange: ageMin !== null || ageMax !== null ? `${ageMin || 'any'}-${ageMax || 'any'}` : 'not set'
     });
     
@@ -511,27 +514,30 @@ export async function loadArtists() {
       });
     }
     
-    // Filter by payment method
-    if (paymentFilter) {
+    // Filter by payment methods (checkboxes - any match)
+    if (paymentFilters.length > 0) {
       artists = artists.filter(artist => {
         const artistPayments = artist.paymentMethods || [];
-        return artistPayments.includes(paymentFilter);
+        // Artist must have at least one of the selected payment methods
+        return paymentFilters.some(payment => artistPayments.includes(payment));
       });
     }
 
-    // Filter by genre
-    if (genreFilter) {
+    // Filter by genres (checkboxes - any match)
+    if (genreFilters.length > 0) {
       artists = artists.filter(artist => {
         const artistGenres = artist.genres || [];
-        return artistGenres.includes(genreFilter);
+        // Artist must have at least one of the selected genres
+        return genreFilters.some(genre => artistGenres.includes(genre));
       });
     }
 
-    // Filter by language
-    if (languageFilter) {
+    // Filter by languages (checkboxes - any match)
+    if (languageFilters.length > 0) {
       artists = artists.filter(artist => {
         const artistLanguages = artist.languages || [];
-        return artistLanguages.includes(languageFilter);
+        // Artist must have at least one of the selected languages
+        return languageFilters.some(lang => artistLanguages.includes(lang));
       });
     }
     

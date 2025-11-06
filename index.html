@@ -865,52 +865,118 @@
                 <div class="bg-white p-8 rounded-lg shadow-xl">
                     <h3 class="text-2xl font-semibold mb-6">Search for Artists</h3>
                     <!-- Filter UI -->
-                    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
-                        <input id="filter-name" type="text" placeholder="Name..." class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                        <input id="filter-location" type="text" placeholder="Location..." class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                        
-                        <select id="filter-gender" class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">All Genders</option>
-                            <option value="f">Female</option>
-                            <option value="m">Male</option>
-                            <option value="x">Other</option>
-                        </select>
-                        
-                        <select id="filter-genre" class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">All Genres</option>
-                            <option value="performance-poetry">Performance Poetry</option>
-                            <option value="poetry-slam">Poetry Slam</option>
-                            <option value="jazz-poetry">Jazz Poetry</option>
-                            <option value="rap">Rap</option>
-                            <option value="storytelling">Storytelling</option>
-                            <option value="comedy">Comedy</option>
-                            <option value="1-on-1">1-op-1 Sessies</option>
-                        </select>
-                        
-                        <select id="filter-language" class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">All Languages</option>
-                            <option value="nl">NL</option>
-                            <option value="en">EN</option>
-                            <option value="fr">FR</option>
-                        </select>
-                        
-                        <select id="filter-payment" class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">All Payment Methods</option>
-                            <option value="invoice">Invoice</option>
-                            <option value="payrolling">Payrolling</option>
-                            <option value="sbk">Other (SBK)</option>
-                            <option value="volunteer-fee">Volunteer Fee</option>
-                            <option value="other">Other</option>
-                        </select>
-                        
-                        <div class="flex items-center space-x-2">
-                            <input id="filter-age-min" type="number" placeholder="Age from" class="w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            <input id="filter-age-max" type="number" placeholder="to" class="w-1/2 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    <div class="space-y-6 mb-6">
+                        <!-- Text Filters Row -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            <input id="filter-name" type="text" placeholder="Name..." class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <input id="filter-location" type="text" placeholder="Location..." class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+
+                            <select id="filter-gender" class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="">All Genders</option>
+                                <option value="f">Female</option>
+                                <option value="m">Male</option>
+                                <option value="x">Other</option>
+                            </select>
                         </div>
-                        
-                        <button id="search-artists-btn" class="md:col-span-1 lg:col-span-1 bg-indigo-600 text-white px-5 py-2 rounded-md font-medium hover:bg-indigo-700 h-full">
-                            Search
-                        </button>
+
+                        <!-- Age Filter -->
+                        <div class="flex items-center space-x-4">
+                            <label class="font-medium text-gray-700">Age Range:</label>
+                            <input id="filter-age-min" type="number" placeholder="Min" class="w-24 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <span class="text-gray-500">to</span>
+                            <input id="filter-age-max" type="number" placeholder="Max" class="w-24 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+
+                        <!-- Checkbox Filters -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <!-- Genres -->
+                            <div>
+                                <label class="block font-medium text-gray-700 mb-2">Genres:</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="genre-filter" value="performance-poetry" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                        <span class="ml-2 text-sm text-gray-700">Performance Poetry</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="genre-filter" value="poetry-slam" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                        <span class="ml-2 text-sm text-gray-700">Poetry Slam</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="genre-filter" value="jazz-poetry" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                        <span class="ml-2 text-sm text-gray-700">Jazz Poetry</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="genre-filter" value="rap" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                        <span class="ml-2 text-sm text-gray-700">Rap</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="genre-filter" value="storytelling" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                        <span class="ml-2 text-sm text-gray-700">Storytelling</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="genre-filter" value="comedy" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                        <span class="ml-2 text-sm text-gray-700">Comedy</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="genre-filter" value="1-on-1" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                        <span class="ml-2 text-sm text-gray-700">1-op-1 Sessies</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Languages -->
+                            <div>
+                                <label class="block font-medium text-gray-700 mb-2">Languages:</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="language-filter" value="nl" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                        <span class="ml-2 text-sm text-gray-700">Dutch (NL)</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="language-filter" value="en" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                        <span class="ml-2 text-sm text-gray-700">English (EN)</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="language-filter" value="fr" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                        <span class="ml-2 text-sm text-gray-700">French (FR)</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Payment Methods -->
+                            <div>
+                                <label class="block font-medium text-gray-700 mb-2">Payment Methods:</label>
+                                <div class="space-y-2">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="payment-filter" value="invoice" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                        <span class="ml-2 text-sm text-gray-700">Invoice</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="payment-filter" value="payrolling" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                        <span class="ml-2 text-sm text-gray-700">Payrolling</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="payment-filter" value="sbk" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                        <span class="ml-2 text-sm text-gray-700">Other (SBK)</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="payment-filter" value="volunteer-fee" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                        <span class="ml-2 text-sm text-gray-700">Volunteer Fee</span>
+                                    </label>
+                                    <label class="flex items-center">
+                                        <input type="checkbox" name="payment-filter" value="other" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                                        <span class="ml-2 text-sm text-gray-700">Other</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Search Button -->
+                        <div>
+                            <button id="search-artists-btn" class="w-full bg-indigo-600 text-white px-6 py-3 rounded-md font-medium hover:bg-indigo-700 text-lg">
+                                Search Artists
+                            </button>
+                        </div>
                     </div>
 
                     <!-- Artist List (Results) -->
