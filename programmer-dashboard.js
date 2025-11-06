@@ -431,20 +431,18 @@ export async function loadArtists() {
   }
   
   console.log("[LOAD ARTISTS] ✅ Auth check passed, loading artists...");
-  
-  const resultsContainer = document.getElementById('artist-results');
-  const loadingDiv = document.getElementById('loading-artists');
-  const noResultsDiv = document.getElementById('no-results');
-  
+
+  const resultsContainer = document.getElementById('artist-list-container');
+  const noResultsDiv = document.getElementById('artist-list-empty');
+
   if (!resultsContainer) {
-    console.error("[LOAD ARTISTS] ❌ ERROR: artist-results container not found!");
+    console.error("[LOAD ARTISTS] ❌ ERROR: artist-list-container not found!");
     return;
   }
-  
-  // Show loading
-  resultsContainer.innerHTML = '';
-  loadingDiv.style.display = 'block';
-  noResultsDiv.style.display = 'none';
+
+  // Show loading state
+  resultsContainer.innerHTML = '<p class="text-gray-500">Loading artists...</p>';
+  if (noResultsDiv) noResultsDiv.style.display = 'none';
   
   try {
     // Get filter values
@@ -452,17 +450,14 @@ export async function loadArtists() {
     const locationFilter = document.getElementById('filter-location')?.value.toLowerCase().trim() || '';
     const genderFilter = document.getElementById('filter-gender')?.value || '';
     
-    // Payment filter (NEW - v2.1)
-    const paymentCheckboxes = document.querySelectorAll('input[name="payment-filter"]:checked');
-    const paymentFilters = Array.from(paymentCheckboxes).map(cb => cb.value);
-    
-    // Genre filter
-    const genreCheckboxes = document.querySelectorAll('input[name="genre-filter"]:checked');
-    const genreFilters = Array.from(genreCheckboxes).map(cb => cb.value);
-    
-    // Language filter
-    const languageCheckboxes = document.querySelectorAll('input[name="language-filter"]:checked');
-    const languageFilters = Array.from(languageCheckboxes).map(cb => cb.value);
+    // Payment filter (using select dropdown)
+    const paymentFilter = document.getElementById('filter-payment')?.value || '';
+
+    // Genre filter (using select dropdown)
+    const genreFilter = document.getElementById('filter-genre')?.value || '';
+
+    // Language filter (using select dropdown)
+    const languageFilter = document.getElementById('filter-language')?.value || '';
     
     // Age range filter
     const ageMinInput = document.getElementById('filter-age-min')?.value;
@@ -474,9 +469,9 @@ export async function loadArtists() {
       nameFilter,
       locationFilter,
       genderFilter,
-      paymentFilters,
-      genreFilters,
-      languageFilters,
+      paymentFilter,
+      genreFilter,
+      languageFilter,
       ageRange: ageMin !== null || ageMax !== null ? `${ageMin || 'any'}-${ageMax || 'any'}` : 'not set'
     });
     
@@ -516,30 +511,27 @@ export async function loadArtists() {
       });
     }
     
-    // Filter by payment methods (NEW - v2.1)
-    if (paymentFilters.length > 0) {
+    // Filter by payment method
+    if (paymentFilter) {
       artists = artists.filter(artist => {
         const artistPayments = artist.paymentMethods || [];
-        // Artist must have at least one of the selected payment methods
-        return paymentFilters.some(payment => artistPayments.includes(payment));
+        return artistPayments.includes(paymentFilter);
       });
     }
-    
-    // Filter by genres
-    if (genreFilters.length > 0) {
+
+    // Filter by genre
+    if (genreFilter) {
       artists = artists.filter(artist => {
         const artistGenres = artist.genres || [];
-        // Artist must have at least one of the selected genres
-        return genreFilters.some(genre => artistGenres.includes(genre));
+        return artistGenres.includes(genreFilter);
       });
     }
-    
-    // Filter by languages
-    if (languageFilters.length > 0) {
+
+    // Filter by language
+    if (languageFilter) {
       artists = artists.filter(artist => {
         const artistLanguages = artist.languages || [];
-        // Artist must have at least one of the selected languages
-        return languageFilters.some(lang => artistLanguages.includes(lang));
+        return artistLanguages.includes(languageFilter);
       });
     }
     
@@ -556,20 +548,19 @@ export async function loadArtists() {
     }
     
     console.log(`${artists.length} artists after all filtering`);
-    
-    // Hide loading
-    loadingDiv.style.display = 'none';
-    
+
     // Display results
     if (artists.length === 0) {
-      noResultsDiv.style.display = 'block';
+      resultsContainer.innerHTML = '';
+      if (noResultsDiv) noResultsDiv.style.display = 'block';
     } else {
+      if (noResultsDiv) noResultsDiv.style.display = 'none';
       renderArtists(artists);
     }
-    
+
   } catch (error) {
     console.error("Error loading artists:", error);
-    loadingDiv.style.display = 'none';
+    resultsContainer.innerHTML = '<p class="text-red-500">Error loading artists. Please try again.</p>';
     alert("Could not load artists: " + error.message);
   }
 }
@@ -597,9 +588,14 @@ function calculateAge(dob) {
  * Render artists in the results container
  */
 function renderArtists(artists) {
-  const resultsContainer = document.getElementById('artist-results');
+  const resultsContainer = document.getElementById('artist-list-container');
+  if (!resultsContainer) {
+    console.error("[RENDER ARTISTS] ❌ artist-list-container not found!");
+    return;
+  }
+
   resultsContainer.innerHTML = '';
-  
+
   artists.forEach(artist => {
     const card = createArtistCard(artist);
     resultsContainer.appendChild(card);
