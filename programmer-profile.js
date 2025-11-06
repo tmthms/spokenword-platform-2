@@ -7,6 +7,7 @@ import { getStore, setStore } from './store.js';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from './firebase.js';
+import { setLanguage } from './translations.js';
 
 /**
  * Sets up the programmer profile editor
@@ -97,7 +98,8 @@ export function populateProgrammerEditor() {
   document.getElementById('programmer-edit-org-name').value = currentUserData.organizationName || '';
   document.getElementById('programmer-edit-org-about').value = currentUserData.organizationAbout || '';
   document.getElementById('programmer-edit-website').value = currentUserData.website || '';
-  
+  document.getElementById('programmer-edit-language').value = currentUserData.language || 'nl';
+
   // Show current profile picture
   const previewImg = document.getElementById('programmer-profile-pic-preview');
   if (currentUserData.profilePicUrl) {
@@ -142,7 +144,8 @@ async function handleProgrammerProfileSubmit(e) {
       phone: document.getElementById('programmer-edit-phone').value.trim(),
       organizationName: document.getElementById('programmer-edit-org-name').value.trim(),
       organizationAbout: document.getElementById('programmer-edit-org-about').value.trim(),
-      website: document.getElementById('programmer-edit-website').value.trim()
+      website: document.getElementById('programmer-edit-website').value.trim(),
+      language: document.getElementById('programmer-edit-language').value
     };
     
     // Validate required fields
@@ -180,7 +183,10 @@ async function handleProgrammerProfileSubmit(e) {
     // Update local store
     const currentUserData = getStore('currentUserData');
     setStore('currentUserData', { ...currentUserData, ...dataToUpdate });
-    
+
+    // Apply language change immediately
+    setLanguage(dataToUpdate.language);
+
     // Show success message
     successMsg.textContent = '✓ Profile updated successfully!';
     

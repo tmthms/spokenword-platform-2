@@ -32,7 +32,7 @@
                 <div class="hidden md:block">
                     <div class="ml-10 flex items-baseline space-x-4">
                         <button id="nav-home" class="nav-button text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">Home</button>
-                        <button id="nav-dashboard" class="nav-button hidden text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">Dashboard</button>
+                        <button id="nav-dashboard" class="nav-button hidden text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">Search</button>
                         <button id="nav-messages" class="nav-button hidden text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium relative">
                             Messages
                             <span id="messages-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
@@ -809,7 +809,17 @@
             <label for="programmer-edit-website" class="block text-sm font-medium text-gray-700">Website</label>
             <input id="programmer-edit-website" type="url" placeholder="https://yourcompany.com" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
         </div>
-        
+
+        <!-- Language Preference -->
+        <div>
+            <label for="programmer-edit-language" class="block text-sm font-medium text-gray-700">Language Preference</label>
+            <select id="programmer-edit-language" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                <option value="nl">Nederlands (Dutch)</option>
+                <option value="en">English</option>
+            </select>
+            <p class="mt-1 text-sm text-gray-500">Choose your preferred language for the website interface</p>
+        </div>
+
         <!-- Save Button -->
         <button type="submit" class="bg-green-600 text-white px-5 py-2 rounded-md font-medium hover:bg-green-700">
             Save Profile Changes
@@ -820,7 +830,7 @@
 </div>
 
                 <!-- Search and Filter Section -->
-                <div class="bg-white p-8 rounded-lg shadow-xl">
+                <div id="artist-search-section" class="bg-white p-8 rounded-lg shadow-xl">
                     <h3 class="text-2xl font-semibold mb-6">Search for Artists</h3>
                     <!-- Filter UI -->
                     <div class="space-y-6 mb-6">

@@ -55,6 +55,7 @@ const elements = {
   programmerTrialMessage: document.getElementById('programmer-trial-message'),
   programmerProMessage: document.getElementById('programmer-pro-message'),
   programmerProfileEditor: document.getElementById('programmer-profile-editor'),
+  artistSearchSection: document.getElementById('artist-search-section'),
 };
 
 /**
@@ -138,14 +139,22 @@ export function showDashboard() {
     const trialMessage = elements.programmerTrialMessage;
     const proMessage = elements.programmerProMessage;
 
+    // Hide profile editor and show search section
+    if (elements.programmerProfileEditor) {
+      elements.programmerProfileEditor.classList.add('hidden');
+      elements.programmerProfileEditor.style.display = 'none';
+    }
+    if (elements.artistSearchSection) elements.artistSearchSection.style.display = 'block';
+
     if (status === 'pending') {
       // Verberg de zoekfilters, toon "pending" bericht
       pendingView.style.display = 'block';
-      trialView.style.display = 'none'; 
-    } else { 
+      trialView.style.display = 'none';
+      if (elements.artistSearchSection) elements.artistSearchSection.style.display = 'none';
+    } else {
       // Toon de zoekfilters en verberg "pending"
       pendingView.style.display = 'none';
-      trialView.style.display = 'block'; 
+      trialView.style.display = 'block';
 
       // Toon het juiste bericht (Trial of Pro)
       if (status === 'pro') {
@@ -185,12 +194,13 @@ export function showProgrammerSettings() {
   elements.programmerDashboard.style.display = 'block';
   elements.programmerDashboard.classList.remove('hidden');
 
-  // Hide the pending/trial views and show profile editor
+  // Hide the pending/trial views and artist search section
   const pendingView = elements.programmerPendingView;
   const trialView = elements.programmerTrialView;
 
   if (pendingView) pendingView.style.display = 'none';
   if (trialView) trialView.style.display = 'none';
+  if (elements.artistSearchSection) elements.artistSearchSection.style.display = 'none';
 
   // Show the profile editor
   if (elements.programmerProfileEditor) {
