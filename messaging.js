@@ -491,55 +491,65 @@ function formatTimeAgo(date) {
  */
 export async function openConversation(conversationId) {
   console.log("Opening conversation:", conversationId);
-  
+
   try {
     const currentUser = getStore('currentUser');
-    
+
     if (!currentUser) {
       console.error("No user logged in");
       return;
     }
-    
+
     // Haal conversatie data op
     const conversationRef = doc(db, 'conversations', conversationId);
     const conversationSnap = await getDoc(conversationRef);
-    
+
     if (!conversationSnap.exists()) {
       console.error("Conversation not found:", conversationId);
       alert("Conversation not found.");
       return;
     }
-    
+
     const conversation = { id: conversationSnap.id, ...conversationSnap.data() };
-    
+
     // Bepaal de andere participant
     const otherParticipantId = conversation.participants.find(id => id !== currentUser.uid);
     const otherParticipantName = conversation.participantNames[otherParticipantId] || 'Unknown';
     const otherParticipantRole = conversation.participantRoles[otherParticipantId] || '';
-    
-    // Vul de header in
-    document.getElementById('conversation-participant-name').textContent = otherParticipantName;
-    document.getElementById('conversation-participant-role').textContent = otherParticipantRole;
-    document.getElementById('conversation-subject').innerHTML = `<strong>Subject:</strong> ${conversation.subject || 'No subject'}`;
-    
+
+    // Show chat container and hide placeholder
+    const chatPlaceholder = document.getElementById('chat-placeholder');
+    const chatContainer = document.getElementById('chat-container');
+    const chatHeader = document.getElementById('chat-header');
+
+    if (chatPlaceholder) chatPlaceholder.style.display = 'none';
+    if (chatContainer) {
+      chatContainer.classList.remove('hidden');
+      chatContainer.style.display = 'flex';
+    }
+
+    // Update chat header with participant info
+    if (chatHeader) {
+      chatHeader.innerHTML = `
+        <div>
+          <h3 class="text-lg font-semibold text-gray-900">${otherParticipantName}</h3>
+          <p class="text-sm text-gray-500">${otherParticipantRole}</p>
+          ${conversation.subject ? `<p class="text-sm text-gray-600 mt-1"><strong>Subject:</strong> ${conversation.subject}</p>` : ''}
+        </div>
+      `;
+    }
+
     // Markeer conversatie als gelezen
     await markConversationAsRead(conversationId);
-    
+
     // Laad berichten
     await loadMessages(conversationId);
-    
-    // Toon de conversation detail view en verberg messages view
-    document.getElementById('messages-view').style.display = 'none';
-    document.getElementById('conversation-detail-view').style.display = 'block';
-    
-    // Scroll naar boven
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    
+
     // Activeer Lucide icons
     if (window.lucide) {
       window.lucide.createIcons();
     }
-    
+
   } catch (error) {
     console.error("Error opening conversation:", error);
     alert("Could not open conversation: " + error.message);
@@ -550,45 +560,38 @@ export async function openConversation(conversationId) {
  * Laadt alle berichten van een conversatie
  */
 async function loadMessages(conversationId) {
-  const loadingEl = document.getElementById('messages-loading');
-  const listEl = document.getElementById('messages-list');
-  const replyForm = document.getElementById('reply-form');
-  
-  // Toon loading state
-  if (loadingEl) loadingEl.style.display = 'block';
-  if (listEl) {
-    listEl.style.display = 'none';
-    listEl.innerHTML = '';
+  const messagesContainer = document.getElementById('messages-container');
+
+  if (!messagesContainer) {
+    console.error("Messages container not found");
+    return;
   }
-  if (replyForm) replyForm.style.display = 'none';
-  
+
+  // Show loading state
+  messagesContainer.innerHTML = '<p class="text-center text-gray-500">Loading messages...</p>';
+
   try {
     const messagesRef = collection(db, `conversations/${conversationId}/messages`);
     const q = query(messagesRef, orderBy('createdAt', 'asc'));
-    
+
     const querySnapshot = await getDocs(q);
-    
+
     const messages = [];
     querySnapshot.forEach((doc) => {
       messages.push({ id: doc.id, ...doc.data() });
     });
-    
-    // Verberg loading
-    if (loadingEl) loadingEl.style.display = 'none';
-    
-    // Toon berichten
+
+    // Display messages
     displayMessages(messages, conversationId);
-    
+
   } catch (error) {
     console.error("Error loading messages:", error);
-    if (loadingEl) {
-      loadingEl.innerHTML = `
-        <div class="text-center py-8">
-          <p class="text-red-500">Error loading messages. Please refresh the page.</p>
-          <p class="text-sm text-gray-500 mt-2">${error.message}</p>
-        </div>
-      `;
-    }
+    messagesContainer.innerHTML = `
+      <div class="text-center py-8">
+        <p class="text-red-500">Error loading messages. Please refresh the page.</p>
+        <p class="text-sm text-gray-500 mt-2">${error.message}</p>
+      </div>
+    `;
   }
 }
 
@@ -599,96 +602,58 @@ async function loadMessages(conversationId) {
 // This version shows actual profile pictures with a hover tooltip
 
 function displayMessages(messages, conversationId) {
-  const listEl = document.getElementById('messages-list');
-  const replyForm = document.getElementById('reply-form');
+  const messagesContainer = document.getElementById('messages-container');
   const currentUser = getStore('currentUser');
-  
-  if (!listEl || !currentUser) return;
-  
-  listEl.innerHTML = '';
-  listEl.style.display = 'block';
-  
+
+  if (!messagesContainer || !currentUser) return;
+
+  messagesContainer.innerHTML = '';
+
   if (messages.length === 0) {
-    listEl.innerHTML = '<p class="text-gray-500 text-center py-4">No messages yet.</p>';
+    messagesContainer.innerHTML = '<p class="text-gray-500 text-center py-4">No messages yet.</p>';
   } else {
     messages.forEach(message => {
       const isOwnMessage = message.senderId === currentUser.uid;
-      
+
       // Format timestamp
       let timeAgo = 'Just now';
       if (message.createdAt && message.createdAt.toDate) {
         const date = message.createdAt.toDate();
         timeAgo = formatTimeAgo(date);
       }
-      
-      // ⭐ Get profile picture with proper fallback
-      const profilePic = message.senderProfilePic || 
-                        'https://placehold.co/48x48/e0e7ff/6366f1?text=' + 
-                        encodeURIComponent(message.senderName.charAt(0));
-      
-      // Maak message bubble
+
+      // Get profile picture with proper fallback
+      const profilePic = message.senderProfilePic ||
+                        'https://placehold.co/48x48/e0e7ff/6366f1?text=' +
+                        encodeURIComponent(message.senderName?.charAt(0) || '?');
+
+      // Create message bubble
       const messageDiv = document.createElement('div');
       messageDiv.className = `flex items-start space-x-3 mb-4 ${isOwnMessage ? 'flex-row-reverse space-x-reverse' : ''}`;
-      
-      // ⭐ UPDATED: Better profile picture with tooltip and visual CTA
+
       messageDiv.innerHTML = `
-        <div class="relative group flex-shrink-0">
-          <img src="${profilePic}" 
-               alt="${message.senderName}" 
-               class="h-12 w-12 rounded-full object-cover border-2 ${isOwnMessage ? 'border-indigo-200' : 'border-gray-200'} cursor-pointer hover:border-indigo-500 transition-all duration-200 hover:shadow-lg transform hover:scale-110"
-               data-view-profile="${message.senderId}"
-               data-profile-role="${message.senderRole}">
-          
-          <!-- Hover Tooltip/CTA -->
-          <div class="absolute bottom-0 ${isOwnMessage ? 'right-0' : 'left-0'} transform translate-y-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-            <div class="bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap">
-              <svg class="inline-block h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-              </svg>
-              View profile
-            </div>
-          </div>
-          
-          <!-- Small indicator dot (optional - shows it's clickable) -->
-          <div class="absolute -bottom-1 -right-1 h-4 w-4 bg-indigo-500 rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <svg class="h-3 w-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-            </svg>
-          </div>
+        <div class="flex-shrink-0">
+          <img src="${profilePic}"
+               alt="${message.senderName}"
+               class="h-10 w-10 rounded-full object-cover">
         </div>
-        
+
         <div class="max-w-xl ${isOwnMessage ? 'bg-indigo-100' : 'bg-gray-100'} rounded-lg p-4 shadow-sm">
           <div class="flex items-center mb-2">
             <span class="font-semibold text-sm ${isOwnMessage ? 'text-indigo-900' : 'text-gray-900'}">${message.senderName}</span>
-            <span class="text-xs text-gray-500 ml-2 capitalize">${message.senderRole}</span>
+            <span class="text-xs text-gray-500 ml-2 capitalize">${message.senderRole || ''}</span>
           </div>
           <p class="text-gray-800 whitespace-pre-wrap">${message.text}</p>
           <p class="text-xs text-gray-500 mt-2">${timeAgo}</p>
         </div>
       `;
-      
-      // ⭐ Add click handler to profile picture
-      const profileImg = messageDiv.querySelector('img[data-view-profile]');
-      profileImg.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const userId = e.target.getAttribute('data-view-profile');
-        const role = e.target.getAttribute('data-profile-role');
-        viewUserProfile(userId, role);
-      });
-      
-      listEl.appendChild(messageDiv);
+
+      messagesContainer.appendChild(messageDiv);
     });
   }
-  
-  // Scroll naar laatste bericht
-  listEl.scrollTop = listEl.scrollHeight;
-  
-  // Toon reply form
-  if (replyForm) {
-    replyForm.style.display = 'block';
-    replyForm.dataset.conversationId = conversationId;
-  }
+
+  // Scroll to latest message
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
 /**

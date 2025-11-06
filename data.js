@@ -1,7 +1,8 @@
 // BELANGRIJKE FIX: 'getDoc' hier geïmporteerd
-import { doc, getDoc } from "firebase/firestore"; 
+import { doc, getDoc } from "firebase/firestore";
 import { db } from './firebase.js';
 import { setStore } from './store.js';
+import { setLanguage } from './translations.js';
 
 /**
  * Haalt de profielgegevens van de gebruiker op uit Firestore
@@ -65,6 +66,11 @@ export async function fetchUserData(uid) {
     // 3. Sla de volledige profielgegevens op in de store
     setStore('currentUserData', completeUserData);
     console.log("Gebruikersprofiel geladen met role:", { uid, email, role, status: completeUserData.status });
+
+    // 4. Set user's language preference (defaults to 'nl' if not set)
+    const userLanguage = userProfile.language || 'nl';
+    setLanguage(userLanguage);
+
     return completeUserData;
 
   } catch (error) {

@@ -6,12 +6,13 @@
 
 // Importeer de initialisatie-functies van onze modules
 import { initAuth, monitorAuthState } from './auth.js';
-import { initNavigation, showPage } from './ui.js'; 
+import { initNavigation, showPage } from './ui.js';
 import { setupArtistDashboard } from './artist-dashboard.js';
 import { getArtistSignupData, validateArtistSignupData } from './artist-signup-helpers.js';
 import { setupProgrammerDashboard } from './programmer-dashboard.js';
 import { setupProgrammerProfile } from './programmer-profile.js'; // ⭐ NEW: Import programmer profile
 import { setupMessaging } from './messaging.js';
+import { initTranslations } from './translations.js';
 
 /**
  * initApp
@@ -20,29 +21,32 @@ import { setupMessaging } from './messaging.js';
 function initApp() {
   try {
     console.log("main.js is succesvol geladen...");
-    
+
+    // Initialize translations (default to Dutch)
+    initTranslations();
+
     // Stel de navigatieknoppen in (Login, Home, etc.)
-    initNavigation(); 
-    
+    initNavigation();
+
     // Stel de auth-formulieren in (Login, Signup, Logout knoppen)
-    initAuth(); 
-    
+    initAuth();
+
     // Stel de listener in die kijkt of we in- of uitgelogd zijn
     // Deze verbergt ook de lader en toont de homepagina
     monitorAuthState();
-    
+
     // Stel de listeners in voor het artiesten-dashboard (foto upload, save knop)
     setupArtistDashboard();
 
     // Stel de listeners in voor het programmeurs-dashboard (zoekknop)
     setupProgrammerDashboard();
-    
+
     // ⭐ NEW: Stel de listeners in voor het programmeurs-profiel (edit profile)
     setupProgrammerProfile();
-    
+
     // Stel de messaging listeners in (send message button, modal)
     setupMessaging();
-    
+
     console.log("Applicatie succesvol geïnitialiseerd.");
 
   } catch (error) {
