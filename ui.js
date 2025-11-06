@@ -33,6 +33,7 @@ const elements = {
   navSignup: document.getElementById('nav-signup'),
   navDashboard: document.getElementById('nav-dashboard'),
   navMessages: document.getElementById('nav-messages'),
+  navSettings: document.getElementById('nav-settings'),
   navLogout: document.getElementById('nav-logout'),
   authLinks: document.getElementById('auth-links'),
   userMenu: document.getElementById('user-menu'),
@@ -53,6 +54,7 @@ const elements = {
   programmerTrialView: document.getElementById('programmer-trial-view'),
   programmerTrialMessage: document.getElementById('programmer-trial-message'),
   programmerProMessage: document.getElementById('programmer-pro-message'),
+  programmerProfileEditor: document.getElementById('programmer-profile-editor'),
 };
 
 /**
@@ -83,6 +85,16 @@ export function updateNav(user) {
     elements.userEmailSpan.textContent = user.email;
     elements.navDashboard.style.display = 'block';
     elements.navMessages.style.display = 'block';
+
+    // Show Settings button only for programmers
+    const currentUserData = getStore('currentUserData');
+    if (currentUserData && currentUserData.role === 'programmer') {
+      elements.navSettings.style.display = 'inline-block';
+      elements.navSettings.classList.remove('hidden');
+    } else {
+      elements.navSettings.style.display = 'none';
+      elements.navSettings.classList.add('hidden');
+    }
   } else {
     // Uitgelogd
     elements.authLinks.style.display = 'block';
@@ -90,6 +102,7 @@ export function updateNav(user) {
     elements.userEmailSpan.textContent = '';
     elements.navDashboard.style.display = 'none';
     elements.navMessages.style.display = 'none';
+    elements.navSettings.style.display = 'none';
   }
 }
 
@@ -142,14 +155,48 @@ export function showDashboard() {
         trialMessage.style.display = 'block';
         proMessage.style.display = 'none';
       }
-      
-      // De gebruiker klikt zelf op "Search" om artiesten te laden
-      // Dit voorkomt onnodige database reads bij het inloggen
+
+      // Auto-load all artists when dashboard loads
+      loadArtists();
     }
   }
 
   // Toon ten slotte de hoofd-dashboard pagina
   showPage('dashboard-view');
+}
+
+/**
+ * Shows programmer settings (profile editor)
+ */
+export function showProgrammerSettings() {
+  const currentUserData = getStore('currentUserData');
+
+  if (!currentUserData || currentUserData.role !== 'programmer') {
+    console.warn("Only programmers can access settings");
+    return;
+  }
+
+  // Show dashboard page
+  showPage('dashboard-view');
+
+  // Show programmer dashboard
+  elements.artistDashboard.style.display = 'none';
+  elements.artistDashboard.classList.add('hidden');
+  elements.programmerDashboard.style.display = 'block';
+  elements.programmerDashboard.classList.remove('hidden');
+
+  // Hide the pending/trial views and show profile editor
+  const pendingView = elements.programmerPendingView;
+  const trialView = elements.programmerTrialView;
+
+  if (pendingView) pendingView.style.display = 'none';
+  if (trialView) trialView.style.display = 'none';
+
+  // Show the profile editor
+  if (elements.programmerProfileEditor) {
+    elements.programmerProfileEditor.classList.remove('hidden');
+    elements.programmerProfileEditor.style.display = 'block';
+  }
 }
 
 /**
@@ -171,13 +218,16 @@ export function initNavigation() {
   elements.navHome.addEventListener('click', () => showPage('home-view'));
   elements.navLogin.addEventListener('click', () => showPage('login-view'));
   elements.navSignup.addEventListener('click', () => showPage('signup-view'));
-  
+
   // De Dashboard knop toont het *juiste* dashboard
   elements.navDashboard.addEventListener('click', showDashboard);
-  
+
   // De Messages knop toont de conversations lijst
   elements.navMessages.addEventListener('click', showMessages);
-  
+
+  // Settings button for programmers
+  elements.navSettings.addEventListener('click', showProgrammerSettings);
+
   elements.navLogout.addEventListener('click', handleLogout);
 
   // Homepagina CTA-knoppen
