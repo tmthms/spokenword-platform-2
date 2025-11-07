@@ -728,6 +728,31 @@
             <p id="artist-profile-error" class="text-red-600 text-sm mt-2"></p>
         </div>
     </form>
+    <!-- Recommendations Section -->
+                <div id="artist-recommendations-section" class="bg-white p-8 rounded-lg shadow-xl mt-6">
+                    <h3 class="text-2xl font-semibold mb-6">Recommendations</h3>
+                    
+                    <!-- Loading State -->
+                    <div id="recommendations-loading" class="text-center py-8" style="display: none;">
+                        <div class="loader mx-auto"></div>
+                        <p class="text-gray-600 mt-4">Loading recommendations...</p>
+                    </div>
+                    
+                    <!-- Error State -->
+                    <div id="recommendations-error" class="text-center py-8 text-red-600" style="display: none;">
+                        Error loading recommendations
+                    </div>
+                    
+                    <!-- Empty State -->
+                    <div id="recommendations-empty" class="text-center py-8" style="display: none;">
+                        <p class="text-gray-600">No recommendations yet. Programmers can write recommendations after viewing your profile.</p>
+                    </div>
+                    
+                    <!-- Recommendations List -->
+                    <div id="recommendations-list" class="space-y-4" style="display: none;">
+                        <!-- Recommendations will be inserted here dynamically -->
+                    </div>
+                </div>
 </div>
 
             </div>

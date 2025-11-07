@@ -1036,3 +1036,64 @@ function showProgrammerProfileModal(programmer) {
     }
   });
 }
+/**
+ * Send recommendation notification to artist
+ * @param {string} artistId - Artist user ID
+ * @param {string} artistEmail - Artist email
+ * @param {string} artistName - Artist name
+ * @param {string} programmerId - Programmer user ID
+ * @param {object} programmerData - Programmer data
+ * @param {string} recommendationText - The recommendation text
+ */
+export async function sendRecommendationNotification(artistId, artistEmail, artistName, programmerId, programmerData, recommendationText) {
+  try {
+    // Check if conversation exists
+    const existingConversation = await findExistingConversation(programmerId, artistId);
+    
+    let conversationId;
+    
+    if (existingConversation) {
+      conversationId = existingConversation.id;
+    } else {
+      // Create new conversation
+      const conversationData = {
+        participants: [programmerId, artistId],
+        participantNames: {
+          [programmerId]: `${programmerData.firstName} ${programmerData.lastName}`,
+          [artistId]: artistName
+        },
+        participantRoles: {
+          [programmerId]: 'programmer',
+          [artistId]: 'artist'
+        },
+        participantEmails: {
+          [programmerId]: programmerData.email,
+          [artistId]: artistEmail
+        },
+        participantProfilePics: {
+          [programmerId]: programmerData.profilePicUrl || '',
+          [artistId]: ''
+        },
+        subject: '🌟 New Recommendation',
+        lastMessage: '',
+        lastMessageAt: serverTimestamp(),
+        unreadBy: [artistId],
+        createdAt: serverTimestamp()
+      };
+      
+      const convRef = await addDoc(collection(db, 'conversations'), conversationData);
+      conversationId = convRef.id;
+    }
+    
+    // Send notification message
+    const notificationText = `I've written a recommendation for you! Here's what I said:\n\n"${recommendationText}"\n\nYou can view all your recommendations in your artist dashboard.`;
+    
+    await addMessage(conversationId, programmerId, programmerData, notificationText);
+    
+    console.log("Recommendation notification sent successfully");
+    
+  } catch (error) {
+    console.error("Error sending recommendation notification:", error);
+    throw error;
+  }
+}

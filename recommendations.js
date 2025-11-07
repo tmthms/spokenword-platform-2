@@ -1,5 +1,3 @@
-// recommendations.js - VOLLEDIGE GEÜPDATETE VERSIE
-
 /**
  * recommendations.js
  * Handles recommendation functionality for programmers to recommend artists
@@ -9,6 +7,7 @@ import { collection, addDoc, query, where, getDocs, orderBy, serverTimestamp, do
 import { db } from './firebase.js';
 import { getStore } from './store.js';
 import { t } from './translations.js';
+import { sendRecommendationNotification } from './messaging.js';
 
 /**
  * Setup recommendation modal and form
@@ -64,6 +63,7 @@ export function openRecommendationModal(artistId, artistData) {
   // Store artist data in modal for later use
   form.dataset.artistId = artistId;
   form.dataset.artistName = artistData.stageName || `${artistData.firstName} ${artistData.lastName}`;
+  form.dataset.artistEmail = artistData.email;
 
   // Reset form
   form.reset();
@@ -118,6 +118,7 @@ async function handleRecommendationSubmit(e) {
 
     const artistId = e.target.dataset.artistId;
     const artistName = e.target.dataset.artistName;
+    const artistEmail = e.target.dataset.artistEmail;
     const text = document.getElementById('recommendation-text').value.trim();
 
     if (!text) {
@@ -132,18 +133,37 @@ async function handleRecommendationSubmit(e) {
     const recommendationData = {
       artistId: artistId,
       artistName: artistName,
+      artistEmail: artistEmail,
       programmerId: currentUser.uid,
       programmerName: `${currentUserData.firstName} ${currentUserData.lastName}`,
       programmerOrganization: currentUserData.organizationName || '',
+      programmerEmail: currentUserData.email || '',
+      programmerProfilePic: currentUserData.profilePicUrl || '',
       text: text,
       createdAt: serverTimestamp(),
       isApproved: true // Auto-approve for now
     };
 
     // Add to Firestore
-    await addDoc(collection(db, 'recommendations'), recommendationData);
+    const recDoc = await addDoc(collection(db, 'recommendations'), recommendationData);
 
-    console.log("Recommendation submitted successfully");
+    console.log("Recommendation submitted successfully:", recDoc.id);
+
+    // Send notification message to artist
+    try {
+      await sendRecommendationNotification(
+        artistId,
+        artistEmail,
+        artistName,
+        currentUser.uid,
+        currentUserData,
+        text
+      );
+      console.log("Notification sent to artist");
+    } catch (notifError) {
+      console.error("Failed to send notification:", notifError);
+      // Don't throw - recommendation was saved successfully
+    }
 
     // Show success message
     successMsg.textContent = t('recommendation_success');
@@ -267,10 +287,15 @@ function displayRecommendations(recommendations) {
     // Check if current user owns this recommendation (for delete button)
     const canDelete = currentUser && currentUser.uid === rec.programmerId;
 
+    // Programmer name - clickable if viewing as artist or different programmer
+    const programmerNameHtml = currentUser && currentUser.uid !== rec.programmerId
+      ? `<button onclick="viewProgrammerProfile('${rec.programmerId}')" class="font-semibold text-indigo-600 hover:text-indigo-800 underline">${rec.programmerName}</button>`
+      : `<h4 class="font-semibold text-gray-900">${rec.programmerName}</h4>`;
+
     recDiv.innerHTML = `
       <div class="flex justify-between items-start mb-3">
         <div>
-          <h4 class="font-semibold text-gray-900">${rec.programmerName}</h4>
+          ${programmerNameHtml}
           ${rec.programmerOrganization ? `<p class="text-sm text-gray-600">${rec.programmerOrganization}</p>` : ''}
           <p class="text-xs text-gray-500 mt-1">${dateText}</p>
         </div>
@@ -291,6 +316,117 @@ function displayRecommendations(recommendations) {
     window.lucide.createIcons();
   }
 }
+
+/**
+ * View programmer profile
+ */
+window.viewProgrammerProfile = async function(programmerId) {
+  try {
+    console.log("Viewing programmer profile:", programmerId);
+    
+    const programmerRef = doc(db, 'programmers', programmerId);
+    const programmerSnap = await getDoc(programmerRef);
+    
+    if (!programmerSnap.exists()) {
+      alert('Programmer profile not found');
+      return;
+    }
+    
+    const programmer = { id: programmerId, ...programmerSnap.data() };
+    
+    // Show programmer profile modal
+    showProgrammerProfileModal(programmer);
+    
+  } catch (error) {
+    console.error("Error loading programmer profile:", error);
+    alert('Failed to load programmer profile');
+  }
+};
+
+/**
+ * Show programmer profile in a modal
+ */
+function showProgrammerProfileModal(programmer) {
+  // Create modal HTML
+  const modalHTML = `
+    <div id="programmer-profile-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+      <div class="relative p-8 bg-white w-full max-w-2xl m-auto rounded-lg shadow-xl">
+        <!-- Close button -->
+        <button onclick="closeProgrammerProfileModal()" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+          <i data-lucide="x" class="h-6 w-6"></i>
+        </button>
+        
+        <!-- Profile content -->
+        <div class="mt-3">
+          <div class="flex items-start gap-6 mb-6">
+            <img src="${programmer.profilePicUrl || 'https://placehold.co/100x100/e0e7ff/6366f1?text=' + encodeURIComponent((programmer.firstName || 'P').charAt(0))}" 
+                 alt="Profile" 
+                 class="h-24 w-24 rounded-full object-cover border-4 border-indigo-100">
+            <div class="flex-1">
+              <h3 class="text-2xl font-bold text-gray-900">${programmer.firstName} ${programmer.lastName}</h3>
+              <p class="text-lg text-indigo-600 font-semibold">${programmer.organizationName || ''}</p>
+              ${programmer.website ? `<a href="${programmer.website}" target="_blank" class="text-sm text-blue-600 hover:underline">${programmer.website}</a>` : ''}
+            </div>
+          </div>
+          
+          <div class="space-y-4">
+            ${programmer.organizationAbout ? `
+              <div>
+                <h4 class="font-semibold text-gray-700 mb-2">About</h4>
+                <p class="text-gray-600">${programmer.organizationAbout}</p>
+              </div>
+            ` : ''}
+            
+            <div class="grid grid-cols-2 gap-4 text-sm">
+              ${programmer.phone ? `
+                <div>
+                  <span class="font-semibold text-gray-700">Phone:</span>
+                  <span class="ml-2 text-gray-600">${programmer.phone}</span>
+                </div>
+              ` : ''}
+              ${programmer.email ? `
+                <div>
+                  <span class="font-semibold text-gray-700">Email:</span>
+                  <a href="mailto:${programmer.email}" class="ml-2 text-blue-600 hover:underline">${programmer.email}</a>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+          
+          <div class="mt-6 flex justify-end">
+            <button onclick="closeProgrammerProfileModal()" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300">
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  // Remove existing modal if present
+  const existingModal = document.getElementById('programmer-profile-modal');
+  if (existingModal) {
+    existingModal.remove();
+  }
+  
+  // Add modal to body
+  document.body.insertAdjacentHTML('beforeend', modalHTML);
+  
+  // Activate Lucide icons
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
+}
+
+/**
+ * Close programmer profile modal
+ */
+window.closeProgrammerProfileModal = function() {
+  const modal = document.getElementById('programmer-profile-modal');
+  if (modal) {
+    modal.remove();
+  }
+};
 
 /**
  * Get recommendation count for an artist
