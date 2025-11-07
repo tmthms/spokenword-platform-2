@@ -1,3 +1,5 @@
+// recommendations.js - VOLLEDIGE GEÜPDATETE VERSIE
+
 /**
  * recommendations.js
  * Handles recommendation functionality for programmers to recommend artists
@@ -178,6 +180,7 @@ export async function loadRecommendations(artistId) {
   const container = document.getElementById('recommendations-list');
   const loadingEl = document.getElementById('recommendations-loading');
   const emptyEl = document.getElementById('recommendations-empty');
+  const errorEl = document.getElementById('recommendations-error');
 
   if (!container) {
     console.warn("Recommendations container not found");
@@ -187,10 +190,13 @@ export async function loadRecommendations(artistId) {
   // Show loading
   if (loadingEl) loadingEl.style.display = 'block';
   if (emptyEl) emptyEl.style.display = 'none';
+  if (errorEl) errorEl.style.display = 'none';
   container.innerHTML = '';
   container.style.display = 'none';
 
   try {
+    console.log("Loading recommendations for artist:", artistId);
+    
     const recommendationsRef = collection(db, 'recommendations');
     const q = query(
       recommendationsRef,
@@ -206,6 +212,8 @@ export async function loadRecommendations(artistId) {
       recommendations.push({ id: doc.id, ...doc.data() });
     });
 
+    console.log(`Found ${recommendations.length} recommendations`);
+
     // Hide loading
     if (loadingEl) loadingEl.style.display = 'none';
 
@@ -218,8 +226,14 @@ export async function loadRecommendations(artistId) {
 
   } catch (error) {
     console.error("Error loading recommendations:", error);
-    if (loadingEl) {
-      loadingEl.innerHTML = `<p class="text-red-500">${t('error_loading')}</p>`;
+    
+    // Hide loading
+    if (loadingEl) loadingEl.style.display = 'none';
+    
+    // Show error message
+    if (errorEl) {
+      errorEl.textContent = 'Fout bij laden. Probeer het later opnieuw.';
+      errorEl.style.display = 'block';
     }
   }
 }
