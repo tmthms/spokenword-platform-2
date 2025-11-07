@@ -194,8 +194,7 @@ export async function loadRecommendations(artistId) {
     const recommendationsRef = collection(db, 'recommendations');
     const q = query(
       recommendationsRef,
-      where('artistId', '==', artistId),
-      orderBy('createdAt', 'desc')
+      where('artistId', '==', artistId)
     );
 
     const querySnapshot = await getDocs(q);
@@ -203,6 +202,12 @@ export async function loadRecommendations(artistId) {
     const recommendations = [];
     querySnapshot.forEach((doc) => {
       recommendations.push({ id: doc.id, ...doc.data() });
+    });
+
+    // Sort by createdAt in JavaScript (no Firestore index needed)
+    recommendations.sort((a, b) => {
+      if (!a.createdAt || !b.createdAt) return 0;
+      return b.createdAt.seconds - a.createdAt.seconds;
     });
 
     // Hide loading
