@@ -7,8 +7,227 @@
 
 /* Hieronder staan uw bestaande stijlen */
 
+:root {
+    /* Dans Dichter Dans Color Palette */
+    --ddd-blue: #7499d1;
+    --ddd-pink: #e891c1;
+    --ddd-purple: #a44ca2;
+    --ddd-teal: #41aba9;
+    --ddd-yellow: #fbef72;
+    --ddd-dark: #333333;
+    --ddd-light: #f2f2f2;
+}
+
 body {
     font-family: 'Inter', sans-serif;
+}
+
+/* Dans Dichter Dans Artist Profile Styling */
+.ddd-profile-header {
+    font-family: 'Sarabun', sans-serif;
+}
+
+.ddd-card {
+    background: white;
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.ddd-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+.ddd-card-header {
+    background: linear-gradient(135deg, var(--ddd-blue) 0%, var(--ddd-teal) 100%);
+    border-radius: 24px 24px 0 0;
+    padding: 3rem 2rem;
+    color: white;
+    margin: -2rem -2rem 2rem -2rem;
+}
+
+.ddd-card-bio {
+    background: linear-gradient(135deg, var(--ddd-pink) 0%, var(--ddd-purple) 100%);
+}
+
+.ddd-card-media {
+    background: linear-gradient(135deg, var(--ddd-teal) 0%, var(--ddd-blue) 100%);
+}
+
+.ddd-card-contact {
+    background: linear-gradient(135deg, var(--ddd-yellow) 0%, var(--ddd-pink) 50%);
+}
+
+.ddd-card-recommendations {
+    background: linear-gradient(135deg, var(--ddd-purple) 0%, var(--ddd-blue) 100%);
+}
+
+.ddd-section-title {
+    font-family: 'Sarabun', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--ddd-dark);
+    margin-bottom: 1.5rem;
+    position: relative;
+    display: inline-block;
+}
+
+.ddd-section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 60%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--ddd-pink), var(--ddd-purple));
+    border-radius: 2px;
+}
+
+.ddd-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 600;
+    font-family: 'Sarabun', sans-serif;
+    margin: 0.25rem;
+    transition: transform 0.2s ease;
+}
+
+.ddd-badge:hover {
+    transform: scale(1.05);
+}
+
+.ddd-badge-blue {
+    background-color: var(--ddd-blue);
+    color: white;
+}
+
+.ddd-badge-pink {
+    background-color: var(--ddd-pink);
+    color: white;
+}
+
+.ddd-badge-purple {
+    background-color: var(--ddd-purple);
+    color: white;
+}
+
+.ddd-badge-teal {
+    background-color: var(--ddd-teal);
+    color: white;
+}
+
+.ddd-badge-yellow {
+    background-color: var(--ddd-yellow);
+    color: var(--ddd-dark);
+}
+
+.ddd-profile-pic {
+    border-radius: 24px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border: 6px solid white;
+    transition: transform 0.3s ease;
+}
+
+.ddd-profile-pic:hover {
+    transform: scale(1.02);
+}
+
+.ddd-button {
+    font-family: 'Sarabun', sans-serif;
+    font-weight: 600;
+    padding: 0.875rem 2rem;
+    border-radius: 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.ddd-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.ddd-button-primary {
+    background: linear-gradient(135deg, var(--ddd-purple), var(--ddd-pink));
+    color: white;
+    border: none;
+}
+
+.ddd-button-secondary {
+    background: linear-gradient(135deg, var(--ddd-blue), var(--ddd-teal));
+    color: white;
+    border: none;
+}
+
+.ddd-back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--ddd-purple);
+    font-weight: 600;
+    font-family: 'Sarabun', sans-serif;
+    padding: 0.5rem 1rem;
+    border-radius: 12px;
+    transition: all 0.2s ease;
+}
+
+.ddd-back-button:hover {
+    background-color: var(--ddd-light);
+    transform: translateX(-4px);
+}
+
+/* Organic shapes decoration */
+.ddd-card::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(116, 153, 209, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.ddd-card::after {
+    content: '';
+    position: absolute;
+    bottom: -30px;
+    left: -30px;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(232, 145, 193, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+/* Grid layout for artist profile */
+.ddd-profile-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+@media (min-width: 768px) {
+    .ddd-profile-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1024px) {
+    .ddd-profile-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.ddd-profile-grid .ddd-card-header,
+.ddd-profile-grid .ddd-card-full {
+    grid-column: 1 / -1;
 }
 
 /* Aangepaste stijlen voor multi-select in de formulieren */
