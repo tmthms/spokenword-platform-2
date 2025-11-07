@@ -957,57 +957,61 @@
             </div>
 
             <!-- Artist Detail View -->
-            <div id="artist-detail-view" class="hidden">
+            <div id="artist-detail-view" class="profile-container hidden">
+
                 <!-- Back Button -->
-                <button id="back-to-search-btn" class="ddd-back-button mb-6">
-                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                    Back to Search Results
+                <button id="back-to-search-btn" class="back-button">
+                    <svg class="back-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="m15 18-6-6 6-6"/>
+                    </svg>
+                    <span>Back to Search Results</span>
                 </button>
 
-                <!-- Grid Layout -->
-                <div class="ddd-profile-grid">
+                <!-- Profile Grid Layout -->
+                <div class="profile-grid">
 
-                    <!-- HEADER CARD - Full Width -->
-                    <div class="ddd-card ddd-card-full">
-                        <div class="flex flex-col md:flex-row gap-8 items-start">
-                            <!-- Profile Picture -->
-                            <div class="flex-shrink-0 mx-auto md:mx-0">
-                                <img id="detail-profile-pic" class="ddd-profile-pic h-64 w-64 object-cover" src="https://placehold.co/400x400/e0e7ff/6366f1?text=Artist" alt="Artist Photo">
+                    <!-- HEADER CARD -->
+                    <div class="profile-card header-card full-width">
+                        <div class="header-content">
+                            <!-- Profile Photo -->
+                            <div class="profile-photo-container">
+                                <img id="detail-profile-pic" class="profile-photo" src="https://placehold.co/400x400/e891c1/ffffff?text=Artist" alt="Artist Photo">
                             </div>
 
                             <!-- Basic Info -->
-                            <div class="flex-1 text-center md:text-left">
-                                <h2 id="detail-artist-name" class="ddd-profile-header text-5xl font-bold mb-2" style="color: var(--ddd-dark);">Artist Name</h2>
-                                <p id="detail-stage-name" class="text-3xl font-semibold mb-6" style="color: var(--ddd-purple);">Stage Name</p>
+                            <div class="header-info">
+                                <h1 id="detail-artist-name" class="artist-name">Artist Name</h1>
+                                <h2 id="detail-stage-name" class="stage-name">Stage Name</h2>
 
-                                <div class="flex flex-col md:flex-row gap-4 mb-6 justify-center md:justify-start">
-                                    <div class="flex items-center justify-center md:justify-start gap-2">
-                                        <i data-lucide="map-pin" class="h-5 w-5" style="color: var(--ddd-teal);"></i>
-                                        <span id="detail-location" class="font-medium">Location</span>
+                                <!-- Location, Gender, Age -->
+                                <div class="info-items">
+                                    <div class="info-item">
+                                        <i data-lucide="map-pin" class="info-icon icon-teal"></i>
+                                        <span id="detail-location">Location</span>
                                     </div>
-                                    <div class="flex items-center justify-center md:justify-start gap-2">
-                                        <i data-lucide="user" class="h-5 w-5" style="color: var(--ddd-pink);"></i>
-                                        <span id="detail-gender" class="font-medium">Gender</span>
+                                    <div class="info-item">
+                                        <i data-lucide="user" class="info-icon icon-pink"></i>
+                                        <span id="detail-gender">Gender</span>
                                     </div>
-                                    <div class="flex items-center justify-center md:justify-start gap-2">
-                                        <i data-lucide="calendar" class="h-5 w-5" style="color: var(--ddd-blue);"></i>
-                                        <span id="detail-age" class="font-medium">Age</span>
+                                    <div class="info-item">
+                                        <i data-lucide="calendar" class="info-icon icon-purple"></i>
+                                        <span id="detail-age">Age</span>
                                     </div>
                                 </div>
 
-                                <!-- Genres & Languages -->
-                                <div class="space-y-3">
-                                    <div>
-                                        <span class="ddd-section-title text-lg">Genres</span>
-                                        <div id="detail-genres" class="flex flex-wrap gap-2 mt-2 justify-center md:justify-start">
-                                            <!-- Genre badges will be added here -->
-                                        </div>
+                                <!-- Genres -->
+                                <div class="badge-section">
+                                    <h3 class="badge-label">Genres</h3>
+                                    <div id="detail-genres" class="badge-container">
+                                        <!-- Badges added dynamically -->
                                     </div>
-                                    <div>
-                                        <span class="ddd-section-title text-lg">Languages</span>
-                                        <div id="detail-languages" class="flex flex-wrap gap-2 mt-2 justify-center md:justify-start">
-                                            <!-- Language badges will be added here -->
-                                        </div>
+                                </div>
+
+                                <!-- Languages -->
+                                <div class="badge-section">
+                                    <h3 class="badge-label">Languages</h3>
+                                    <div id="detail-languages" class="badge-container">
+                                        <!-- Badges added dynamically -->
                                     </div>
                                 </div>
                             </div>
@@ -1015,121 +1019,119 @@
                     </div>
 
                     <!-- BIO & PITCH CARD -->
-                    <div class="ddd-card">
-                        <h3 class="ddd-section-title">Bio & Pitch</h3>
-                        <div class="space-y-4">
-                            <div>
-                                <h4 class="font-bold text-lg mb-2" style="color: var(--ddd-purple);">Bio</h4>
-                                <p id="detail-bio" class="text-gray-700 whitespace-pre-line leading-relaxed">Bio content will appear here</p>
-                            </div>
-                            <div class="pt-4 border-t-2" style="border-color: var(--ddd-light);">
-                                <h4 class="font-bold text-lg mb-2" style="color: var(--ddd-pink);">Pitch</h4>
-                                <p id="detail-pitch" class="text-gray-700 whitespace-pre-line leading-relaxed">Pitch content will appear here</p>
-                            </div>
+                    <div class="profile-card bio-card">
+                        <h2 class="card-title">Bio & Pitch</h2>
+
+                        <div class="bio-section">
+                            <h3 class="section-subtitle subtitle-purple">Bio</h3>
+                            <p id="detail-bio" class="bio-text">Bio content will appear here</p>
+                        </div>
+
+                        <div class="pitch-section">
+                            <h3 class="section-subtitle subtitle-pink">Pitch</h3>
+                            <p id="detail-pitch" class="pitch-text">Pitch content will appear here</p>
                         </div>
                     </div>
 
                     <!-- MEDIA CARD -->
-                    <div class="ddd-card">
-                        <h3 class="ddd-section-title">Media</h3>
+                    <div class="profile-card media-card">
+                        <h2 class="card-title">Media</h2>
 
-                        <!-- Video Material -->
-                        <div id="detail-video-section" class="mb-6 hidden">
-                            <h4 class="font-bold text-lg mb-3" style="color: var(--ddd-blue);">🎥 Video</h4>
-                            <div id="detail-video-container" class="aspect-video bg-gray-100 rounded-2xl overflow-hidden">
-                                <!-- Embedded video or link will go here -->
+                        <!-- Video -->
+                        <div id="detail-video-section" class="media-section hidden">
+                            <h3 class="media-title">🎥 Video</h3>
+                            <div id="detail-video-container" class="video-container">
+                                <!-- Video embed -->
                             </div>
                         </div>
 
-                        <!-- Audio Material -->
-                        <div id="detail-audio-section" class="mb-6 hidden">
-                            <h4 class="font-bold text-lg mb-3" style="color: var(--ddd-teal);">🎵 Audio</h4>
-                            <div id="detail-audio-container" class="bg-gray-100 rounded-2xl p-4">
-                                <!-- Embedded audio or link will go here -->
+                        <!-- Audio -->
+                        <div id="detail-audio-section" class="media-section hidden">
+                            <h3 class="media-title">🎵 Audio</h3>
+                            <div id="detail-audio-container" class="audio-container">
+                                <!-- Audio embed -->
                             </div>
                         </div>
 
-                        <!-- Text Material -->
-                        <div id="detail-text-section" class="mb-6 hidden">
-                            <h4 class="font-bold text-lg mb-3" style="color: var(--ddd-purple);">📝 Text</h4>
-                            <div class="bg-gray-50 p-6 rounded-2xl border-2" style="border-color: var(--ddd-light);">
-                                <p id="detail-text-content" class="text-gray-700 whitespace-pre-line leading-relaxed">Text content will appear here</p>
+                        <!-- Text -->
+                        <div id="detail-text-section" class="media-section hidden">
+                            <h3 class="media-title">📝 Text</h3>
+                            <div class="text-material-box">
+                                <p id="detail-text-content" class="text-content">Text content</p>
                             </div>
                         </div>
 
-                        <!-- Document Material -->
-                        <div id="detail-document-section" class="mb-6 hidden">
-                            <h4 class="font-bold text-lg mb-3" style="color: var(--ddd-pink);">📄 Document</h4>
-                            <div class="bg-gray-50 p-6 rounded-2xl border-2" style="border-color: var(--ddd-light);">
-                                <div class="flex items-center space-x-3">
-                                    <i data-lucide="file-text" class="h-8 w-8" style="color: var(--ddd-pink);"></i>
-                                    <div>
-                                        <p class="font-semibold text-gray-900">Document Available</p>
-                                        <a id="detail-document-link" href="#" target="_blank" class="font-medium hover:underline" style="color: var(--ddd-purple);">Download/View Document</a>
-                                    </div>
+                        <!-- Document -->
+                        <div id="detail-document-section" class="media-section hidden">
+                            <h3 class="media-title">📄 Document</h3>
+                            <div class="document-box">
+                                <i data-lucide="file-text" class="document-icon"></i>
+                                <div class="document-info">
+                                    <p class="document-label">Document Available</p>
+                                    <a id="detail-document-link" href="#" target="_blank" class="document-link">Download/View</a>
                                 </div>
                             </div>
                         </div>
 
                         <!-- No Media Message -->
-                        <p id="detail-no-media" class="hidden text-gray-500 text-center py-6">No media available yet.</p>
+                        <p id="detail-no-media" class="no-media-message hidden">No media available yet.</p>
                     </div>
 
                     <!-- CONTACT CARD -->
-                    <div class="ddd-card">
-                        <h3 class="ddd-section-title">Contact</h3>
+                    <div class="profile-card contact-card">
+                        <h2 class="card-title">Contact</h2>
 
                         <!-- Trial Message -->
-                        <div id="detail-trial-message" class="hidden p-4 rounded-2xl mb-4" style="background-color: var(--ddd-yellow);">
-                            <p class="font-bold" style="color: var(--ddd-dark);">🔒 Upgrade to PRO to view contact details and send messages to artists.</p>
+                        <div id="detail-trial-message" class="trial-message hidden">
+                            <p>🔒 Upgrade to PRO to view contact details</p>
                         </div>
 
-                        <!-- Contact Info (for Pro users) -->
-                        <div id="detail-contact-info" class="hidden">
-                            <div class="grid grid-cols-1 gap-4 mb-6">
-                                <div class="flex items-center gap-3 p-4 rounded-2xl" style="background-color: var(--ddd-light);">
-                                    <i data-lucide="mail" class="h-6 w-6" style="color: var(--ddd-teal);"></i>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-600">Email</p>
-                                        <a id="detail-email" href="mailto:" class="font-semibold hover:underline" style="color: var(--ddd-purple);">email@example.com</a>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-3 p-4 rounded-2xl" style="background-color: var(--ddd-light);">
-                                    <i data-lucide="phone" class="h-6 w-6" style="color: var(--ddd-pink);"></i>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-600">Phone</p>
-                                        <a id="detail-phone" href="tel:" class="font-semibold hover:underline" style="color: var(--ddd-purple);">+31 6 12345678</a>
-                                    </div>
+                        <!-- Contact Info -->
+                        <div id="detail-contact-info" class="contact-info hidden">
+                            <div class="contact-item">
+                                <i data-lucide="mail" class="contact-icon"></i>
+                                <div class="contact-details">
+                                    <p class="contact-label">Email</p>
+                                    <a id="detail-email" href="mailto:" class="contact-value">email@example.com</a>
                                 </div>
                             </div>
-                            <button id="send-message-btn" class="ddd-button ddd-button-primary w-full">
+
+                            <div class="contact-item">
+                                <i data-lucide="phone" class="contact-icon"></i>
+                                <div class="contact-details">
+                                    <p class="contact-label">Phone</p>
+                                    <a id="detail-phone" href="tel:" class="contact-value">+31 6 12345678</a>
+                                </div>
+                            </div>
+
+                            <button id="send-message-btn" class="btn btn-primary">
                                 💬 Send Message
                             </button>
                         </div>
                     </div>
 
-                    <!-- RECOMMENDATIONS CARD - Full Width -->
-                    <div class="ddd-card ddd-card-full">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="ddd-section-title" data-i18n="recommendations">Recommendations</h3>
-                            <button id="write-recommendation-btn" class="hidden ddd-button ddd-button-secondary" data-i18n="write_recommendation">
+                    <!-- RECOMMENDATIONS CARD -->
+                    <div class="profile-card recommendations-card full-width">
+                        <div class="recommendations-header">
+                            <h2 class="card-title" data-i18n="recommendations">Recommendations</h2>
+                            <button id="write-recommendation-btn" class="btn btn-secondary hidden" data-i18n="write_recommendation">
                                 ✍️ Write Recommendation
                             </button>
                         </div>
 
-                        <!-- Loading state -->
-                        <div id="recommendations-loading" class="text-center py-8">
-                            <p class="text-gray-500" data-i18n="loading">Loading...</p>
+                        <!-- Loading -->
+                        <div id="recommendations-loading" class="recommendations-loading">
+                            <p data-i18n="loading">Loading...</p>
                         </div>
 
-                        <!-- Empty state -->
-                        <div id="recommendations-empty" class="hidden text-center py-8 rounded-2xl" style="background-color: var(--ddd-light);">
-                            <p class="text-gray-600 font-medium" data-i18n="no_recommendations_yet">No recommendations yet. Be the first to recommend this artist!</p>
+                        <!-- Empty State -->
+                        <div id="recommendations-empty" class="recommendations-empty hidden">
+                            <p data-i18n="no_recommendations_yet">No recommendations yet!</p>
                         </div>
 
-                        <!-- Recommendations list -->
-                        <div id="recommendations-list" class="space-y-4 hidden">
-                            <!-- Recommendations will be loaded here -->
+                        <!-- List -->
+                        <div id="recommendations-list" class="recommendations-list hidden">
+                            <!-- Recommendations added dynamically -->
                         </div>
                     </div>
 

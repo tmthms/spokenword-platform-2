@@ -271,3 +271,618 @@ select[multiple] {
     border: 2px solid #e2e8f0; /* Lichte rand */
 }
 
+/**
+ * ARTIST PROFILE STYLES - Dans Dichter Dans Brand
+ * Plain CSS - No Tailwind
+ */
+
+/* ============================================
+   GOOGLE FONTS IMPORT
+   ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&family=Inter:wght@400;500;600;700&display=swap');
+
+/* ============================================
+   COLOR PALETTE - Dans Dichter Dans
+   ============================================ */
+:root {
+    --color-pink: #e891c1;
+    --color-yellow: #fbef72;
+    --color-teal: #41aba9;
+    --color-purple: #a44ca2;
+    --color-dark: #333333;
+    --color-light: #f2f2f2;
+    --color-white: #ffffff;
+    --color-gray: #999999;
+}
+
+/* ============================================
+   PROFILE CONTAINER
+   ============================================ */
+.profile-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+}
+
+/* ============================================
+   BACK BUTTON
+   ============================================ */
+.back-button {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: none;
+    border: none;
+    color: var(--color-purple);
+    font-family: 'Kalam', cursive;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    margin-bottom: 2rem;
+}
+
+.back-button:hover {
+    background-color: var(--color-light);
+    transform: translateX(-5px);
+}
+
+.back-icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* ============================================
+   PROFILE GRID
+   ============================================ */
+.profile-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 768px) {
+    .profile-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* Desktop: 3 columns */
+@media (min-width: 1024px) {
+    .profile-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ============================================
+   PROFILE CARDS
+   ============================================ */
+.profile-card {
+    background: var(--color-white);
+    border-radius: 24px;
+    padding: 2rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+}
+
+/* Organic decoration blobs */
+.profile-card::before {
+    content: '';
+    position: absolute;
+    top: -50px;
+    right: -50px;
+    width: 150px;
+    height: 150px;
+    background: radial-gradient(circle, rgba(232, 145, 193, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.profile-card::after {
+    content: '';
+    position: absolute;
+    bottom: -30px;
+    left: -30px;
+    width: 120px;
+    height: 120px;
+    background: radial-gradient(circle, rgba(65, 171, 169, 0.1) 0%, transparent 70%);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+/* Full width cards */
+.full-width {
+    grid-column: 1 / -1;
+}
+
+/* ============================================
+   HEADER CARD
+   ============================================ */
+.header-card {
+    background: linear-gradient(135deg, var(--color-teal) 0%, var(--color-purple) 100%);
+    color: var(--color-white);
+}
+
+.header-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2rem;
+}
+
+@media (min-width: 768px) {
+    .header-content {
+        flex-direction: row;
+        align-items: flex-start;
+    }
+}
+
+.profile-photo-container {
+    flex-shrink: 0;
+}
+
+.profile-photo {
+    width: 200px;
+    height: 200px;
+    border-radius: 24px;
+    object-fit: cover;
+    border: 6px solid var(--color-white);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.profile-photo:hover {
+    transform: scale(1.05);
+}
+
+.header-info {
+    flex: 1;
+    text-align: center;
+}
+
+@media (min-width: 768px) {
+    .header-info {
+        text-align: left;
+    }
+}
+
+.artist-name {
+    font-family: 'Kalam', cursive;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.2;
+}
+
+@media (min-width: 768px) {
+    .artist-name {
+        font-size: 3rem;
+    }
+}
+
+.stage-name {
+    font-family: 'Kalam', cursive;
+    font-size: 1.5rem;
+    font-weight: 400;
+    margin: 0 0 1.5rem 0;
+    opacity: 0.9;
+}
+
+@media (min-width: 768px) {
+    .stage-name {
+        font-size: 2rem;
+    }
+}
+
+/* ============================================
+   INFO ITEMS
+   ============================================ */
+.info-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .info-items {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 1.5rem;
+    }
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    justify-content: center;
+}
+
+@media (min-width: 768px) {
+    .info-item {
+        justify-content: flex-start;
+    }
+}
+
+.info-icon {
+    width: 20px;
+    height: 20px;
+}
+
+.icon-teal { color: var(--color-teal); filter: brightness(1.3); }
+.icon-pink { color: var(--color-pink); filter: brightness(1.2); }
+.icon-purple { color: var(--color-purple); filter: brightness(1.3); }
+
+/* ============================================
+   BADGES
+   ============================================ */
+.badge-section {
+    margin-bottom: 1.5rem;
+}
+
+.badge-label {
+    font-family: 'Kalam', cursive;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0 0 0.75rem 0;
+}
+
+.badge-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+}
+
+@media (min-width: 768px) {
+    .badge-container {
+        justify-content: flex-start;
+    }
+}
+
+.badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-family: 'Kalam', cursive;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: transform 0.2s ease;
+    cursor: default;
+}
+
+.badge:hover {
+    transform: scale(1.05);
+}
+
+.badge-pink { background-color: var(--color-pink); color: var(--color-white); }
+.badge-yellow { background-color: var(--color-yellow); color: var(--color-dark); }
+.badge-teal { background-color: var(--color-teal); color: var(--color-white); }
+.badge-purple { background-color: var(--color-purple); color: var(--color-white); }
+
+/* Dynamic badge classes for JS */
+.ddd-badge {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-family: 'Kalam', cursive;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: transform 0.2s ease;
+}
+.ddd-badge:hover { transform: scale(1.05); }
+.ddd-badge-pink { background-color: var(--color-pink); color: var(--color-white); }
+.ddd-badge-yellow { background-color: var(--color-yellow); color: var(--color-dark); }
+.ddd-badge-teal { background-color: var(--color-teal); color: var(--color-white); }
+.ddd-badge-purple { background-color: var(--color-purple); color: var(--color-white); }
+.ddd-badge-blue { background-color: var(--color-teal); color: var(--color-white); }
+
+/* ============================================
+   CARD TITLES
+   ============================================ */
+.card-title {
+    font-family: 'Kalam', cursive;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--color-dark);
+    margin: 0 0 1.5rem 0;
+    position: relative;
+    display: inline-block;
+}
+
+.card-title::after {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 0;
+    width: 60%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--color-pink), var(--color-purple));
+    border-radius: 2px;
+}
+
+/* ============================================
+   BIO & PITCH CARD
+   ============================================ */
+.bio-section,
+.pitch-section {
+    margin-bottom: 1.5rem;
+}
+
+.pitch-section {
+    padding-top: 1.5rem;
+    border-top: 2px solid var(--color-light);
+    margin-bottom: 0;
+}
+
+.section-subtitle {
+    font-family: 'Kalam', cursive;
+    font-size: 1.3rem;
+    font-weight: 700;
+    margin: 0 0 0.75rem 0;
+}
+
+.subtitle-purple { color: var(--color-purple); }
+.subtitle-pink { color: var(--color-pink); }
+
+.bio-text,
+.pitch-text {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    line-height: 1.7;
+    color: var(--color-dark);
+    white-space: pre-line;
+}
+
+/* ============================================
+   MEDIA CARD
+   ============================================ */
+.media-section {
+    margin-bottom: 1.5rem;
+}
+
+.media-section:last-child {
+    margin-bottom: 0;
+}
+
+.media-title {
+    font-family: 'Kalam', cursive;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 0 0 1rem 0;
+}
+
+.video-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    background-color: var(--color-light);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.audio-container {
+    background-color: var(--color-light);
+    border-radius: 16px;
+    padding: 1rem;
+}
+
+.text-material-box {
+    background-color: var(--color-light);
+    border: 2px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 1.5rem;
+}
+
+.text-content {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
+    line-height: 1.7;
+    color: var(--color-dark);
+    white-space: pre-line;
+    margin: 0;
+}
+
+.document-box {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background-color: var(--color-light);
+    border: 2px solid #e0e0e0;
+    border-radius: 16px;
+    padding: 1.5rem;
+}
+
+.document-icon {
+    width: 32px;
+    height: 32px;
+    color: var(--color-pink);
+    flex-shrink: 0;
+}
+
+.document-info {
+    flex: 1;
+}
+
+.document-label {
+    font-weight: 600;
+    color: var(--color-dark);
+    margin: 0 0 0.25rem 0;
+}
+
+.document-link {
+    color: var(--color-purple);
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.document-link:hover {
+    text-decoration: underline;
+}
+
+.no-media-message {
+    text-align: center;
+    color: var(--color-gray);
+    padding: 2rem 0;
+    font-style: italic;
+}
+
+/* ============================================
+   CONTACT CARD
+   ============================================ */
+.trial-message {
+    background-color: var(--color-yellow);
+    padding: 1rem 1.5rem;
+    border-radius: 16px;
+    margin-bottom: 1.5rem;
+}
+
+.trial-message p {
+    color: var(--color-dark);
+    font-weight: 600;
+    margin: 0;
+}
+
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.contact-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background-color: var(--color-light);
+    padding: 1rem 1.5rem;
+    border-radius: 16px;
+}
+
+.contact-icon {
+    width: 24px;
+    height: 24px;
+    color: var(--color-teal);
+    flex-shrink: 0;
+}
+
+.contact-details {
+    flex: 1;
+}
+
+.contact-label {
+    font-size: 0.85rem;
+    color: var(--color-gray);
+    font-weight: 500;
+    margin: 0 0 0.25rem 0;
+}
+
+.contact-value {
+    color: var(--color-purple);
+    font-weight: 600;
+    text-decoration: none;
+    font-size: 1rem;
+}
+
+.contact-value:hover {
+    text-decoration: underline;
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+.btn {
+    font-family: 'Kalam', cursive;
+    font-size: 1.1rem;
+    font-weight: 600;
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--color-purple), var(--color-pink));
+    color: var(--color-white);
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.btn-secondary {
+    background: linear-gradient(135deg, var(--color-teal), var(--color-purple));
+    color: var(--color-white);
+}
+
+/* ============================================
+   RECOMMENDATIONS CARD
+   ============================================ */
+.recommendations-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.recommendations-loading,
+.recommendations-empty {
+    text-align: center;
+    padding: 2rem 0;
+}
+
+.recommendations-loading p {
+    color: var(--color-gray);
+}
+
+.recommendations-empty {
+    background-color: var(--color-light);
+    border-radius: 16px;
+    padding: 2rem;
+}
+
+.recommendations-empty p {
+    color: var(--color-dark);
+    font-weight: 500;
+    margin: 0;
+}
+
+.recommendations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+.hidden {
+    display: none !important;
+}
