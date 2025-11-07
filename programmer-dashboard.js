@@ -757,9 +757,12 @@ function populateArtistDetail(artist) {
   const detailGenres = document.getElementById('detail-genres');
   detailGenres.innerHTML = '';
   if (artist.genres && artist.genres.length > 0) {
-    artist.genres.forEach(genre => {
+    artist.genres.forEach((genre, index) => {
       const badge = document.createElement('span');
-      badge.className = 'inline-block bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium';
+      // Cycle through DDD colors for visual variety
+      const colors = ['ddd-badge-blue', 'ddd-badge-pink', 'ddd-badge-purple', 'ddd-badge-teal'];
+      const colorClass = colors[index % colors.length];
+      badge.className = `ddd-badge ${colorClass}`;
       badge.textContent = genre;
       detailGenres.appendChild(badge);
     });
@@ -771,9 +774,12 @@ function populateArtistDetail(artist) {
   const detailLanguages = document.getElementById('detail-languages');
   detailLanguages.innerHTML = '';
   if (artist.languages && artist.languages.length > 0) {
-    artist.languages.forEach(lang => {
+    artist.languages.forEach((lang, index) => {
       const badge = document.createElement('span');
-      badge.className = 'inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium';
+      // Cycle through DDD colors for language badges
+      const colors = ['ddd-badge-teal', 'ddd-badge-blue', 'ddd-badge-purple'];
+      const colorClass = colors[index % colors.length];
+      badge.className = `ddd-badge ${colorClass}`;
       badge.textContent = lang.toUpperCase();
       detailLanguages.appendChild(badge);
     });
@@ -784,9 +790,13 @@ function populateArtistDetail(artist) {
   // Bio & Pitch
   document.getElementById('detail-bio').textContent = artist.bio || 'No bio available.';
   document.getElementById('detail-pitch').textContent = artist.pitch || 'No pitch available.';
-  
+
+  // Track if any media is available
+  let hasMedia = false;
+
   // Video Material
   if (artist.videoUrl && artist.videoUrl.trim()) {
+    hasMedia = true;
     document.getElementById('detail-video-section').style.display = 'block';
     const embedUrl = getEmbedUrl(artist.videoUrl, 'video');
     if (embedUrl) {
@@ -806,6 +816,7 @@ function populateArtistDetail(artist) {
   
   // Audio Material
   if (artist.audioUrl && artist.audioUrl.trim()) {
+    hasMedia = true;
     document.getElementById('detail-audio-section').style.display = 'block';
     const embedUrl = getEmbedUrl(artist.audioUrl, 'audio');
     if (embedUrl) {
@@ -823,6 +834,7 @@ function populateArtistDetail(artist) {
   
   // Text Material
   if (artist.textContent && artist.textContent.trim()) {
+    hasMedia = true;
     document.getElementById('detail-text-section').style.display = 'block';
     document.getElementById('detail-text-content').textContent = artist.textContent;
   } else {
@@ -834,13 +846,20 @@ function populateArtistDetail(artist) {
   const documentLink = document.getElementById('detail-document-link');
   
   if (artist.documentUrl && artist.documentUrl.trim()) {
+    hasMedia = true;
     documentSection.style.display = 'block';
     documentLink.href = artist.documentUrl;
     documentLink.textContent = artist.documentName || 'Download/View Document';
   } else {
     documentSection.style.display = 'none';
   }
-  
+
+  // Show/hide "No media" message
+  const noMediaMsg = document.getElementById('detail-no-media');
+  if (noMediaMsg) {
+    noMediaMsg.style.display = hasMedia ? 'none' : 'block';
+  }
+
   // Contact Information - Access Control
   const currentUserData = getStore('currentUserData');
   const isPro = currentUserData && currentUserData.status === 'pro';
