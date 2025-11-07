@@ -102,6 +102,24 @@ export const translations = {
     error_loading: 'Fout bij laden. Probeer het later opnieuw.',
     auth_required: 'Je moet ingelogd zijn als een programmeur om deze pagina te bekijken.',
 
+    // Recommendations
+    recommendations: 'Aanbevelingen',
+    write_recommendation: 'Schrijf Aanbeveling',
+    write_recommendation_for: 'Schrijf Aanbeveling voor',
+    your_recommendation: 'Jouw Aanbeveling',
+    recommendation_placeholder: 'Deel je positieve ervaring met deze artiest...',
+    recommendation_help: 'Minimaal 10 karakters. Wees specifiek en positief!',
+    submit_recommendation: 'Verstuur Aanbeveling',
+    submitting: 'Versturen...',
+    recommendation_success: '✓ Aanbeveling succesvol verstuurd!',
+    no_recommendations_yet: 'Nog geen aanbevelingen. Wees de eerste om deze artiest aan te bevelen!',
+    confirm_delete_recommendation: 'Weet je zeker dat je deze aanbeveling wilt verwijderen?',
+    error_only_programmers_recommend: 'Alleen programmeurs kunnen aanbevelingen schrijven.',
+    error_recommendation_required: 'Vul alsjeblieft een aanbeveling in.',
+    error_recommendation_too_short: 'Aanbeveling moet minimaal 10 karakters bevatten.',
+    error_must_be_logged_in: 'Je moet ingelogd zijn om deze actie uit te voeren.',
+    cancel: 'Annuleren',
+
     // Common
     required: '*',
     loading: 'Laden...',
@@ -203,6 +221,24 @@ export const translations = {
     // Errors
     error_loading: 'Error loading. Please try again later.',
     auth_required: 'You must be logged in as a programmer to access this page.',
+
+    // Recommendations
+    recommendations: 'Recommendations',
+    write_recommendation: 'Write Recommendation',
+    write_recommendation_for: 'Write Recommendation for',
+    your_recommendation: 'Your Recommendation',
+    recommendation_placeholder: 'Share your positive experience working with this artist...',
+    recommendation_help: 'Minimum 10 characters. Be specific and positive!',
+    submit_recommendation: 'Submit Recommendation',
+    submitting: 'Submitting...',
+    recommendation_success: '✓ Recommendation submitted successfully!',
+    no_recommendations_yet: 'No recommendations yet. Be the first to recommend this artist!',
+    confirm_delete_recommendation: 'Are you sure you want to delete this recommendation?',
+    error_only_programmers_recommend: 'Only programmers can write recommendations.',
+    error_recommendation_required: 'Please provide a recommendation.',
+    error_recommendation_too_short: 'Recommendation must be at least 10 characters long.',
+    error_must_be_logged_in: 'You must be logged in to perform this action.',
+    cancel: 'Cancel',
 
     // Common
     required: '*',

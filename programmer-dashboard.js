@@ -9,6 +9,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { db } from './firebase.js';
 import { getStore, setStore } from './store.js';
 import { openMessageModal } from './messaging.js';
+import { loadRecommendations, openRecommendationModal, getRecommendationCount } from './recommendations.js';
 
 /**
  * Security: Check if user is authenticated as a programmer
@@ -679,23 +680,42 @@ export async function showArtistDetail(artistId, pushHistory = true) {
     
     // Vul de detail view met de data
     populateArtistDetail(artist);
-    
+
     // Toon de detail view en verberg de search results
     document.getElementById('programmer-dashboard').style.display = 'none';
-    document.getElementById('artist-detail-view').style.display = 'block';
-    
+    const detailView = document.getElementById('artist-detail-view');
+    detailView.style.display = 'block';
+
+    // Store artistId in detail view for later use
+    detailView.dataset.artistId = artistId;
+
+    // Load recommendations for this artist
+    loadRecommendations(artistId);
+
+    // Setup "Write Recommendation" button (only for programmers)
+    const writeRecommendationBtn = document.getElementById('write-recommendation-btn');
+    if (writeRecommendationBtn) {
+      const currentUserData = getStore('currentUserData');
+      if (currentUserData && currentUserData.role === 'programmer') {
+        writeRecommendationBtn.classList.remove('hidden');
+        writeRecommendationBtn.onclick = () => openRecommendationModal(artistId, artist);
+      } else {
+        writeRecommendationBtn.classList.add('hidden');
+      }
+    }
+
     // Push to browser history
     if (pushHistory) {
       window.history.pushState(
-        { view: 'artist-detail', artistId: artistId }, 
-        '', 
+        { view: 'artist-detail', artistId: artistId },
+        '',
         `#artist/${artistId}`
       );
     }
-    
+
     // Scroll naar boven
     window.scrollTo({ top: 0, behavior: 'smooth' });
-    
+
     // Activeer Lucide icons
     if (window.lucide) {
       window.lucide.createIcons();
