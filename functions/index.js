@@ -195,7 +195,116 @@ exports.onProgrammerApproved = onDocumentUpdated({
 
 
 /**
- * ROBOT 4: NOTIFY USER ON NEW MESSAGE (FASE 4)
+ * ROBOT 4: NOTIFY ARTIST ON NEW RECOMMENDATION
+ * Triggers when a programmer writes a recommendation for an artist.
+ * Sends an email notification to the artist.
+ */
+exports.onRecommendationCreated = onDocumentCreated({
+  document: "recommendations/{recommendationId}",
+  region: "europe-west4"
+}, async (event) => {
+  const recommendation = event.data.data();
+  const recommendationId = event.params.recommendationId;
+
+  console.log(`New recommendation created for artist ${recommendation.artistId}. Sending email notification.`);
+
+  try {
+    // Fetch artist data
+    const artistRef = getFirestore().collection("artists").doc(recommendation.artistId);
+    const artistSnap = await artistRef.get();
+
+    if (!artistSnap.exists) {
+      console.error("Artist document not found.");
+      return null;
+    }
+
+    const artistData = artistSnap.data();
+    const artistEmail = artistData.email;
+    const artistName = artistData.stageName || `${artistData.firstName} ${artistData.lastName}`;
+
+    if (!artistEmail) {
+      console.error("Artist email not found. Cannot send notification.");
+      return null;
+    }
+
+    // Build the inline HTML email template
+    const emailHtml = `
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nieuwe Aanbeveling Ontvangen</title>
+</head>
+<body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; background-color: #f5f5f5; margin: 0; padding: 0;">
+    <div style="max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+
+        <!-- Header -->
+        <div style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #ffffff; padding: 30px; text-align: center;">
+            <h1 style="margin: 0; font-size: 24px; font-weight: 600;">🌟 Nieuwe Aanbeveling Ontvangen!</h1>
+        </div>
+
+        <!-- Content -->
+        <div style="padding: 30px;">
+            <p style="margin: 0 0 15px 0;">Hallo <strong>${artistName}</strong>,</p>
+
+            <p style="margin: 0 0 20px 0;">Goed nieuws! Je hebt een nieuwe aanbeveling ontvangen van <strong>${recommendation.programmerName}</strong>${recommendation.programmerOrganization ? ` (${recommendation.programmerOrganization})` : ''}.</p>
+
+            <div style="background-color: #ffffff; border: 2px solid #6366f1; padding: 20px; border-radius: 8px; margin: 20px 0;">
+                <p style="margin: 0; font-style: italic; color: #555; font-size: 16px;">
+                    "${recommendation.text}"
+                </p>
+            </div>
+
+            <div style="text-align: center; margin: 25px 0;">
+                <a href="https://community.dansdichterdans.be" style="display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%); color: #ffffff; text-decoration: none; padding: 14px 32px; border-radius: 6px; font-weight: 600;">
+                    Bekijk Je Profiel →
+                </a>
+            </div>
+
+            <div style="height: 1px; background-color: #e9ecef; margin: 20px 0;"></div>
+
+            <p style="color: #6c757d; font-size: 14px; margin: 15px 0 0 0;">
+                <strong>Tip:</strong> Aanbevelingen zijn zichtbaar op je profiel voor alle programmeurs. Ze helpen je om meer boekingen te krijgen!
+            </p>
+        </div>
+
+        <!-- Footer -->
+        <div style="background-color: #f8f9fa; padding: 20px 30px; text-align: center; color: #6c757d; font-size: 14px;">
+            <p style="margin: 0 0 10px 0;">Je ontvangt deze email omdat je een profiel hebt op SpokenWord DB.</p>
+            <p style="margin: 0;">
+                <a href="https://community.dansdichterdans.be" style="color: #6366f1; text-decoration: none;">Bezoek SpokenWord DB</a>
+            </p>
+            <p style="margin: 15px 0 0 0; font-size: 12px; color: #999;">
+                © 2024 SpokenWord Database. Alle rechten voorbehouden.
+            </p>
+        </div>
+    </div>
+</body>
+</html>
+    `;
+
+    // Send email via Firebase Extension
+    await getFirestore().collection("mail").add({
+      to: [artistEmail],
+      message: {
+        subject: `🌟 Nieuwe aanbeveling van ${recommendation.programmerName}`,
+        html: emailHtml,
+      },
+    });
+
+    console.log(`Email notification sent to ${artistEmail} for new recommendation`);
+    return null;
+
+  } catch (error) {
+    console.error("Error sending recommendation notification:", error);
+    return null;
+  }
+});
+
+
+/**
+ * ROBOT 5: NOTIFY USER ON NEW MESSAGE (FASE 4)
  * Triggers when a new message is created in any conversation.
  * Sends an email notification to the recipient.
  * SMTP VERSION: Uses inline HTML template (geen external template nodig)
