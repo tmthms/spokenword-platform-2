@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Spoken Word Artist Database</title>
     
-    <!-- Google Fonts (Inter & Sarabun) -->
+    <!-- Google Fonts (Inter) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Sarabun:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
@@ -958,162 +958,140 @@
 
             <!-- Artist Detail View -->
             <div id="artist-detail-view" class="hidden">
-                <!-- Back Button -->
-                <button id="back-to-search-btn" class="ddd-back-button mb-6">
-                    <svg class="h-5 w-5" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                    Back to Search Results
-                </button>
+                <div class="bg-white p-8 rounded-lg shadow-xl">
+                    <!-- Back Button -->
+                    <button id="back-to-search-btn" class="mb-6 text-indigo-600 hover:text-indigo-800 flex items-center font-medium">
+                        <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+                        Back to Search Results
+                    </button>
 
-                <!-- Grid Layout -->
-                <div class="ddd-profile-grid">
-
-                    <!-- HEADER CARD - Full Width -->
-                    <div class="ddd-card ddd-card-full">
-                        <div class="flex flex-col md:flex-row gap-8 items-start">
-                            <!-- Profile Picture -->
-                            <div class="flex-shrink-0 mx-auto md:mx-0">
-                                <img id="detail-profile-pic" class="ddd-profile-pic h-64 w-64 object-cover" src="https://placehold.co/400x400/e0e7ff/6366f1?text=Artist" alt="Artist Photo">
+                    <!-- Artist Header -->
+                    <div class="flex flex-col md:flex-row gap-8 mb-8">
+                        <!-- Profile Picture -->
+                        <div class="flex-shrink-0">
+                            <img id="detail-profile-pic" class="h-64 w-64 object-cover rounded-lg shadow-lg" src="https://placehold.co/400x400/e0e7ff/6366f1?text=Artist" alt="Artist Photo">
+                        </div>
+                        
+                        <!-- Basic Info -->
+                        <div class="flex-1">
+                            <h2 id="detail-artist-name" class="text-4xl font-bold text-gray-900 mb-2">Artist Name</h2>
+                            <p id="detail-stage-name" class="text-2xl text-indigo-600 font-semibold mb-4">Stage Name</p>
+                            
+                            <div class="space-y-2 text-gray-700">
+                                <div class="flex items-center">
+                                    <i data-lucide="map-pin" class="h-5 w-5 mr-2 text-indigo-600"></i>
+                                    <span id="detail-location">Location</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i data-lucide="user" class="h-5 w-5 mr-2 text-indigo-600"></i>
+                                    <span id="detail-gender">Gender</span>
+                                </div>
+                                <div class="flex items-center">
+                                    <i data-lucide="calendar" class="h-5 w-5 mr-2 text-indigo-600"></i>
+                                    <span id="detail-age">Age</span>
+                                </div>
                             </div>
-
-                            <!-- Basic Info -->
-                            <div class="flex-1 text-center md:text-left">
-                                <h2 id="detail-artist-name" class="ddd-profile-header text-5xl font-bold mb-2" style="color: var(--ddd-dark);">Artist Name</h2>
-                                <p id="detail-stage-name" class="text-3xl font-semibold mb-6" style="color: var(--ddd-purple);">Stage Name</p>
-
-                                <div class="flex flex-col md:flex-row gap-4 mb-6 justify-center md:justify-start">
-                                    <div class="flex items-center justify-center md:justify-start gap-2">
-                                        <i data-lucide="map-pin" class="h-5 w-5" style="color: var(--ddd-teal);"></i>
-                                        <span id="detail-location" class="font-medium">Location</span>
-                                    </div>
-                                    <div class="flex items-center justify-center md:justify-start gap-2">
-                                        <i data-lucide="user" class="h-5 w-5" style="color: var(--ddd-pink);"></i>
-                                        <span id="detail-gender" class="font-medium">Gender</span>
-                                    </div>
-                                    <div class="flex items-center justify-center md:justify-start gap-2">
-                                        <i data-lucide="calendar" class="h-5 w-5" style="color: var(--ddd-blue);"></i>
-                                        <span id="detail-age" class="font-medium">Age</span>
+                            
+                            <!-- Genres & Languages -->
+                            <div class="mt-6">
+                                <div class="mb-3">
+                                    <span class="font-semibold text-gray-700">Genres:</span>
+                                    <div id="detail-genres" class="inline-flex flex-wrap gap-2 ml-2">
+                                        <!-- Genre badges will be added here -->
                                     </div>
                                 </div>
-
-                                <!-- Genres & Languages -->
-                                <div class="space-y-3">
-                                    <div>
-                                        <span class="ddd-section-title text-lg">Genres</span>
-                                        <div id="detail-genres" class="flex flex-wrap gap-2 mt-2 justify-center md:justify-start">
-                                            <!-- Genre badges will be added here -->
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <span class="ddd-section-title text-lg">Languages</span>
-                                        <div id="detail-languages" class="flex flex-wrap gap-2 mt-2 justify-center md:justify-start">
-                                            <!-- Language badges will be added here -->
-                                        </div>
+                                <div class="mb-3">
+                                    <span class="font-semibold text-gray-700">Languages:</span>
+                                    <div id="detail-languages" class="inline-flex flex-wrap gap-2 ml-2">
+                                        <!-- Language badges will be added here -->
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    <!-- BIO & PITCH CARD -->
-                    <div class="ddd-card">
-                        <h3 class="ddd-section-title">Bio & Pitch</h3>
-                        <div class="space-y-4">
-                            <div>
-                                <h4 class="font-bold text-lg mb-2" style="color: var(--ddd-purple);">Bio</h4>
-                                <p id="detail-bio" class="text-gray-700 whitespace-pre-line leading-relaxed">Bio content will appear here</p>
-                            </div>
-                            <div class="pt-4 border-t-2" style="border-color: var(--ddd-light);">
-                                <h4 class="font-bold text-lg mb-2" style="color: var(--ddd-pink);">Pitch</h4>
-                                <p id="detail-pitch" class="text-gray-700 whitespace-pre-line leading-relaxed">Pitch content will appear here</p>
-                            </div>
+                    
+                    <!-- Bio & Pitch -->
+                    <div class="mb-8">
+                        <h3 class="text-2xl font-semibold mb-3">Bio</h3>
+                        <p id="detail-bio" class="text-gray-700 whitespace-pre-line">Bio content will appear here</p>
+                    </div>
+                    
+                    <div class="mb-8">
+                        <h3 class="text-2xl font-semibold mb-3">Pitch</h3>
+                        <p id="detail-pitch" class="text-gray-700 whitespace-pre-line">Pitch content will appear here</p>
+                    </div>
+                    
+                    <!-- Video Material -->
+                    <div id="detail-video-section" class="mb-8 hidden">
+                        <h3 class="text-2xl font-semibold mb-3">Video Material</h3>
+                        <div id="detail-video-container" class="aspect-video bg-gray-100 rounded-lg overflow-hidden">
+                            <!-- Embedded video or link will go here -->
                         </div>
                     </div>
-
-                    <!-- MEDIA CARD -->
-                    <div class="ddd-card">
-                        <h3 class="ddd-section-title">Media</h3>
-
-                        <!-- Video Material -->
-                        <div id="detail-video-section" class="mb-6 hidden">
-                            <h4 class="font-bold text-lg mb-3" style="color: var(--ddd-blue);">🎥 Video</h4>
-                            <div id="detail-video-container" class="aspect-video bg-gray-100 rounded-2xl overflow-hidden">
-                                <!-- Embedded video or link will go here -->
-                            </div>
+                    
+                    <!-- Audio Material -->
+                    <div id="detail-audio-section" class="mb-8 hidden">
+                        <h3 class="text-2xl font-semibold mb-3">Audio Material</h3>
+                        <div id="detail-audio-container" class="bg-gray-100 rounded-lg p-4">
+                            <!-- Embedded audio or link will go here -->
                         </div>
-
-                        <!-- Audio Material -->
-                        <div id="detail-audio-section" class="mb-6 hidden">
-                            <h4 class="font-bold text-lg mb-3" style="color: var(--ddd-teal);">🎵 Audio</h4>
-                            <div id="detail-audio-container" class="bg-gray-100 rounded-2xl p-4">
-                                <!-- Embedded audio or link will go here -->
-                            </div>
+                    </div>
+                    
+                    <!-- Text Material -->
+                    <div id="detail-text-section" class="mb-8 hidden">
+                        <h3 class="text-2xl font-semibold mb-3">Text Material</h3>
+                        <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                            <p id="detail-text-content" class="text-gray-700 whitespace-pre-line">Text content will appear here</p>
                         </div>
-
-                        <!-- Text Material -->
-                        <div id="detail-text-section" class="mb-6 hidden">
-                            <h4 class="font-bold text-lg mb-3" style="color: var(--ddd-purple);">📝 Text</h4>
-                            <div class="bg-gray-50 p-6 rounded-2xl border-2" style="border-color: var(--ddd-light);">
-                                <p id="detail-text-content" class="text-gray-700 whitespace-pre-line leading-relaxed">Text content will appear here</p>
-                            </div>
-                        </div>
-
-                        <!-- Document Material -->
-                        <div id="detail-document-section" class="mb-6 hidden">
-                            <h4 class="font-bold text-lg mb-3" style="color: var(--ddd-pink);">📄 Document</h4>
-                            <div class="bg-gray-50 p-6 rounded-2xl border-2" style="border-color: var(--ddd-light);">
-                                <div class="flex items-center space-x-3">
-                                    <i data-lucide="file-text" class="h-8 w-8" style="color: var(--ddd-pink);"></i>
-                                    <div>
-                                        <p class="font-semibold text-gray-900">Document Available</p>
-                                        <a id="detail-document-link" href="#" target="_blank" class="font-medium hover:underline" style="color: var(--ddd-purple);">Download/View Document</a>
-                                    </div>
+                    </div>
+                    
+                    <!-- NEW: Document Material -->
+                    <div id="detail-document-section" class="mb-8 hidden">
+                        <h3 class="text-2xl font-semibold mb-3">Document Material</h3>
+                        <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                            <div class="flex items-center space-x-3">
+                                <i data-lucide="file-text" class="h-8 w-8 text-indigo-600"></i>
+                                <div>
+                                    <p class="font-semibold text-gray-900">Document Available</p>
+                                    <a id="detail-document-link" href="#" target="_blank" class="text-indigo-600 hover:text-indigo-800 underline">Download/View Document</a>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- No Media Message -->
-                        <p id="detail-no-media" class="hidden text-gray-500 text-center py-6">No media available yet.</p>
                     </div>
-
-                    <!-- CONTACT CARD -->
-                    <div class="ddd-card">
-                        <h3 class="ddd-section-title">Contact</h3>
-
+                    
+                    <!-- Contact Information -->
+                    <div class="mt-8 p-6 bg-gray-50 rounded-lg">
+                        <h3 class="text-2xl font-semibold mb-4">Contact Information</h3>
+                        
                         <!-- Trial Message -->
-                        <div id="detail-trial-message" class="hidden p-4 rounded-2xl mb-4" style="background-color: var(--ddd-yellow);">
-                            <p class="font-bold" style="color: var(--ddd-dark);">🔒 Upgrade to PRO to view contact details and send messages to artists.</p>
+                        <div id="detail-trial-message" class="hidden p-4 bg-yellow-100 text-yellow-800 rounded-md mb-4">
+                            <p class="font-medium">🔒 Upgrade to PRO to view contact details and send messages to artists.</p>
                         </div>
-
+                        
                         <!-- Contact Info (for Pro users) -->
                         <div id="detail-contact-info" class="hidden">
-                            <div class="grid grid-cols-1 gap-4 mb-6">
-                                <div class="flex items-center gap-3 p-4 rounded-2xl" style="background-color: var(--ddd-light);">
-                                    <i data-lucide="mail" class="h-6 w-6" style="color: var(--ddd-teal);"></i>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-600">Email</p>
-                                        <a id="detail-email" href="mailto:" class="font-semibold hover:underline" style="color: var(--ddd-purple);">email@example.com</a>
-                                    </div>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                <div>
+                                    <p class="font-semibold text-gray-700">Email:</p>
+                                    <a id="detail-email" href="mailto:" class="text-indigo-600 hover:text-indigo-800">email@example.com</a>
                                 </div>
-                                <div class="flex items-center gap-3 p-4 rounded-2xl" style="background-color: var(--ddd-light);">
-                                    <i data-lucide="phone" class="h-6 w-6" style="color: var(--ddd-pink);"></i>
-                                    <div>
-                                        <p class="text-sm font-medium text-gray-600">Phone</p>
-                                        <a id="detail-phone" href="tel:" class="font-semibold hover:underline" style="color: var(--ddd-purple);">+31 6 12345678</a>
-                                    </div>
+                                <div>
+                                    <p class="font-semibold text-gray-700">Phone:</p>
+                                    <a id="detail-phone" href="tel:" class="text-indigo-600 hover:text-indigo-800">+31 6 12345678</a>
                                 </div>
                             </div>
-                            <button id="send-message-btn" class="ddd-button ddd-button-primary w-full">
-                                💬 Send Message
+                            <button id="send-message-btn" class="bg-indigo-600 text-white px-6 py-3 rounded-md font-medium hover:bg-indigo-700">
+                                Send Message
                             </button>
                         </div>
                     </div>
 
-                    <!-- RECOMMENDATIONS CARD - Full Width -->
-                    <div class="ddd-card ddd-card-full">
-                        <div class="flex justify-between items-center mb-6">
-                            <h3 class="ddd-section-title" data-i18n="recommendations">Recommendations</h3>
-                            <button id="write-recommendation-btn" class="hidden ddd-button ddd-button-secondary" data-i18n="write_recommendation">
-                                ✍️ Write Recommendation
+                    <!-- Recommendations Section -->
+                    <div class="mt-8">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-2xl font-semibold" data-i18n="recommendations">Recommendations</h3>
+                            <button id="write-recommendation-btn" class="hidden bg-indigo-600 text-white px-4 py-2 rounded-md font-medium hover:bg-indigo-700" data-i18n="write_recommendation">
+                                Write Recommendation
                             </button>
                         </div>
 
@@ -1123,8 +1101,8 @@
                         </div>
 
                         <!-- Empty state -->
-                        <div id="recommendations-empty" class="hidden text-center py-8 rounded-2xl" style="background-color: var(--ddd-light);">
-                            <p class="text-gray-600 font-medium" data-i18n="no_recommendations_yet">No recommendations yet. Be the first to recommend this artist!</p>
+                        <div id="recommendations-empty" class="hidden text-center py-8 bg-gray-50 rounded-lg">
+                            <p class="text-gray-500" data-i18n="no_recommendations_yet">No recommendations yet. Be the first to recommend this artist!</p>
                         </div>
 
                         <!-- Recommendations list -->
@@ -1132,7 +1110,6 @@
                             <!-- Recommendations will be loaded here -->
                         </div>
                     </div>
-
                 </div>
             </div>
 
