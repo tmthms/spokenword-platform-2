@@ -13,6 +13,7 @@ import { setupProgrammerDashboard } from './programmer-dashboard.js';
 import { setupProgrammerProfile } from './programmer-profile.js'; // ⭐ NEW: Import programmer profile
 import { setupMessaging } from './messaging.js';
 import { initTranslations } from './translations.js';
+import { setupRecommendations } from './recommendations.js';
 
 /**
  * initApp
@@ -46,6 +47,9 @@ function initApp() {
 
     // Stel de messaging listeners in (send message button, modal)
     setupMessaging();
+
+    // Stel de recommendations listeners in (modal, form)
+    setupRecommendations();
 
     console.log("Applicatie succesvol geïnitialiseerd.");
 

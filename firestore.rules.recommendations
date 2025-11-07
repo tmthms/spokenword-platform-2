@@ -1,0 +1,34 @@
+// Firestore Security Rules voor de 'recommendations' collectie
+// Voeg deze regels toe aan je bestaande firestore.rules bestand
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Recommendations collectie
+    match /recommendations/{recommendationId} {
+      // Iedereen (ingelogd) mag lezen
+      allow read: if request.auth != null;
+
+      // Alleen 'programmers' mogen aanmaken
+      allow create: if request.auth != null
+                    && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'programmer'
+                    && request.resource.data.programmerId == request.auth.uid
+                    && request.resource.data.isApproved == true;
+
+      // Alleen de eigenaar (programmer die het schreef) mag verwijderen
+      allow delete: if request.auth != null
+                    && resource.data.programmerId == request.auth.uid;
+
+      // Update is niet toegestaan (voor nu)
+      allow update: if false;
+    }
+  }
+}
+
+// INSTRUCTIES:
+// 1. Open je Firebase Console
+// 2. Ga naar Firestore Database > Rules
+// 3. Voeg bovenstaande match /recommendations/{recommendationId} blok toe
+//    binnen je bestaande service cloud.firestore { } sectie
+// 4. Klik op "Publish" om de rules te activeren
