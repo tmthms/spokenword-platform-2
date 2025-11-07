@@ -195,7 +195,6 @@ export async function loadRecommendations(artistId) {
     const q = query(
       recommendationsRef,
       where('artistId', '==', artistId),
-      where('isApproved', '==', true),
       orderBy('createdAt', 'desc')
     );
 
@@ -288,8 +287,7 @@ export async function getRecommendationCount(artistId) {
     const recommendationsRef = collection(db, 'recommendations');
     const q = query(
       recommendationsRef,
-      where('artistId', '==', artistId),
-      where('isApproved', '==', true)
+      where('artistId', '==', artistId)
     );
 
     const querySnapshot = await getDocs(q);
