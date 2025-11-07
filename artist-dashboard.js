@@ -5,7 +5,6 @@ import { db } from './firebase.js';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { doc, updateDoc } from "firebase/firestore";
 import { getCheckboxValues, setCheckboxValues } from './checkbox-helpers.js';
-import { loadRecommendations } from './recommendations.js';
 
 /**
  * Sets up the artist dashboard
@@ -37,9 +36,6 @@ export function setupArtistDashboard() {
   if (form) {
     form.addEventListener('submit', handleProfileSubmit);
   }
-  
-  // Load artist's recommendations
-  loadArtistRecommendations();
   
   console.log("Artist dashboard setup complete");
 }
@@ -460,17 +456,4 @@ async function handleProfileSubmit(e) {
     submitBtn.disabled = false;
     submitBtn.textContent = 'Save All Changes';
   }
-}
-/**
- * Load artist's own recommendations on their dashboard
- */
-export function loadArtistRecommendations() {
-  const currentUser = getStore('currentUser');
-  
-  if (!currentUser) {
-    console.warn("No user logged in, cannot load recommendations");
-    return;
-  }
-  
-  loadRecommendations(currentUser.uid);
 }
