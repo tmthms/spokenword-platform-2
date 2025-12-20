@@ -82,19 +82,33 @@ export function updateNav(user) {
   if (user) {
     // Ingelogd
     elements.authLinks.style.display = 'none';
-    elements.userMenu.style.display = 'flex'; // 'flex' om de items naast elkaar te krijgen
+    elements.userMenu.style.display = 'flex';
     elements.userEmailSpan.textContent = user.email;
     elements.navDashboard.style.display = 'block';
     elements.navMessages.style.display = 'block';
 
-    // Show Settings button only for programmers
+    // ⭐ NEW: Update dashboard button text based on role
     const currentUserData = getStore('currentUserData');
-    if (currentUserData && currentUserData.role === 'programmer') {
-      elements.navSettings.style.display = 'inline-block';
-      elements.navSettings.classList.remove('hidden');
-    } else {
-      elements.navSettings.style.display = 'none';
-      elements.navSettings.classList.add('hidden');
+    const navDashboardText = document.getElementById('nav-dashboard-text');
+    
+    if (currentUserData) {
+      // Update nav-dashboard text
+      if (navDashboardText) {
+        if (currentUserData.role === 'artist') {
+          navDashboardText.textContent = 'Dashboard';
+        } else if (currentUserData.role === 'programmer') {
+          navDashboardText.textContent = 'Search Artists';
+        }
+      }
+      
+      // Show Settings button only for programmers
+      if (currentUserData.role === 'programmer') {
+        elements.navSettings.style.display = 'inline-block';
+        elements.navSettings.classList.remove('hidden');
+      } else {
+        elements.navSettings.style.display = 'none';
+        elements.navSettings.classList.add('hidden');
+      }
     }
   } else {
     // Uitgelogd

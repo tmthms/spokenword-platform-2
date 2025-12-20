@@ -15,6 +15,7 @@ export const translations = {
     nav_logout: 'Uitloggen',
     nav_login: 'Inloggen',
     nav_signup: 'Aanmelden',
+    nav_dashboard: 'Dashboard',
 
     // Dashboard
     dashboard_welcome: 'Welkom op je Dashboard',
@@ -82,8 +83,11 @@ export const translations = {
     no_conversations: 'Nog geen gesprekken. Stuur een bericht naar een artiest om een gesprek te starten!',
     select_conversation: 'Selecteer een gesprek om te beginnen met berichten',
     send: 'Verzenden',
+    send_message: 'Verstuur Bericht',
     type_message: 'Typ je bericht...',
     no_messages_yet: 'Nog geen berichten.',
+    message_subject: 'Onderwerp',
+    message_text: 'Bericht',
 
     // Artist Cards
     view_profile: 'Bekijk Profiel',
@@ -120,11 +124,39 @@ export const translations = {
     error_must_be_logged_in: 'Je moet ingelogd zijn om deze actie uit te voeren.',
     cancel: 'Annuleren',
 
+    // User Settings
+    user_settings_title: 'Account Instellingen',
+    settings_language: 'Taal',
+    settings_language_help: 'Kies je voorkeurstaal voor de interface',
+    settings_change_email: 'Email Adres Wijzigen',
+    settings_change_password: 'Wachtwoord Wijzigen',
+    settings_current_password: 'Huidig Wachtwoord',
+    settings_new_email: 'Nieuw Email Adres',
+    settings_new_password: 'Nieuw Wachtwoord',
+    settings_confirm_password: 'Bevestig Nieuw Wachtwoord',
+    settings_update_email: 'Email Bijwerken',
+    settings_update_password: 'Wachtwoord Bijwerken',
+    settings_email_updated: 'Email adres succesvol bijgewerkt! Check je nieuwe inbox voor een verificatie email.',
+    settings_password_updated: 'Wachtwoord succesvol bijgewerkt!',
+    settings_password_mismatch: 'Wachtwoorden komen niet overeen',
+    settings_password_too_short: 'Nieuw wachtwoord moet minimaal 6 karakters bevatten',
+    settings_invalid_email: 'Voer een geldig email adres in',
+    settings_reauth_required: 'Voor deze wijziging moet je je huidige wachtwoord invoeren',
+
     // Common
     required: '*',
     loading: 'Laden...',
     error: 'Fout',
-    success: 'Succes'
+    success: 'Succes',
+    login_title: 'Inloggen',
+    profile: 'Profiel',
+    edit_profile: 'Bewerk Profiel',
+    upload_document: 'Upload Document (PDF, DOC, DOCX)',
+    current_document: 'Huidig document:',
+    view: 'Bekijken',
+    welcome_dashboard: 'Welkom op je Dashboard',
+    edit_your_profile: 'Bewerk je Profiel',
+    update_info_below: 'Update je informatie hieronder. Velden gemarkeerd met * zijn verplicht.'
   },
   en: {
     // Navigation
@@ -135,6 +167,7 @@ export const translations = {
     nav_logout: 'Logout',
     nav_login: 'Login',
     nav_signup: 'Sign Up',
+    nav_dashboard: 'Dashboard',
 
     // Dashboard
     dashboard_welcome: 'Welcome to your Dashboard',
@@ -202,8 +235,11 @@ export const translations = {
     no_conversations: 'No conversations yet. Send a message to an artist to start a conversation!',
     select_conversation: 'Select a conversation to start messaging',
     send: 'Send',
+    send_message: 'Send Message',
     type_message: 'Type your message...',
     no_messages_yet: 'No messages yet.',
+    message_subject: 'Subject',
+    message_text: 'Message',
 
     // Artist Cards
     view_profile: 'View Profile',
@@ -240,11 +276,39 @@ export const translations = {
     error_must_be_logged_in: 'You must be logged in to perform this action.',
     cancel: 'Cancel',
 
+    // User Settings
+    user_settings_title: 'Account Settings',
+    settings_language: 'Language',
+    settings_language_help: 'Choose your preferred language for the interface',
+    settings_change_email: 'Change Email Address',
+    settings_change_password: 'Change Password',
+    settings_current_password: 'Current Password',
+    settings_new_email: 'New Email Address',
+    settings_new_password: 'New Password',
+    settings_confirm_password: 'Confirm New Password',
+    settings_update_email: 'Update Email',
+    settings_update_password: 'Update Password',
+    settings_email_updated: 'Email address successfully updated! Check your new inbox for a verification email.',
+    settings_password_updated: 'Password successfully updated!',
+    settings_password_mismatch: 'Passwords do not match',
+    settings_password_too_short: 'New password must be at least 6 characters',
+    settings_invalid_email: 'Please enter a valid email address',
+    settings_reauth_required: 'You must enter your current password to make this change',
+
     // Common
     required: '*',
     loading: 'Loading...',
     error: 'Error',
-    success: 'Success'
+    success: 'Success',
+    login_title: 'Login',
+    profile: 'Profile',
+    edit_profile: 'Edit Profile',
+    upload_document: 'Upload Document (PDF, DOC, DOCX)',
+    current_document: 'Current document:',
+    view: 'View',
+    welcome_dashboard: 'Welcome to your Dashboard',
+    edit_your_profile: 'Edit Your Profile',
+    update_info_below: 'Update your information below. Fields marked with * are required.'
   }
 };
 

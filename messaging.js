@@ -524,9 +524,11 @@ export async function openConversation(conversationId) {
 
     if (chatPlaceholder) chatPlaceholder.style.display = 'none';
     if (chatContainer) {
-      chatContainer.classList.remove('hidden');
-      chatContainer.style.display = 'flex';
-    }
+  chatContainer.classList.remove('hidden');
+  chatContainer.style.display = 'flex';
+  // ⭐ NEW: Store conversation ID for message form
+  chatContainer.dataset.conversationId = conversationId;
+}
 
     // Update chat header with participant info
     if (chatHeader) {
@@ -652,8 +654,13 @@ function displayMessages(messages, conversationId) {
     });
   }
 
-  // Scroll to latest message
-  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  // ⭐ IMPROVED: Scroll to latest message with smooth behavior
+setTimeout(() => {
+  messagesContainer.scrollTo({
+    top: messagesContainer.scrollHeight,
+    behavior: 'smooth'
+  });
+}, 100);
 }
 
 /**
@@ -825,6 +832,65 @@ export function setupBadgeListener() {
 /**
  * Stop de badge listener (bij logout)
  */
+/**
+ * Scroll to bottom of messages
+ */
+function scrollToBottom() {
+  const messagesContainer = document.getElementById('messages-container');
+  if (messagesContainer) {
+    setTimeout(() => {
+      messagesContainer.scrollTo({
+        top: messagesContainer.scrollHeight,
+        behavior: 'smooth'
+      });
+    }, 100);
+  }
+}
+
+/**
+ * Handle inline message form submit (for replying in existing conversations)
+ */
+async function handleInlineMessageSubmit(e) {
+  e.preventDefault();
+  
+  const messageInput = document.getElementById('message-input');
+  const messageText = messageInput.value.trim();
+  
+  if (!messageText) return;
+  
+  const chatContainer = document.getElementById('chat-container');
+  const conversationId = chatContainer.dataset.conversationId;
+  
+  if (!conversationId) {
+    console.error("No conversation ID found");
+    return;
+  }
+  
+  try {
+    const currentUser = getStore('currentUser');
+    const currentUserData = getStore('currentUserData');
+    
+    if (!currentUser || !currentUserData) {
+      throw new Error('User not logged in');
+    }
+    
+    // Send message
+    await addMessage(conversationId, currentUser.uid, currentUserData, messageText);
+    
+    // Clear input
+    messageInput.value = '';
+    
+    // Reload messages
+    await loadMessages(conversationId);
+    
+    // Scroll to bottom
+    scrollToBottom();
+    
+  } catch (error) {
+    console.error("Error sending message:", error);
+    alert("Failed to send message. Please try again.");
+  }
+}
 export function stopBadgeListener() {
   if (window.badgeListenerUnsubscribe) {
     window.badgeListenerUnsubscribe();
@@ -852,22 +918,23 @@ export function setupMessaging() {
   }
   
   // Form submit
+  // Form submit
   const messageForm = document.getElementById('send-message-form');
   if (messageForm) {
-    messageForm.addEventListener('submit', handleSendMessage);
+  messageForm.addEventListener('submit', handleSendMessage);
   }
-  
-  // FASE 3: Reply form
-  const replyForm = document.getElementById('reply-form');
-  if (replyForm) {
-    replyForm.addEventListener('submit', handleReply);
-  }
-  
-  // FASE 3: Back button
-  const backBtn = document.getElementById('back-to-messages-btn');
-  if (backBtn) {
-    backBtn.addEventListener('click', backToMessages);
-  }
+
+// ⭐ NEW: Inline message form (for replies in chat)
+const inlineMessageForm = document.getElementById('message-form');
+if (inlineMessageForm) {
+  inlineMessageForm.addEventListener('submit', handleInlineMessageSubmit);
+}
+
+// FASE 3: Reply form
+const replyForm = document.getElementById('reply-form');
+if (replyForm) {
+  replyForm.addEventListener('submit', handleReply);
+}
   
   // Close modal when clicking outside
   const modal = document.getElementById('message-modal');

@@ -40,6 +40,10 @@ export function setupArtistDashboard() {
     // Load artist's recommendations
   loadArtistRecommendations();
   console.log("Artist dashboard setup complete");
+// ⭐ NEW: Setup public preview
+  setupPublicPreview();
+  
+  console.log("[SETUP] Artist dashboard setup complete");
 }
 
 /**
@@ -444,6 +448,8 @@ async function handleProfileSubmit(e) {
     
     // Update overview and switch back to it
     displayArtistProfileOverview();
+    // ⭐ NEW: Refresh public preview
+    renderPublicPreview();  
     document.getElementById('artist-profile-editor').classList.add('hidden');
     document.getElementById('artist-profile-overview').classList.remove('hidden');
     
@@ -464,18 +470,150 @@ async function handleProfileSubmit(e) {
  */
 export function loadArtistRecommendations() {
   const currentUser = getStore('currentUser');
-  
+
   if (!currentUser) {
     console.warn("No user logged in, cannot load recommendations");
     return;
   }
-  
+
   // Check if recommendations section exists in HTML before loading
   const recommendationsSection = document.getElementById('recommendations-list');
   if (!recommendationsSection) {
     console.log("Recommendations section not found in HTML, skipping load");
     return;
   }
-  
+
   loadRecommendations(currentUser.uid);
+}
+
+/**
+ * Setup public preview functionality
+ */
+function setupPublicPreview() {
+  const refreshBtn = document.getElementById('refresh-preview-btn');
+
+  if (!refreshBtn) {
+    console.warn("Refresh preview button not found");
+    return;
+  }
+
+  // Setup refresh button click handler
+  refreshBtn.addEventListener('click', () => {
+    renderPublicPreview();
+  });
+
+  // Show initial preview
+  renderPublicPreview();
+
+  console.log("Public preview setup complete");
+}
+
+/**
+ * Render the public profile preview
+ */
+function renderPublicPreview() {
+  const previewContent = document.getElementById('preview-content');
+  const currentUserData = getStore('currentUserData');
+
+  if (!previewContent) {
+    console.warn("Preview content container not found");
+    return;
+  }
+
+  if (!currentUserData) {
+    console.warn("No artist data found for preview");
+    previewContent.innerHTML = `
+      <div class="text-center py-12 text-gray-500">
+        <p>No profile data available. Please complete your profile first.</p>
+      </div>
+    `;
+    return;
+  }
+
+  // Generate preview HTML
+  const profilePicUrl = currentUserData.profilePicUrl ||
+    `https://placehold.co/200x200/e0e7ff/6366f1?text=${encodeURIComponent((currentUserData.stageName || currentUserData.firstName || 'A').charAt(0))}`;
+
+  const genderMap = { 'f': 'Female', 'm': 'Male', 'x': 'Other' };
+  const gender = genderMap[currentUserData.gender] || 'Not specified';
+
+  let age = 'Not specified';
+  if (currentUserData.dob) {
+    age = `${calculateAge(currentUserData.dob)} years old`;
+  }
+
+  // Render genres
+  let genresHTML = '';
+  if (currentUserData.genres && currentUserData.genres.length > 0) {
+    genresHTML = currentUserData.genres.map(genre =>
+      `<span class="inline-block bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium">${genre}</span>`
+    ).join(' ');
+  } else {
+    genresHTML = '<span class="text-gray-500">No genres specified</span>';
+  }
+
+  // Render languages
+  let languagesHTML = '';
+  if (currentUserData.languages && currentUserData.languages.length > 0) {
+    languagesHTML = currentUserData.languages.map(lang =>
+      `<span class="inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">${lang.toUpperCase()}</span>`
+    ).join(' ');
+  } else {
+    languagesHTML = '<span class="text-gray-500">No languages specified</span>';
+  }
+
+  previewContent.innerHTML = `
+    <div class="p-6">
+      <!-- Header with profile pic and basic info -->
+      <div class="flex items-start space-x-6 mb-6">
+        <img src="${profilePicUrl}" alt="Profile" class="w-24 h-24 rounded-full object-cover">
+        <div class="flex-1">
+          <h4 class="text-2xl font-bold text-gray-900">${currentUserData.stageName || currentUserData.firstName || 'Artist Name'}</h4>
+          <p class="text-gray-600">${currentUserData.firstName || ''} ${currentUserData.lastName || ''}</p>
+          <p class="text-sm text-gray-500 mt-1">
+            <i data-lucide="map-pin" class="h-4 w-4 inline mr-1"></i>
+            ${currentUserData.location || 'Location not specified'}
+          </p>
+          <p class="text-sm text-gray-500">
+            ${gender} • ${age}
+          </p>
+        </div>
+      </div>
+
+      <!-- Genres -->
+      <div class="mb-4">
+        <h5 class="text-sm font-semibold text-gray-700 mb-2">Genres</h5>
+        <div class="flex flex-wrap gap-2">
+          ${genresHTML}
+        </div>
+      </div>
+
+      <!-- Languages -->
+      <div class="mb-4">
+        <h5 class="text-sm font-semibold text-gray-700 mb-2">Languages</h5>
+        <div class="flex flex-wrap gap-2">
+          ${languagesHTML}
+        </div>
+      </div>
+
+      <!-- Bio -->
+      <div class="mb-4">
+        <h5 class="text-sm font-semibold text-gray-700 mb-2">Bio</h5>
+        <p class="text-gray-600 text-sm">${currentUserData.bio || 'No bio available'}</p>
+      </div>
+
+      <!-- Pitch -->
+      <div class="mb-4">
+        <h5 class="text-sm font-semibold text-gray-700 mb-2">Pitch</h5>
+        <p class="text-gray-600 text-sm">${currentUserData.pitch || 'No pitch available'}</p>
+      </div>
+    </div>
+  `;
+
+  // Re-initialize Lucide icons for the new content
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
+
+  console.log("Public preview rendered");
 }

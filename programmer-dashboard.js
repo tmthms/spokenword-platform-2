@@ -422,6 +422,12 @@ async function handleProgrammerProfileSubmit(e) {
 /**
  * Load artists with filters (SECURED)
  */
+/**
+ * Load artists with filters (SECURED + FIXED)
+ */
+/**
+ * Load artists with filters (SECURED + FIXED v2 - Normalize spaces/dashes)
+ */
 export async function loadArtists() {
   console.log("[LOAD ARTISTS] Function called");
   
@@ -445,6 +451,11 @@ export async function loadArtists() {
   resultsContainer.innerHTML = '<p class="text-gray-500">Loading artists...</p>';
   if (noResultsDiv) noResultsDiv.style.display = 'none';
   
+  // Helper function to normalize values (lowercase + replace spaces with dashes)
+  const normalize = (value) => {
+    return value.toLowerCase().replace(/\s+/g, '-');
+  };
+  
   try {
     // Get filter values
     const nameFilter = document.getElementById('filter-name')?.value.toLowerCase().trim() || '';
@@ -453,15 +464,15 @@ export async function loadArtists() {
     
     // Payment filter (using checkboxes)
     const paymentCheckboxes = document.querySelectorAll('input[name="payment-filter"]:checked');
-    const paymentFilters = Array.from(paymentCheckboxes).map(cb => cb.value);
+    const paymentFilters = Array.from(paymentCheckboxes).map(cb => normalize(cb.value));
 
     // Genre filter (using checkboxes)
     const genreCheckboxes = document.querySelectorAll('input[name="genre-filter"]:checked');
-    const genreFilters = Array.from(genreCheckboxes).map(cb => cb.value);
+    const genreFilters = Array.from(genreCheckboxes).map(cb => normalize(cb.value));
 
     // Language filter (using checkboxes)
     const languageCheckboxes = document.querySelectorAll('input[name="language-filter"]:checked');
-    const languageFilters = Array.from(languageCheckboxes).map(cb => cb.value);
+    const languageFilters = Array.from(languageCheckboxes).map(cb => cb.value.toLowerCase());
     
     // Age range filter
     const ageMinInput = document.getElementById('filter-age-min')?.value;
@@ -469,7 +480,7 @@ export async function loadArtists() {
     const ageMin = ageMinInput ? parseInt(ageMinInput) : null;
     const ageMax = ageMaxInput ? parseInt(ageMaxInput) : null;
     
-    console.log("Filter values:", {
+    console.log("🔍 Filter values:", {
       nameFilter,
       locationFilter,
       genderFilter,
@@ -489,12 +500,25 @@ export async function loadArtists() {
     
     // Fetch all artists
     const snapshot = await getDocs(q);
-    console.log(`Found ${snapshot.size} artists before client-side filtering`);
+    console.log(`📊 Found ${snapshot.size} artists before client-side filtering`);
     
     let artists = [];
     snapshot.forEach((doc) => {
       artists.push({ id: doc.id, ...doc.data() });
     });
+    
+    // DEBUG: Log first artist's data structure
+    if (artists.length > 0) {
+      console.log("📋 Sample artist data:", {
+        id: artists[0].id,
+        stageName: artists[0].stageName,
+        genres: artists[0].genres,
+        genresNormalized: artists[0].genres?.map(g => normalize(g)),
+        paymentMethods: artists[0].paymentMethods,
+        paymentsNormalized: artists[0].paymentMethods?.map(p => normalize(p)),
+        languages: artists[0].languages
+      });
+    }
     
     // Client-side filtering
     
@@ -505,6 +529,7 @@ export async function loadArtists() {
         const fullName = `${artist.firstName || ''} ${artist.lastName || ''}`.toLowerCase();
         return stageName.includes(nameFilter) || fullName.includes(nameFilter);
       });
+      console.log(`🔍 After name filter: ${artists.length} artists`);
     }
     
     // Filter by location
@@ -513,33 +538,70 @@ export async function loadArtists() {
         const location = (artist.location || '').toLowerCase();
         return location.includes(locationFilter);
       });
+      console.log(`📍 After location filter: ${artists.length} artists`);
     }
     
     // Filter by payment methods (checkboxes - any match)
     if (paymentFilters.length > 0) {
+      console.log(`💳 Filtering by payment methods:`, paymentFilters);
+      
       artists = artists.filter(artist => {
-        const artistPayments = artist.paymentMethods || [];
+        const artistPayments = (artist.paymentMethods || []).map(p => normalize(p));
+        
+        // DEBUG: Log comparison for first artist
+        if (artists.indexOf(artist) === 0) {
+          console.log(`  Artist payment methods (normalized):`, artistPayments);
+          console.log(`  Filter payment methods (normalized):`, paymentFilters);
+        }
+        
         // Artist must have at least one of the selected payment methods
-        return paymentFilters.some(payment => artistPayments.includes(payment));
+        const hasMatch = paymentFilters.some(payment => artistPayments.includes(payment));
+        return hasMatch;
       });
+      
+      console.log(`💳 After payment filter: ${artists.length} artists`);
     }
 
     // Filter by genres (checkboxes - any match)
     if (genreFilters.length > 0) {
+      console.log(`🎭 Filtering by genres:`, genreFilters);
+      
       artists = artists.filter(artist => {
-        const artistGenres = artist.genres || [];
+        const artistGenres = (artist.genres || []).map(g => normalize(g));
+        
+        // DEBUG: Log comparison for first artist
+        if (artists.indexOf(artist) === 0) {
+          console.log(`  Artist genres (normalized):`, artistGenres);
+          console.log(`  Filter genres (normalized):`, genreFilters);
+        }
+        
         // Artist must have at least one of the selected genres
-        return genreFilters.some(genre => artistGenres.includes(genre));
+        const hasMatch = genreFilters.some(genre => artistGenres.includes(genre));
+        return hasMatch;
       });
+      
+      console.log(`🎭 After genre filter: ${artists.length} artists`);
     }
 
     // Filter by languages (checkboxes - any match)
     if (languageFilters.length > 0) {
+      console.log(`🗣️ Filtering by languages:`, languageFilters);
+      
       artists = artists.filter(artist => {
-        const artistLanguages = artist.languages || [];
+        const artistLanguages = (artist.languages || []).map(l => l.toLowerCase());
+        
+        // DEBUG: Log comparison for first artist
+        if (artists.indexOf(artist) === 0) {
+          console.log(`  Artist languages (lowercase):`, artistLanguages);
+          console.log(`  Filter languages (lowercase):`, languageFilters);
+        }
+        
         // Artist must have at least one of the selected languages
-        return languageFilters.some(lang => artistLanguages.includes(lang));
+        const hasMatch = languageFilters.some(lang => artistLanguages.includes(lang));
+        return hasMatch;
       });
+      
+      console.log(`🗣️ After language filter: ${artists.length} artists`);
     }
     
     // Filter by age (only if age filters are set)
@@ -552,9 +614,10 @@ export async function loadArtists() {
         const meetsMax = ageMax === null || age <= ageMax;
         return meetsMin && meetsMax;
       });
+      console.log(`🎂 After age filter: ${artists.length} artists`);
     }
     
-    console.log(`${artists.length} artists after all filtering`);
+    console.log(`✅ ${artists.length} artists after all filtering`);
 
     // Display results
     if (artists.length === 0) {
@@ -566,9 +629,24 @@ export async function loadArtists() {
     }
 
   } catch (error) {
-    console.error("Error loading artists:", error);
-    resultsContainer.innerHTML = '<p class="text-red-500">Error loading artists. Please try again.</p>';
-    alert("Could not load artists: " + error.message);
+    console.error("❌ Error loading artists:", error);
+    console.error("Full error details:", error);
+    
+    // Check if it's a Firestore index error
+    if (error.message && error.message.includes('index')) {
+      console.error("🔗 FIRESTORE INDEX REQUIRED!");
+      console.error("Click this link to create the index:", error.message.match(/https:\/\/[^\s]+/)?.[0]);
+    }
+    
+    resultsContainer.innerHTML = `
+      <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+        <p class="text-red-800 font-semibold">Error loading artists</p>
+        <p class="text-red-600 text-sm mt-2">${error.message}</p>
+        ${error.message.includes('index') ? 
+          `<p class="text-red-600 text-sm mt-2">Please check the console for a link to create the required Firestore index.</p>` : 
+          ''}
+      </div>
+    `;
   }
 }
 

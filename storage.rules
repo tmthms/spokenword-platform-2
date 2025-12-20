@@ -1,0 +1,32 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // 1. Artiesten: Media en Portfolio (Publiek leesbaar)
+    match /artists/{userId}/{allPaths=**} {
+      allow read: if true; 
+      allow write: if request.auth != null && request.auth.uid == userId
+                   && request.resource.size < 10 * 1024 * 1024; // Limiet van 10MB
+    }
+    
+    // 2. Programmeurs: Profielfoto's (Alleen voor ingelogde gebruikers)
+    match /programmers/{userId}/{allPaths=**} {
+      allow read: if request.auth != null; 
+      allow write: if request.auth != null && request.auth.uid == userId
+                   && request.resource.size < 5 * 1024 * 1024 // Limiet van 5MB
+                   && request.resource.contentType.matches('image/.*');
+    }
+    
+    // 3. Documenten (bijv. technische fiches)
+    match /documents/{allPaths=**} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null;
+    }
+
+    // Default: Alles blokkeren
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

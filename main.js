@@ -14,6 +14,7 @@ import { setupProgrammerProfile } from './programmer-profile.js'; // ⭐ NEW: Im
 import { setupMessaging } from './messaging.js';
 import { initTranslations } from './translations.js';
 import { setupRecommendations } from './recommendations.js';
+import { setupUserSettings } from './user-settings.js';
 
 /**
  * initApp
@@ -50,6 +51,9 @@ function initApp() {
 
     // Stel de recommendations listeners in (modal, form)
     setupRecommendations();
+
+    // Stel de user settings listeners in (modal, language, email, password)
+    setupUserSettings();
 
     console.log("Applicatie succesvol geïnitialiseerd.");
 

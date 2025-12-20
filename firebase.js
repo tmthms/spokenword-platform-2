@@ -1,29 +1,32 @@
-// Importeer de *originele* Firebase functies
+// Import Firebase modules
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
-// De configuratie van uw NIEUWE Firebase-project
-// Zorg ervoor dat dit de config is die u zojuist heeft gekopieerd
+// Firebase configuration using environment variables
+// Development (.env) uses ddd-spark
+// Production (.env.production) uses dans-dichter-db
 const firebaseConfig = {
-  // Plak hier de NIEUWE firebaseConfig uit uw
-  // NIEUWE Firebase-projectinstellingen
-  apiKey: "AIzaSyBUId9LHYCGIJgXAXBFhxn9-68_PFzQ5oo",
-  authDomain: "dans-dichter-db.firebaseapp.com",
-  projectId: "dans-dichter-db",
-  storageBucket: "dans-dichter-db.firebasestorage.app",
-  messagingSenderId: "112694272627",
-  appId: "1:112694272627:web:2758ed2393181aff320006",
-  measurementId: "G-W7VYHZNC3D"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-// Initialiseer Firebase
+// Log which environment we're using (helpful for debugging)
+console.log('🔥 Firebase Environment:', import.meta.env.MODE);
+console.log('🔥 Firebase Project:', firebaseConfig.projectId);
+
+// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Maak en EXPORTEER de services die we in andere bestanden gaan gebruiken
-// Dit lost de "db is not exported" fout op.
+// Initialize Firebase services
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
-export { app };
+
+// Export the app instance as well (if needed elsewhere)
+export default app;
