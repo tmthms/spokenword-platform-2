@@ -35,8 +35,8 @@ if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
 }
 
 // FIX 4: Environment guard - Staging warning for ddd-spark
-const isStaging = firebaseConfig.projectId === 'ddd-spark';
-if (isStaging) {
+// Show badge only when hostname contains 'ddd-spark'
+if (window.location.hostname.includes('ddd-spark')) {
   console.warn(
     '%c⚠️ STAGING - DB: DDD-SPARK ⚠️',
     'background: #ff9800; color: #000; font-size: 20px; font-weight: bold; padding: 10px;'
