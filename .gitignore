@@ -26,6 +26,7 @@ serviceAccountKey*.json
 # Environment variables
 .env
 .env.production
+.env.staging
 .env.local
 .env.*.local
 

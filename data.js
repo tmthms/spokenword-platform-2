@@ -24,7 +24,10 @@ export async function fetchUserData(uid) {
     }
     
     const userData = userRoleSnap.data();
-    const role = userData.role;
+    // FIX 1: Handle role as both string and object (data.role.name)
+    const role = typeof userData.role === 'object' && userData.role?.name
+      ? userData.role.name
+      : userData.role;
     const email = userData.email;
     
     setStore('userRole', role); // Sla de rol op

@@ -1090,11 +1090,16 @@ function showProgrammerProfileModal(programmer) {
   
   // Add to page
   document.body.appendChild(modal);
-  
-  // Close handler
-  document.getElementById('close-programmer-modal').addEventListener('click', () => {
-    modal.remove();
-  });
+
+  // FIX 2: DOM race condition guard - check element exists before adding listener
+  const closeBtn = document.getElementById('close-programmer-modal');
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      modal.remove();
+    });
+  } else {
+    console.warn('[MESSAGING] close-programmer-modal element not found in modal');
+  }
   
   // Click outside to close
   modal.addEventListener('click', (e) => {

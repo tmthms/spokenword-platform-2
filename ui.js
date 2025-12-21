@@ -71,8 +71,9 @@ export function showPage(pageId) {
 
   // Speciale afhandeling om dashboard sub-views te verbergen wanneer we weggaan
   if (pageId !== 'dashboard-view') {
-    elements.artistDashboard.style.display = 'none';
-    elements.programmerDashboard.style.display = 'none';
+    // FIX 3: Null-safe style guards
+    if (elements.artistDashboard) elements.artistDashboard.style.display = 'none';
+    if (elements.programmerDashboard) elements.programmerDashboard.style.display = 'none';
   }
 }
 
@@ -83,11 +84,12 @@ export function showPage(pageId) {
 export function updateNav(user) {
   if (user) {
     // Ingelogd
-    elements.authLinks.style.display = 'none';
-    elements.userMenu.style.display = 'flex';
-    elements.userEmailSpan.textContent = user.email;
-    elements.navDashboard.style.display = 'block';
-    elements.navMessages.style.display = 'block';
+    // FIX 3: Null-safe style guards
+    if (elements.authLinks) elements.authLinks.style.display = 'none';
+    if (elements.userMenu) elements.userMenu.style.display = 'flex';
+    if (elements.userEmailSpan) elements.userEmailSpan.textContent = user.email;
+    if (elements.navDashboard) elements.navDashboard.style.display = 'block';
+    if (elements.navMessages) elements.navMessages.style.display = 'block';
 
     // ⭐ NEW: Update dashboard button text based on role
     const currentUserData = getStore('currentUserData');
@@ -105,21 +107,26 @@ export function updateNav(user) {
       
       // Show Settings button only for programmers
       if (currentUserData.role === 'programmer') {
-        elements.navSettings.style.display = 'inline-block';
-        elements.navSettings.classList.remove('hidden');
+        if (elements.navSettings) {
+          elements.navSettings.style.display = 'inline-block';
+          elements.navSettings.classList.remove('hidden');
+        }
       } else {
-        elements.navSettings.style.display = 'none';
-        elements.navSettings.classList.add('hidden');
+        if (elements.navSettings) {
+          elements.navSettings.style.display = 'none';
+          elements.navSettings.classList.add('hidden');
+        }
       }
     }
   } else {
     // Uitgelogd
-    elements.authLinks.style.display = 'block';
-    elements.userMenu.style.display = 'none';
-    elements.userEmailSpan.textContent = '';
-    elements.navDashboard.style.display = 'none';
-    elements.navMessages.style.display = 'none';
-    elements.navSettings.style.display = 'none';
+    // FIX 3: Null-safe style guards
+    if (elements.authLinks) elements.authLinks.style.display = 'block';
+    if (elements.userMenu) elements.userMenu.style.display = 'none';
+    if (elements.userEmailSpan) elements.userEmailSpan.textContent = '';
+    if (elements.navDashboard) elements.navDashboard.style.display = 'none';
+    if (elements.navMessages) elements.navMessages.style.display = 'none';
+    if (elements.navSettings) elements.navSettings.style.display = 'none';
   }
 }
 
@@ -138,10 +145,15 @@ export function showDashboard() {
   const { role, status } = currentUserData;
 
   if (role === 'artist') {
-    elements.artistDashboard.style.display = 'block';
-    elements.artistDashboard.classList.remove('hidden');
-    elements.programmerDashboard.style.display = 'none';
-    elements.programmerDashboard.classList.add('hidden');
+    // FIX 3: Null-safe style guards
+    if (elements.artistDashboard) {
+      elements.artistDashboard.style.display = 'block';
+      elements.artistDashboard.classList.remove('hidden');
+    }
+    if (elements.programmerDashboard) {
+      elements.programmerDashboard.style.display = 'none';
+      elements.programmerDashboard.classList.add('hidden');
+    }
     // Render the artist dashboard HTML
     renderArtistDashboard();
     // ⭐ FIX: Setup dashboard AFTER rendering HTML (so form exists)
@@ -149,10 +161,15 @@ export function showDashboard() {
     // Vul de "Edit Profile" velden met de data van de artiest
     populateArtistEditor();
   } else if (role === 'programmer') {
-    elements.artistDashboard.style.display = 'none';
-    elements.artistDashboard.classList.add('hidden');
-    elements.programmerDashboard.style.display = 'block';
-    elements.programmerDashboard.classList.remove('hidden');
+    // FIX 3: Null-safe style guards
+    if (elements.artistDashboard) {
+      elements.artistDashboard.style.display = 'none';
+      elements.artistDashboard.classList.add('hidden');
+    }
+    if (elements.programmerDashboard) {
+      elements.programmerDashboard.style.display = 'block';
+      elements.programmerDashboard.classList.remove('hidden');
+    }
 
     // Render the programmer dashboard HTML
     renderProgrammerDashboard();
@@ -173,21 +190,23 @@ export function showDashboard() {
 
     if (status === 'pending') {
       // Verberg de zoekfilters, toon "pending" bericht
-      pendingView.style.display = 'block';
-      trialView.style.display = 'none';
+      // FIX 3: Null-safe style guards
+      if (pendingView) pendingView.style.display = 'block';
+      if (trialView) trialView.style.display = 'none';
       if (elements.artistSearchSection) elements.artistSearchSection.style.display = 'none';
     } else {
       // Toon de zoekfilters en verberg "pending"
-      pendingView.style.display = 'none';
-      trialView.style.display = 'block';
+      // FIX 3: Null-safe style guards
+      if (pendingView) pendingView.style.display = 'none';
+      if (trialView) trialView.style.display = 'block';
 
       // Toon het juiste bericht (Trial of Pro)
       if (status === 'pro') {
-        trialMessage.style.display = 'none';
-        proMessage.style.display = 'block';
+        if (trialMessage) trialMessage.style.display = 'none';
+        if (proMessage) proMessage.style.display = 'block';
       } else {
-        trialMessage.style.display = 'block';
-        proMessage.style.display = 'none';
+        if (trialMessage) trialMessage.style.display = 'block';
+        if (proMessage) proMessage.style.display = 'none';
       }
 
       // Render the artist search view dynamically
@@ -217,10 +236,15 @@ export function showProgrammerSettings() {
   showPage('dashboard-view');
 
   // Show programmer dashboard
-  elements.artistDashboard.style.display = 'none';
-  elements.artistDashboard.classList.add('hidden');
-  elements.programmerDashboard.style.display = 'block';
-  elements.programmerDashboard.classList.remove('hidden');
+  // FIX 3: Null-safe style guards
+  if (elements.artistDashboard) {
+    elements.artistDashboard.style.display = 'none';
+    elements.artistDashboard.classList.add('hidden');
+  }
+  if (elements.programmerDashboard) {
+    elements.programmerDashboard.style.display = 'block';
+    elements.programmerDashboard.classList.remove('hidden');
+  }
 
   // Hide the pending/trial views and artist search section
   const pendingView = elements.programmerPendingView;

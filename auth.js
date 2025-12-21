@@ -254,7 +254,8 @@ export function monitorAuthState() {
       showPage('home-view');
     }
     // Verberg de lader (pas nadat alles klaar is)
-    loadingView.style.display = 'none';
+    // FIX 3: Null-safe style guard
+    if (loadingView) loadingView.style.display = 'none';
   });
 }
 
@@ -263,7 +264,26 @@ export function monitorAuthState() {
  * Wordt één keer uitgevoerd bij het starten van de app.
  */
 export function initAuth() {
-  document.getElementById('login-form').addEventListener('submit', handleLogin);
-  document.getElementById('artist-signup-form').addEventListener('submit', handleArtistSignup);
-  document.getElementById('programmer-signup-form').addEventListener('submit', handleProgrammerSignup);
+  // FIX 2: DOM race condition guards - check elements exist before adding listeners
+  const loginForm = document.getElementById('login-form');
+  const artistSignupForm = document.getElementById('artist-signup-form');
+  const programmerSignupForm = document.getElementById('programmer-signup-form');
+
+  if (loginForm) {
+    loginForm.addEventListener('submit', handleLogin);
+  } else {
+    console.warn('[AUTH] login-form element not found');
+  }
+
+  if (artistSignupForm) {
+    artistSignupForm.addEventListener('submit', handleArtistSignup);
+  } else {
+    console.warn('[AUTH] artist-signup-form element not found');
+  }
+
+  if (programmerSignupForm) {
+    programmerSignupForm.addEventListener('submit', handleProgrammerSignup);
+  } else {
+    console.warn('[AUTH] programmer-signup-form element not found');
+  }
 }
