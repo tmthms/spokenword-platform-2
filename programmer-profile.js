@@ -235,30 +235,44 @@ function setupProfilePicPreview() {
  */
 export function populateProgrammerEditor() {
   const currentUserData = getStore('currentUserData');
-  
+
   if (!currentUserData) {
     console.warn("No programmer data found to populate editor");
     return;
   }
-  
+
   console.log("Populating programmer editor with:", currentUserData);
-  
-  // Populate form fields
-  document.getElementById('programmer-edit-firstname').value = currentUserData.firstName || '';
-  document.getElementById('programmer-edit-lastname').value = currentUserData.lastName || '';
-  document.getElementById('programmer-edit-phone').value = currentUserData.phone || '';
-  document.getElementById('programmer-edit-org-name').value = currentUserData.organizationName || '';
-  document.getElementById('programmer-edit-org-about').value = currentUserData.organizationAbout || '';
-  document.getElementById('programmer-edit-website').value = currentUserData.website || '';
-  document.getElementById('programmer-edit-language').value = currentUserData.language || 'nl';
+
+  // ⭐ NULL-SAFE: Helper to safely set element value
+  const safeSetValue = (id, value) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.value = value || '';
+    } else {
+      console.warn(`[POPULATE] Element not found: ${id}`);
+    }
+  };
+
+  // Populate form fields with null safety
+  safeSetValue('programmer-edit-firstname', currentUserData.firstName);
+  safeSetValue('programmer-edit-lastname', currentUserData.lastName);
+  safeSetValue('programmer-edit-phone', currentUserData.phone);
+  safeSetValue('programmer-edit-org-name', currentUserData.organizationName);
+  safeSetValue('programmer-edit-org-about', currentUserData.organizationAbout);
+  safeSetValue('programmer-edit-website', currentUserData.website);
+  safeSetValue('programmer-edit-language', currentUserData.language || 'nl');
 
   // Show current profile picture
   const previewImg = document.getElementById('programmer-profile-pic-preview');
-  if (currentUserData.profilePicUrl) {
-    previewImg.src = currentUserData.profilePicUrl;
+  if (previewImg) {
+    if (currentUserData.profilePicUrl) {
+      previewImg.src = currentUserData.profilePicUrl;
+    } else {
+      previewImg.src = "https://placehold.co/100x100/e0e7ff/6366f1?text=" +
+                       encodeURIComponent(currentUserData.firstName?.charAt(0) || 'P');
+    }
   } else {
-    previewImg.src = "https://placehold.co/100x100/e0e7ff/6366f1?text=" + 
-                     encodeURIComponent(currentUserData.firstName?.charAt(0) || 'P');
+    console.warn("[POPULATE] Profile picture preview element not found");
   }
 }
 
@@ -267,18 +281,21 @@ export function populateProgrammerEditor() {
  */
 async function handleProgrammerProfileSubmit(e) {
   e.preventDefault();
-  
+
+  // ⭐ NULL-SAFE: Get elements with null checks
   const successMsg = document.getElementById('programmer-profile-success');
   const errorMsg = document.getElementById('programmer-profile-error');
   const submitBtn = e.submitter || e.target.querySelector('button[type="submit"]');
-  
-  // Reset messages
-  successMsg.textContent = '';
-  errorMsg.textContent = '';
-  
-  // Disable button
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'Saving...';
+
+  // Reset messages (null-safe)
+  if (successMsg) successMsg.textContent = '';
+  if (errorMsg) errorMsg.textContent = '';
+
+  // Disable button (null-safe)
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+  }
   
   try {
     const currentUser = getStore('currentUser');
@@ -305,27 +322,30 @@ async function handleProgrammerProfileSubmit(e) {
       throw new Error("Please fill in all required fields (marked with *)");
     }
     
-    // Handle profile picture upload
+    // Handle profile picture upload (null-safe)
     const fileInput = document.getElementById('programmer-edit-profile-pic');
-    const file = fileInput.files[0];
-    
+    const file = fileInput?.files[0];
+
     if (file) {
       console.log("Uploading profile picture...");
       const storage = getStorage();
       const storageRef = ref(storage, `programmers/${uid}/profile.jpg`);
-      
+
       // Upload file
       const snapshot = await uploadBytes(storageRef, file);
-      
+
       // Get download URL
       const downloadURL = await getDownloadURL(snapshot.ref);
       console.log("Profile picture uploaded:", downloadURL);
-      
+
       // Add URL to data
       dataToUpdate.profilePicUrl = downloadURL;
-      
-      // Update preview
-      document.getElementById('programmer-profile-pic-preview').src = downloadURL;
+
+      // Update preview (null-safe)
+      const previewImg = document.getElementById('programmer-profile-pic-preview');
+      if (previewImg) {
+        previewImg.src = downloadURL;
+      }
     }
     
     // Update Firestore
@@ -345,19 +365,26 @@ async function handleProgrammerProfileSubmit(e) {
     // Refresh the public preview
     renderPublicPreview();
 
-    // Show success message
-    successMsg.textContent = '✓ Profile updated successfully!';
-    
-    // Clear file input
-    if (file) {
+    // Show success message (null-safe)
+    if (successMsg) {
+      successMsg.textContent = '✓ Profile updated successfully!';
+    }
+
+    // Clear file input (null-safe)
+    if (file && fileInput) {
       fileInput.value = '';
     }
-    
+
   } catch (error) {
     console.error("Error saving profile:", error);
-    errorMsg.textContent = 'Error: ' + error.message;
+    if (errorMsg) {
+      errorMsg.textContent = 'Error: ' + error.message;
+    }
   } finally {
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Save Profile Changes';
+    // Re-enable button (null-safe)
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Save Profile Changes';
+    }
   }
 }
