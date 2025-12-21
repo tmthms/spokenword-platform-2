@@ -6,8 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:staging": "vite build --mode staging",
-    "build:prod": "vite build --mode production",
+    "build:staging": "node scripts/validate-env.cjs staging && vite build --mode staging",
+    "build:prod": "node scripts/validate-env.cjs production && vite build --mode production",
     "preview": "vite preview",
     "deploy": "npm run build && node deploy.js"
   },

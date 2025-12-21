@@ -26,12 +26,43 @@ console.log('🔥 Firebase Config Check:', {
   projectId: firebaseConfig.projectId ? '✓ Set' : '❌ MISSING'
 });
 
-// Throw error if config is invalid
-if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
-  const error = new Error('❌ CRITICAL: Firebase configuration is missing! Check .env file and Vite build process.');
-  console.error(error);
+// RUNTIME ENVIRONMENT GUARD: Comprehensive validation
+const requiredKeys = ['apiKey', 'authDomain', 'projectId', 'storageBucket', 'messagingSenderId', 'appId'];
+const missing = requiredKeys.filter(k => !firebaseConfig[k] || firebaseConfig[k] === '❌ MISSING' || firebaseConfig[k].length < 5);
+
+if (missing.length > 0) {
+  const errorMsg = `FATAL: Environment variables missing or invalid (${missing.join(', ')}).`;
+  console.error('❌', errorMsg);
   console.error('Current config:', firebaseConfig);
-  throw error;
+  console.error('Mode:', import.meta.env.MODE);
+
+  // Show user-friendly error page
+  document.body.innerHTML = `
+    <div style="
+      color: #dc2626;
+      padding: 40px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      max-width: 600px;
+      margin: 100px auto;
+      background: #fef2f2;
+      border: 2px solid #dc2626;
+      border-radius: 8px;
+    ">
+      <h1 style="margin-top: 0;">⚠️ Configuration Error</h1>
+      <p><strong>${errorMsg}</strong></p>
+      <p style="font-size: 14px; color: #991b1b;">
+        The application cannot start because required environment variables are not configured correctly.
+      </p>
+      <details style="margin-top: 20px; font-size: 12px; color: #7f1d1d;">
+        <summary style="cursor: pointer; font-weight: bold;">Technical Details</summary>
+        <pre style="background: white; padding: 10px; border-radius: 4px; margin-top: 10px; overflow-x: auto;">Mode: ${import.meta.env.MODE}
+Missing: ${missing.join(', ')}
+Project ID: ${firebaseConfig.projectId || 'NOT SET'}</pre>
+      </details>
+    </div>
+  `;
+
+  throw new Error(errorMsg);
 }
 
 // FIX 4: Environment guard - Staging warning for ddd-spark
