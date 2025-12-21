@@ -51,9 +51,8 @@ async function handleLogin(e) {
   const password = document.getElementById('login-password').value;
   const errorEl = document.getElementById('login-error');
   errorEl.textContent = '';
-  
-  // DEBUG: Log de API key om te controleren
-  console.log(`DEBUG: API Key die wordt gebruikt voor inloggen: ${auth.config.apiKey}`);
+
+  console.log("[LOGIN] Attempting login for:", email);
 
   try {
     await signInWithEmailAndPassword(auth, email, password);
