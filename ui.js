@@ -9,11 +9,11 @@ import { getStore } from './store.js';
 
 // Importeer de functies die we nodig hebben van andere modules
 import { handleLogout } from './auth.js';
-import { renderArtistDashboard, populateArtistEditor } from './artist-dashboard.js';
-import { renderProgrammerDashboard } from './programmer-dashboard.js';
+import { renderArtistDashboard, populateArtistEditor, setupArtistDashboard } from './artist-dashboard.js';
+import { renderProgrammerDashboard, setupProgrammerDashboard } from './programmer-dashboard.js';
 import { loadArtists, renderArtistSearch } from './artist-search.js';
 import { loadConversations } from './messaging.js';
-import { populateProgrammerEditor } from './programmer-profile.js'; 
+import { populateProgrammerEditor, renderProgrammerProfileEditor, setupProfileFormHandlers } from './programmer-profile.js'; 
 
 // --- DOM Elementen ---
 // We slaan alle belangrijke UI-elementen één keer op voor snelle toegang
@@ -144,6 +144,8 @@ export function showDashboard() {
     elements.programmerDashboard.classList.add('hidden');
     // Render the artist dashboard HTML
     renderArtistDashboard();
+    // ⭐ FIX: Setup dashboard AFTER rendering HTML (so form exists)
+    setupArtistDashboard();
     // Vul de "Edit Profile" velden met de data van de artiest
     populateArtistEditor();
   } else if (role === 'programmer') {
@@ -154,6 +156,8 @@ export function showDashboard() {
 
     // Render the programmer dashboard HTML
     renderProgrammerDashboard();
+    // ⭐ FIX: Setup dashboard AFTER rendering HTML (so elements exist)
+    setupProgrammerDashboard();
 
     const pendingView = elements.programmerPendingView;
     const trialView = elements.programmerTrialView;
@@ -235,8 +239,14 @@ export function showProgrammerSettings() {
 
   // Show the profile editor
   if (elements.programmerProfileEditor) {
+    // Render the editor HTML first
+    renderProgrammerProfileEditor();
+
     elements.programmerProfileEditor.classList.remove('hidden');
     elements.programmerProfileEditor.style.display = 'block';
+
+    // Setup form handlers after rendering
+    setupProfileFormHandlers();
 
     // Populate the editor with current data
     populateProgrammerEditor();

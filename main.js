@@ -7,10 +7,9 @@
 // Importeer de initialisatie-functies van onze modules
 import { initAuth, monitorAuthState } from './auth.js';
 import { initNavigation, showPage } from './ui.js';
-import { setupArtistDashboard } from './artist-dashboard.js';
 import { getArtistSignupData, validateArtistSignupData } from './artist-signup-helpers.js';
-import { setupProgrammerDashboard } from './programmer-dashboard.js';
-import { setupProgrammerProfile } from './programmer-profile.js'; // ⭐ NEW: Import programmer profile
+import { setupProgrammerProfile } from './programmer-profile.js';
+import { setupArtistSearch } from './artist-search.js'; // Artist search & detail view
 import { setupMessaging } from './messaging.js';
 import { initTranslations } from './translations.js';
 import { setupRecommendations } from './recommendations.js';
@@ -37,14 +36,14 @@ function initApp() {
     // Deze verbergt ook de lader en toont de homepagina
     monitorAuthState();
 
-    // Stel de listeners in voor het artiesten-dashboard (foto upload, save knop)
-    setupArtistDashboard();
+    // ⭐ NOTE: setupArtistDashboard() and setupProgrammerDashboard() are now called
+    // in ui.js showDashboard() AFTER the HTML is rendered, so event listeners can attach
 
-    // Stel de listeners in voor het programmeurs-dashboard (zoekknop)
-    setupProgrammerDashboard();
-
-    // ⭐ NEW: Stel de listeners in voor het programmeurs-profiel (edit profile)
+    // Stel de listeners in voor het programmeurs-profiel (edit profile)
     setupProgrammerProfile();
+
+    // Stel de listeners in voor de artiest-zoekfunctie (filters, search, detail view)
+    setupArtistSearch();
 
     // Stel de messaging listeners in (send message button, modal)
     setupMessaging();

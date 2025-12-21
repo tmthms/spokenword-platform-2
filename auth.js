@@ -20,6 +20,7 @@ import { showPage, updateNav, showDashboard } from './ui.js';
 import { setStore } from './store.js';
 import { fetchUserData } from './data.js';
 import { setupBadgeListener, stopBadgeListener } from './messaging.js';
+import { getCheckboxValues } from './checkbox-helpers.js';
 
 // --- HULPFUNCTIES ---
 
@@ -37,15 +38,7 @@ function showAuthError(formId, message) {
   }
 }
 
-/**
- * Haalt de waarden van multi-select velden op.
- * @param {string} selectId - De ID van het <select> element.
- * @returns {string[]} - Een array met de geselecteerde waarden.
- */
-function getSelectValues(selectId) {
-  const select = document.getElementById(selectId);
-  return Array.from(select.selectedOptions).map(option => option.value);
-}
+// ⭐ REMOVED: getSelectValues() is no longer needed, we use getCheckboxValues() from checkbox-helpers.js
 
 // --- FORMULIER-HANDLERS ---
 
@@ -110,9 +103,9 @@ async function handleArtistSignup(e) {
         dob: document.getElementById('artist-dob').value,
         gender: document.getElementById('artist-gender').value,
         location: document.getElementById('artist-location').value,
-        genres: getSelectValues('artist-genres'),
-        languages: getSelectValues('artist-languages'),
-        paymentMethods: getSelectValues('artist-payment'),
+        genres: getCheckboxValues('artist-genres'),
+        languages: getCheckboxValues('artist-languages'),
+        paymentMethods: getCheckboxValues('artist-payment'),
         bio: document.getElementById('artist-bio').value,
         pitch: document.getElementById('artist-pitch').value,
         notifyEmail: document.getElementById('artist-notify-email').checked,

@@ -20,6 +20,8 @@ pubsub-debug.log
 # Service Account Keys (BELANGRIJK!)
 serviceAccountKey.json
 *-firebase-adminsdk-*.json
+serviceAccountKey*.json
+.env*.local
 
 # Environment variables
 .env
