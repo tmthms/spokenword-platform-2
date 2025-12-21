@@ -24,28 +24,9 @@ export async function fetchUserData(uid) {
     }
     
     const userData = userRoleSnap.data();
-
-    // ⭐ CRITICAL FIX: Ensure role is a STRING, not an object
-    let role = userData.role;
-
-    // Log raw role for debugging
-    console.log('[DATA] Raw role from Firestore:', role, 'Type:', typeof role);
-
-    // If role is an object, extract the string value
-    if (typeof role === 'object' && role !== null) {
-      console.warn('[DATA] ⚠️ Role is an object, extracting string value...');
-      // Try common patterns
-      role = role.name || role.type || role.value || String(role);
-      console.log('[DATA] Extracted role string:', role);
-    }
-
-    // Validate role is now a string
-    if (typeof role !== 'string' || !role) {
-      throw new Error(`Invalid role format. Expected string, got: ${typeof role}. Value: ${JSON.stringify(role)}`);
-    }
-
+    const role = userData.role;
     const email = userData.email;
-
+    
     setStore('userRole', role); // Sla de rol op
 
     // 2. Haal het volledige profiel op uit de specifieke collectie (artists/programmers)
@@ -84,7 +65,7 @@ export async function fetchUserData(uid) {
 
     // 3. Sla de volledige profielgegevens op in de store
     setStore('currentUserData', completeUserData);
-    console.log("Gebruikersprofiel geladen met role:", role, "| Type:", typeof role, "| Status:", completeUserData.status);
+    console.log("Gebruikersprofiel geladen met role:", { uid, email, role, status: completeUserData.status });
 
     // 4. Set user's language preference (defaults to 'nl' if not set)
     const userLanguage = userProfile.language || 'nl';
