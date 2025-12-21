@@ -9,9 +9,10 @@ import { getStore } from './store.js';
 
 // Importeer de functies die we nodig hebben van andere modules
 import { handleLogout } from './auth.js';
-import { populateArtistEditor } from './artist-dashboard.js';
-import { loadArtists } from './programmer-dashboard.js';
-import { loadConversations } from './messaging.js'; 
+import { renderArtistDashboard, populateArtistEditor } from './artist-dashboard.js';
+import { loadArtists, renderArtistSearch } from './artist-search.js';
+import { loadConversations } from './messaging.js';
+import { populateProgrammerEditor } from './programmer-profile.js'; 
 
 // --- DOM Elementen ---
 // We slaan alle belangrijke UI-elementen één keer op voor snelle toegang
@@ -140,6 +141,8 @@ export function showDashboard() {
     elements.artistDashboard.classList.remove('hidden');
     elements.programmerDashboard.style.display = 'none';
     elements.programmerDashboard.classList.add('hidden');
+    // Render the artist dashboard HTML
+    renderArtistDashboard();
     // Vul de "Edit Profile" velden met de data van de artiest
     populateArtistEditor();
   } else if (role === 'programmer') {
@@ -179,6 +182,9 @@ export function showDashboard() {
         proMessage.style.display = 'none';
       }
 
+      // Render the artist search view dynamically
+      renderArtistSearch();
+
       // Auto-load all artists when dashboard loads
       loadArtists();
     }
@@ -216,10 +222,25 @@ export function showProgrammerSettings() {
   if (trialView) trialView.style.display = 'none';
   if (elements.artistSearchSection) elements.artistSearchSection.style.display = 'none';
 
+  // Show the profile overview
+  const profileOverview = document.getElementById('programmer-profile-overview');
+  if (profileOverview) {
+    profileOverview.style.display = 'block';
+    profileOverview.classList.remove('hidden');
+  }
+
   // Show the profile editor
   if (elements.programmerProfileEditor) {
     elements.programmerProfileEditor.classList.remove('hidden');
     elements.programmerProfileEditor.style.display = 'block';
+
+    // Populate the editor with current data
+    populateProgrammerEditor();
+
+    // Scroll to the profile editor
+    setTimeout(() => {
+      elements.programmerProfileEditor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
   }
 }
 
