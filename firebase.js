@@ -81,8 +81,7 @@ if (window.location.hostname.includes('ddd-spark')) {
     badge.style.cssText = `
       position: fixed;
       top: 0;
-      left: 50%;
-      transform: translateX(-50%);
+      left: 0;
       background: linear-gradient(135deg, #ff9800 0%, #ff5722 100%);
       color: white;
       padding: 8px 20px;
@@ -90,7 +89,7 @@ if (window.location.hostname.includes('ddd-spark')) {
       font-size: 14px;
       z-index: 999999;
       box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-      border-radius: 0 0 8px 8px;
+      border-radius: 0 0 8px 0;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     `;
     badge.textContent = '⚠️ STAGING - DB: DDD-SPARK';
