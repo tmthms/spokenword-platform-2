@@ -1,207 +1,188 @@
 /**
- * SECURE programmer-dashboard.js v2.2
- * Met authentication guards, age filtering, payment filtering, en browser history
- * CRITICAL SECURITY UPDATE: Alle sensitive functies nu beveiligd tegen ongeautoriseerde toegang
+ * programmer-dashboard.js
+ * Manages only the programmer's profile overview (read-only display)
+ * - Name, Organization, Photo, Contact Info, About
+ * - Public profile preview
+ *
+ * Profile editing is handled by programmer-profile.js
+ * Artist search is handled by artist-search.js
  */
 
-import { collection, getDocs, query, where, doc, getDoc, updateDoc } from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import { db } from './firebase.js';
-import { getStore, setStore } from './store.js';
-import { openMessageModal } from './messaging.js';
-import { loadRecommendations, openRecommendationModal, getRecommendationCount } from './recommendations.js';
+import { getStore } from './store.js';
 
 /**
- * Security: Check if user is authenticated as a programmer
- * @returns {boolean} True if authenticated programmer, false otherwise
+ * Renders the programmer dashboard HTML structure
  */
-function isAuthenticatedProgrammer() {
-  const currentUser = getStore('currentUser');
-  const userRole = getStore('userRole');
-  
-  // DEBUG: Log wat we hebben
-  console.log('[AUTH CHECK] currentUser:', currentUser ? 'EXISTS (uid: ' + currentUser.uid + ')' : 'NULL');
-  console.log('[AUTH CHECK] userRole:', userRole);
-  
-  if (!currentUser) {
-    console.warn("[AUTH CHECK] ❌ Access denied: No currentUser in store");
-    return false;
+export function renderProgrammerDashboard() {
+  const container = document.getElementById('programmer-dashboard');
+
+  if (!container) {
+    console.warn("Programmer dashboard container not found");
+    return;
   }
-  
-  if (userRole !== 'programmer') {
-    console.warn("[AUTH CHECK] ❌ Access denied: userRole is not 'programmer', got:", userRole);
-    return false;
-  }
-  
-  console.log("[AUTH CHECK] ✅ Authentication passed - User is authenticated programmer");
-  return true;
+
+  container.innerHTML = `
+    <div class="bg-white p-8 rounded-lg shadow-xl mb-6">
+        <h3 class="text-2xl font-semibold mb-2" data-i18n="programmer_dashboard">Programmer Dashboard</h3>
+
+        <!-- View voor "Pending" -->
+        <div id="programmer-pending-view" class="hidden">
+            <p class="mb-4 text-lg p-4 bg-yellow-100 text-yellow-800 rounded-md" data-i18n="pending_approval">Your account is <strong>pending admin approval</strong>. You will be notified by email once it's published.</p>
+        </div>
+
+        <!-- View voor "Trial" of "Pro" -->
+        <div id="programmer-trial-view">
+            <p id="programmer-pro-message" class="mb-4 text-lg hidden" data-i18n="pro_account">You have a <strong>PRO Account</strong>. Enjoy full access to the database.</p>
+            <p id="programmer-trial-message" class="mb-4 text-lg" data-i18n="trial_account">You are currently on your <strong>7-Day Free Trial</strong>.</p>
+            <button id="upgrade-pro-btn" class="bg-yellow-500 text-white px-5 py-2 rounded-md font-medium hover:bg-yellow-600" data-i18n="upgrade_to_pro">
+                Upgrade to PRO (Coming Soon)
+            </button>
+        </div>
+    </div>
+
+    <!-- Programmer Profile Overview Card -->
+    <div id="programmer-profile-overview" class="bg-white p-8 rounded-lg shadow-xl mb-6">
+        <h3 class="text-2xl font-semibold mb-6 flex items-center justify-between">
+            <span>Your Profile</span>
+            <button id="edit-programmer-profile-btn" class="text-sm bg-indigo-600 text-white px-5 py-2 rounded-md font-medium hover:bg-indigo-700">
+                Edit Profile
+            </button>
+        </h3>
+
+        <div class="flex flex-col md:flex-row gap-6">
+            <!-- Profile Picture -->
+            <div class="flex-shrink-0">
+                <img id="programmer-overview-pic" src="https://placehold.co/200x200/e0e7ff/6366f1?text=P" alt="Profile" class="h-48 w-48 object-cover rounded-lg shadow-lg">
+            </div>
+
+            <!-- Profile Info -->
+            <div class="flex-1">
+                <h4 id="programmer-overview-name" class="text-3xl font-bold text-gray-900 mb-2">Programmer Name</h4>
+                <p id="programmer-overview-org" class="text-xl text-indigo-600 font-semibold mb-4">Organization Name</p>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+                    <div>
+                        <span class="font-semibold">Email:</span>
+                        <span id="programmer-overview-email" class="ml-2">email@example.com</span>
+                    </div>
+                    <div>
+                        <span class="font-semibold">Phone:</span>
+                        <span id="programmer-overview-phone" class="ml-2">Phone</span>
+                    </div>
+                    <div class="col-span-2">
+                        <span class="font-semibold">Website:</span>
+                        <a id="programmer-overview-website" href="#" target="_blank" class="ml-2 text-indigo-600 hover:text-indigo-800">Website</a>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <p class="font-semibold text-gray-700">About Organization:</p>
+                    <p id="programmer-overview-about" class="text-gray-600 mt-1">Organization description here</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Programmer Profile Editor (rendered by programmer-profile.js) -->
+    <div id="programmer-profile-editor" class="bg-white p-8 rounded-lg shadow-xl mb-6 hidden">
+        <!-- Content will be rendered by renderProgrammerProfileEditor() -->
+    </div>
+
+    <!-- Programmer Public Preview Section -->
+    <div id="programmer-public-preview" class="bg-white p-8 rounded-lg shadow-xl mb-6">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-2xl font-semibold">Public Profile Preview</h3>
+            <button id="refresh-programmer-preview-btn" class="text-sm bg-indigo-600 text-white px-4 py-2 rounded-md font-medium hover:bg-indigo-700">
+                <i data-lucide="refresh-cw" class="h-4 w-4 inline mr-1"></i>
+                Refresh Preview
+            </button>
+        </div>
+
+        <div class="bg-gray-50 p-6 rounded-lg border-2 border-dashed border-gray-300">
+            <p class="text-sm text-gray-600 mb-4">
+                <i data-lucide="info" class="h-4 w-4 inline mr-1"></i>
+                This is how artists see your profile when they view your organization information.
+            </p>
+
+            <!-- Preview Content Container -->
+            <div id="programmer-preview-content" class="bg-white rounded-lg shadow-lg">
+                <!-- Preview will be rendered here -->
+                <div class="text-center py-12 text-gray-500">
+                    <i data-lucide="eye" class="h-12 w-12 mx-auto mb-4 text-gray-400"></i>
+                    <p>Click "Refresh Preview" to see how your profile looks</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter Section (Content rendered dynamically by renderArtistSearch() in artist-search.js) -->
+    <div id="artist-search-section" class="bg-white p-8 rounded-lg shadow-xl">
+        <!-- Content will be injected dynamically -->
+    </div>
+  `;
+
+  console.log("Programmer dashboard HTML rendered");
 }
 
 /**
- * Security: Require authentication for sensitive operations
- * Redirects to login if not authenticated
- */
-function requireAuth() {
-  console.log("[REQUIRE AUTH] Checking authentication...");
-  
-  if (!isAuthenticatedProgrammer()) {
-    console.error("[REQUIRE AUTH] ❌ Access denied: Redirecting to login");
-    console.error("[REQUIRE AUTH] TIP: Check if auth.js properly sets store values:");
-    console.error("[REQUIRE AUTH]   - setStore('currentUser', user)");
-    console.error("[REQUIRE AUTH]   - setStore('userRole', 'programmer')");
-    
-    alert("You must be logged in as a programmer to access this page.");
-    
-    // Hide all content
-    const programmerDashboard = document.getElementById('programmer-dashboard');
-    const artistDetailView = document.getElementById('artist-detail-view');
-    
-    if (programmerDashboard) programmerDashboard.classList.add('hidden');
-    if (artistDetailView) artistDetailView.classList.add('hidden');
-    
-    // Show login page
-    const loginView = document.getElementById('login-view');
-    if (loginView) {
-      loginView.style.display = 'block';
-    }
-    
-    return false;
-  }
-  
-  console.log("[REQUIRE AUTH] ✅ Auth check passed");
-  return true;
-}
-
-/**
- * Setup programmer dashboard (SECURED)
- * NOTE: Auth check removed from setup - setup can run at page load
- * Auth checks are in the actual data-fetching functions (loadArtists, showArtistDetail, etc.)
+ * Setup programmer dashboard
+ * Only handles the profile overview display and public preview
  */
 export function setupProgrammerDashboard() {
-  console.log("[SETUP] Starting programmer dashboard setup...");
-  
-  // Setup search button
-  const searchButton = document.getElementById('search-artists-btn');
-  if (searchButton) {
-    searchButton.addEventListener('click', loadArtists);
-    console.log("[SETUP] Search button listener added");
-  } else {
-    console.warn("[SETUP] ⚠️ Search button not found in DOM");
-  }
-  
-  // Setup back button for detail view
-  const backToSearchBtn = document.getElementById('back-to-search-btn');
-  if (backToSearchBtn) {
-    backToSearchBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      
-      // Security check before navigation
-      if (!requireAuth()) return;
-      
-      showSearchView();
-      // Update browser history
-      window.history.pushState({ view: 'search' }, '', '#search');
-    });
-    console.log("[SETUP] Back button listener added");
-  }
-  
-  // Setup profile editor
-  setupProgrammerProfileEditor();
-  
-  // Display profile overview  
+  console.log("[SETUP PROGRAMMER DASHBOARD] Starting programmer dashboard setup...");
+
+  // Display profile overview
   displayProgrammerProfileOverview();
-  
-  // Setup browser back/forward buttons (SECURED)
-  setupBrowserHistory();
-  
-  console.log("[SETUP] ✅ Programmer dashboard setup complete (SECURED v2.2.1-FIXED)");
+
+  // Setup public profile preview
+  setupPublicPreview();
+
+  console.log("[SETUP PROGRAMMER DASHBOARD] ✅ Programmer dashboard setup complete");
 }
 
 /**
- * Setup browser history management (SECURED)
+ * Displays the programmer profile overview (read-only)
+ * Called on initial load and after profile updates
  */
-function setupBrowserHistory() {
-  // Handle browser back/forward buttons with security
-  window.addEventListener('popstate', (event) => {
-    console.log("Popstate event:", event.state);
-    
-    // Security check: Block if not authenticated
-    if (!isAuthenticatedProgrammer()) {
-      console.error("Popstate blocked: User not authenticated");
-      
-      // Redirect to login
-      const loginView = document.getElementById('login-view');
-      if (loginView) {
-        loginView.style.display = 'block';
-      }
-      
-      // Hide programmer views
-      document.getElementById('programmer-dashboard')?.classList.add('hidden');
-      document.getElementById('artist-detail-view')?.classList.add('hidden');
-      
-      return;
-    }
-    
-    if (event.state) {
-      if (event.state.view === 'search') {
-        showSearchView();
-      } else if (event.state.view === 'artist-detail' && event.state.artistId) {
-        showArtistDetail(event.state.artistId, false); // false = don't push to history again
-      }
-    } else {
-      // No state, probably initial page load or back to main
-      showSearchView();
-    }
-  });
-  
-  // Set initial state
-  if (!window.history.state) {
-    window.history.replaceState({ view: 'search' }, '', '#search');
-  }
-}
-
-/**
- * Displays the programmer profile overview
- */
-function displayProgrammerProfileOverview() {
+export function displayProgrammerProfileOverview() {
   const currentUserData = getStore('currentUserData');
   const currentUser = getStore('currentUser');
-  
+
   // If no data yet (e.g., during page load before login), skip
   if (!currentUserData || !currentUser) {
     console.log("[PROFILE] No user data yet, skipping profile overview display");
     return;
   }
-  
+
   // Profile Picture
   const overviewPic = document.getElementById('programmer-overview-pic');
   if (overviewPic) {
-    overviewPic.src = currentUserData.profilePicUrl || 
+    overviewPic.src = currentUserData.profilePicUrl ||
                       `https://placehold.co/200x200/e0e7ff/6366f1?text=${encodeURIComponent((currentUserData.firstName || 'P').charAt(0))}`;
   }
-  
+
   // Name & Organization
   const nameEl = document.getElementById('programmer-overview-name');
   if (nameEl) {
     nameEl.textContent = `${currentUserData.firstName || ''} ${currentUserData.lastName || ''}`.trim() || 'Programmer Name';
   }
-  
+
   const orgEl = document.getElementById('programmer-overview-org');
   if (orgEl) {
     orgEl.textContent = currentUserData.organizationName || 'Organization Name';
   }
-  
+
   // Contact Info
   const emailEl = document.getElementById('programmer-overview-email');
   if (emailEl) {
     emailEl.textContent = currentUser?.email || 'email@example.com';
   }
-  
+
   const phoneEl = document.getElementById('programmer-overview-phone');
   if (phoneEl) {
     phoneEl.textContent = currentUserData.phone || 'Not specified';
   }
-  
+
   // Website
   const websiteElement = document.getElementById('programmer-overview-website');
   if (websiteElement) {
@@ -213,792 +194,125 @@ function displayProgrammerProfileOverview() {
       websiteElement.textContent = 'Not specified';
     }
   }
-  
+
   // About
   const aboutEl = document.getElementById('programmer-overview-about');
   if (aboutEl) {
     aboutEl.textContent = currentUserData.organizationAbout || 'No description available';
   }
-  
+
   console.log("[PROFILE] Profile overview displayed successfully");
 }
 
 /**
- * Setup programmer profile editor
+ * Setup public profile preview functionality
  */
-function setupProgrammerProfileEditor() {
-  const editBtn = document.getElementById('edit-programmer-profile-btn');
-  const editor = document.getElementById('programmer-profile-editor');
-  const overview = document.getElementById('programmer-profile-overview');
-  
-  if (!editBtn || !editor || !overview) {
-    console.warn("Programmer profile editor elements not found");
+function setupPublicPreview() {
+  const refreshBtn = document.getElementById('refresh-programmer-preview-btn');
+
+  if (!refreshBtn) {
+    console.warn("Refresh programmer preview button not found");
     return;
   }
-  
-  // Remove old listeners
-  const newBtn = editBtn.cloneNode(true);
-  editBtn.parentNode.replaceChild(newBtn, editBtn);
-  
-  // Add new listener
-  newBtn.addEventListener('click', () => {
-    const isHidden = editor.classList.contains('hidden');
-    
-    if (isHidden) {
-      editor.classList.remove('hidden');
-      overview.classList.add('hidden');
-      populateProgrammerEditor();
-    } else {
-      editor.classList.add('hidden');
-      overview.classList.remove('hidden');
-      displayProgrammerProfileOverview();
-    }
+
+  // Setup refresh button click handler
+  refreshBtn.addEventListener('click', () => {
+    renderPublicPreview();
   });
-  
-  // Setup profile picture preview
-  const fileInput = document.getElementById('programmer-edit-profile-pic');
-  const previewImg = document.getElementById('programmer-profile-pic-preview');
-  
-  if (fileInput && previewImg) {
-    fileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (file) {
-        if (file.size > 5 * 1024 * 1024) {
-          alert('File size must be less than 5MB');
-          fileInput.value = '';
-          return;
-        }
-        
-        if (!file.type.startsWith('image/')) {
-          alert('Please select an image file');
-          fileInput.value = '';
-          return;
-        }
-        
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          previewImg.src = event.target.result;
-        };
-        reader.readAsDataURL(file);
-      }
-    });
-  }
-  
-  // Handle form submission
-  const form = document.getElementById('programmer-profile-form');
-  if (form) {
-    form.addEventListener('submit', handleProgrammerProfileSubmit);
-  }
+
+  // Show initial preview
+  renderPublicPreview();
+
+  console.log("Programmer public preview setup complete");
 }
 
 /**
- * Populates the programmer editor with current data
+ * Render the public profile preview
+ * Shows how the programmer's profile looks to artists
  */
-function populateProgrammerEditor() {
+export function renderPublicPreview() {
+  const previewContent = document.getElementById('programmer-preview-content');
   const currentUserData = getStore('currentUserData');
-  
+  const currentUser = getStore('currentUser');
+
+  if (!previewContent) {
+    console.warn("Programmer preview content container not found");
+    return;
+  }
+
   if (!currentUserData) {
-    console.warn("No programmer data found to populate editor");
-    return;
-  }
-  
-  console.log("Populating programmer editor with:", currentUserData);
-  
-  document.getElementById('programmer-edit-firstname').value = currentUserData.firstName || '';
-  document.getElementById('programmer-edit-lastname').value = currentUserData.lastName || '';
-  document.getElementById('programmer-edit-phone').value = currentUserData.phone || '';
-  document.getElementById('programmer-edit-org-name').value = currentUserData.organizationName || '';
-  document.getElementById('programmer-edit-org-about').value = currentUserData.organizationAbout || '';
-  document.getElementById('programmer-edit-website').value = currentUserData.website || '';
-  
-  const previewImg = document.getElementById('programmer-profile-pic-preview');
-  if (currentUserData.profilePicUrl) {
-    previewImg.src = currentUserData.profilePicUrl;
-  } else {
-    previewImg.src = `https://placehold.co/100x100/e0e7ff/6366f1?text=${encodeURIComponent((currentUserData.firstName || 'P').charAt(0))}`;
-  }
-}
-
-/**
- * Handles programmer profile form submission
- */
-async function handleProgrammerProfileSubmit(e) {
-  e.preventDefault();
-  
-  const successMsg = document.getElementById('programmer-profile-success');
-  const errorMsg = document.getElementById('programmer-profile-error');
-  const submitBtn = e.submitter || e.target.querySelector('button[type="submit"]');
-  
-  // Reset messages
-  successMsg.textContent = '';
-  errorMsg.textContent = '';
-  
-  // Disable button
-  submitBtn.disabled = true;
-  submitBtn.textContent = 'Saving...';
-  
-  try {
-    const currentUser = getStore('currentUser');
-    
-    if (!currentUser) {
-      throw new Error("No user logged in");
-    }
-    
-    // Get form values
-    const firstName = document.getElementById('programmer-edit-firstname').value.trim();
-    const lastName = document.getElementById('programmer-edit-lastname').value.trim();
-    const phone = document.getElementById('programmer-edit-phone').value.trim();
-    const orgName = document.getElementById('programmer-edit-org-name').value.trim();
-    const orgAbout = document.getElementById('programmer-edit-org-about').value.trim();
-    const website = document.getElementById('programmer-edit-website').value.trim();
-    
-    // Build update object
-    const updateData = {
-      firstName,
-      lastName,
-      phone,
-      organizationName: orgName,
-      organizationAbout: orgAbout,
-      website
-    };
-    
-    // Handle profile picture upload if selected
-    const fileInput = document.getElementById('programmer-edit-profile-pic');
-    if (fileInput.files && fileInput.files[0]) {
-      const file = fileInput.files[0];
-      
-      // Validate file
-      if (file.size > 5 * 1024 * 1024) {
-        throw new Error("File size must be less than 5MB");
-      }
-      
-      if (!file.type.startsWith('image/')) {
-        throw new Error("Please select an image file");
-      }
-      
-      // Upload to Firebase Storage
-      const storage = getStorage();
-      const storageRef = ref(storage, `programmers/${currentUser.uid}/profile-pic-${Date.now()}.jpg`);
-      
-      await uploadBytes(storageRef, file);
-      const downloadURL = await getDownloadURL(storageRef);
-      
-      updateData.profilePicUrl = downloadURL;
-      console.log("Profile picture uploaded:", downloadURL);
-    }
-    
-    // Update Firestore
-    const userDocRef = doc(db, 'programmers', currentUser.uid);
-    await updateDoc(userDocRef, updateData);
-    
-    console.log("Programmer profile updated successfully");
-    
-    // Update local store
-    const currentUserData = getStore('currentUserData');
-    setStore('currentUserData', { ...currentUserData, ...updateData });
-    
-    // Show success message
-    successMsg.textContent = 'Profile updated successfully!';
-    
-    // Refresh overview
-    displayProgrammerProfileOverview();
-    
-    // Hide editor after 2 seconds
-    setTimeout(() => {
-      document.getElementById('programmer-profile-editor').classList.add('hidden');
-      document.getElementById('programmer-profile-overview').classList.remove('hidden');
-    }, 2000);
-    
-  } catch (error) {
-    console.error("Error updating programmer profile:", error);
-    errorMsg.textContent = `Error: ${error.message}`;
-  } finally {
-    // Re-enable button
-    submitBtn.disabled = false;
-    submitBtn.textContent = 'Save Profile';
-  }
-}
-
-/**
- * Load artists with filters (SECURED)
- */
-/**
- * Load artists with filters (SECURED + FIXED)
- */
-/**
- * Load artists with filters (SECURED + FIXED v2 - Normalize spaces/dashes)
- */
-export async function loadArtists() {
-  console.log("[LOAD ARTISTS] Function called");
-  
-  // Security check: Only allow authenticated programmers
-  if (!requireAuth()) {
-    console.error("[LOAD ARTISTS] ❌ Load artists blocked: Authentication required");
-    return;
-  }
-  
-  console.log("[LOAD ARTISTS] ✅ Auth check passed, loading artists...");
-
-  const resultsContainer = document.getElementById('artist-list-container');
-  const noResultsDiv = document.getElementById('artist-list-empty');
-
-  if (!resultsContainer) {
-    console.error("[LOAD ARTISTS] ❌ ERROR: artist-list-container not found!");
-    return;
-  }
-
-  // Show loading state
-  resultsContainer.innerHTML = '<p class="text-gray-500">Loading artists...</p>';
-  if (noResultsDiv) noResultsDiv.style.display = 'none';
-  
-  // Helper function to normalize values (lowercase + replace spaces with dashes)
-  const normalize = (value) => {
-    return value.toLowerCase().replace(/\s+/g, '-');
-  };
-  
-  try {
-    // Get filter values
-    const nameFilter = document.getElementById('filter-name')?.value.toLowerCase().trim() || '';
-    const locationFilter = document.getElementById('filter-location')?.value.toLowerCase().trim() || '';
-    const genderFilter = document.getElementById('filter-gender')?.value || '';
-    
-    // Payment filter (using checkboxes)
-    const paymentCheckboxes = document.querySelectorAll('input[name="payment-filter"]:checked');
-    const paymentFilters = Array.from(paymentCheckboxes).map(cb => normalize(cb.value));
-
-    // Genre filter (using checkboxes)
-    const genreCheckboxes = document.querySelectorAll('input[name="genre-filter"]:checked');
-    const genreFilters = Array.from(genreCheckboxes).map(cb => normalize(cb.value));
-
-    // Language filter (using checkboxes)
-    const languageCheckboxes = document.querySelectorAll('input[name="language-filter"]:checked');
-    const languageFilters = Array.from(languageCheckboxes).map(cb => cb.value.toLowerCase());
-    
-    // Age range filter
-    const ageMinInput = document.getElementById('filter-age-min')?.value;
-    const ageMaxInput = document.getElementById('filter-age-max')?.value;
-    const ageMin = ageMinInput ? parseInt(ageMinInput) : null;
-    const ageMax = ageMaxInput ? parseInt(ageMaxInput) : null;
-    
-    console.log("🔍 Filter values:", {
-      nameFilter,
-      locationFilter,
-      genderFilter,
-      paymentFilters,
-      genreFilters,
-      languageFilters,
-      ageRange: ageMin !== null || ageMax !== null ? `${ageMin || 'any'}-${ageMax || 'any'}` : 'not set'
-    });
-    
-    // Build Firestore query
-    let q = query(collection(db, 'artists'), where('published', '==', true));
-    
-    // Add gender filter if selected
-    if (genderFilter) {
-      q = query(q, where('gender', '==', genderFilter));
-    }
-    
-    // Fetch all artists
-    const snapshot = await getDocs(q);
-    console.log(`📊 Found ${snapshot.size} artists before client-side filtering`);
-    
-    let artists = [];
-    snapshot.forEach((doc) => {
-      artists.push({ id: doc.id, ...doc.data() });
-    });
-    
-    // DEBUG: Log first artist's data structure
-    if (artists.length > 0) {
-      console.log("📋 Sample artist data:", {
-        id: artists[0].id,
-        stageName: artists[0].stageName,
-        genres: artists[0].genres,
-        genresNormalized: artists[0].genres?.map(g => normalize(g)),
-        paymentMethods: artists[0].paymentMethods,
-        paymentsNormalized: artists[0].paymentMethods?.map(p => normalize(p)),
-        languages: artists[0].languages
-      });
-    }
-    
-    // Client-side filtering
-    
-    // Filter by name (stage name or full name)
-    if (nameFilter) {
-      artists = artists.filter(artist => {
-        const stageName = (artist.stageName || '').toLowerCase();
-        const fullName = `${artist.firstName || ''} ${artist.lastName || ''}`.toLowerCase();
-        return stageName.includes(nameFilter) || fullName.includes(nameFilter);
-      });
-      console.log(`🔍 After name filter: ${artists.length} artists`);
-    }
-    
-    // Filter by location
-    if (locationFilter) {
-      artists = artists.filter(artist => {
-        const location = (artist.location || '').toLowerCase();
-        return location.includes(locationFilter);
-      });
-      console.log(`📍 After location filter: ${artists.length} artists`);
-    }
-    
-    // Filter by payment methods (checkboxes - any match)
-    if (paymentFilters.length > 0) {
-      console.log(`💳 Filtering by payment methods:`, paymentFilters);
-      
-      artists = artists.filter(artist => {
-        const artistPayments = (artist.paymentMethods || []).map(p => normalize(p));
-        
-        // DEBUG: Log comparison for first artist
-        if (artists.indexOf(artist) === 0) {
-          console.log(`  Artist payment methods (normalized):`, artistPayments);
-          console.log(`  Filter payment methods (normalized):`, paymentFilters);
-        }
-        
-        // Artist must have at least one of the selected payment methods
-        const hasMatch = paymentFilters.some(payment => artistPayments.includes(payment));
-        return hasMatch;
-      });
-      
-      console.log(`💳 After payment filter: ${artists.length} artists`);
-    }
-
-    // Filter by genres (checkboxes - any match)
-    if (genreFilters.length > 0) {
-      console.log(`🎭 Filtering by genres:`, genreFilters);
-      
-      artists = artists.filter(artist => {
-        const artistGenres = (artist.genres || []).map(g => normalize(g));
-        
-        // DEBUG: Log comparison for first artist
-        if (artists.indexOf(artist) === 0) {
-          console.log(`  Artist genres (normalized):`, artistGenres);
-          console.log(`  Filter genres (normalized):`, genreFilters);
-        }
-        
-        // Artist must have at least one of the selected genres
-        const hasMatch = genreFilters.some(genre => artistGenres.includes(genre));
-        return hasMatch;
-      });
-      
-      console.log(`🎭 After genre filter: ${artists.length} artists`);
-    }
-
-    // Filter by languages (checkboxes - any match)
-    if (languageFilters.length > 0) {
-      console.log(`🗣️ Filtering by languages:`, languageFilters);
-      
-      artists = artists.filter(artist => {
-        const artistLanguages = (artist.languages || []).map(l => l.toLowerCase());
-        
-        // DEBUG: Log comparison for first artist
-        if (artists.indexOf(artist) === 0) {
-          console.log(`  Artist languages (lowercase):`, artistLanguages);
-          console.log(`  Filter languages (lowercase):`, languageFilters);
-        }
-        
-        // Artist must have at least one of the selected languages
-        const hasMatch = languageFilters.some(lang => artistLanguages.includes(lang));
-        return hasMatch;
-      });
-      
-      console.log(`🗣️ After language filter: ${artists.length} artists`);
-    }
-    
-    // Filter by age (only if age filters are set)
-    if (ageMin !== null || ageMax !== null) {
-      artists = artists.filter(artist => {
-        if (!artist.dob) return false; // Exclude artists without birthdate when age filter is active
-
-        const age = calculateAge(artist.dob);
-        const meetsMin = ageMin === null || age >= ageMin;
-        const meetsMax = ageMax === null || age <= ageMax;
-        return meetsMin && meetsMax;
-      });
-      console.log(`🎂 After age filter: ${artists.length} artists`);
-    }
-    
-    console.log(`✅ ${artists.length} artists after all filtering`);
-
-    // Display results
-    if (artists.length === 0) {
-      resultsContainer.innerHTML = '';
-      if (noResultsDiv) noResultsDiv.style.display = 'block';
-    } else {
-      if (noResultsDiv) noResultsDiv.style.display = 'none';
-      renderArtists(artists);
-    }
-
-  } catch (error) {
-    console.error("❌ Error loading artists:", error);
-    console.error("Full error details:", error);
-    
-    // Check if it's a Firestore index error
-    if (error.message && error.message.includes('index')) {
-      console.error("🔗 FIRESTORE INDEX REQUIRED!");
-      console.error("Click this link to create the index:", error.message.match(/https:\/\/[^\s]+/)?.[0]);
-    }
-    
-    resultsContainer.innerHTML = `
-      <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-        <p class="text-red-800 font-semibold">Error loading artists</p>
-        <p class="text-red-600 text-sm mt-2">${error.message}</p>
-        ${error.message.includes('index') ? 
-          `<p class="text-red-600 text-sm mt-2">Please check the console for a link to create the required Firestore index.</p>` : 
-          ''}
+    console.warn("No programmer data found for preview");
+    previewContent.innerHTML = `
+      <div class="text-center py-12 text-gray-500">
+        <p>No profile data available. Please complete your profile first.</p>
       </div>
     `;
-  }
-}
-
-/**
- * Calculate age from date of birth
- */
-function calculateAge(dob) {
-  if (!dob) return null;
-  
-  const birthDate = new Date(dob);
-  const today = new Date();
-  
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-  
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-  
-  return age;
-}
-
-/**
- * Render artists in the results container
- */
-function renderArtists(artists) {
-  const resultsContainer = document.getElementById('artist-list-container');
-  if (!resultsContainer) {
-    console.error("[RENDER ARTISTS] ❌ artist-list-container not found!");
     return;
   }
 
-  resultsContainer.innerHTML = '';
+  // Generate preview HTML
+  const profilePicUrl = currentUserData.profilePicUrl ||
+    `https://placehold.co/200x200/e0e7ff/6366f1?text=${encodeURIComponent((currentUserData.firstName || 'P').charAt(0))}`;
 
-  artists.forEach(artist => {
-    const card = createArtistCard(artist);
-    resultsContainer.appendChild(card);
-  });
-}
+  const fullName = `${currentUserData.firstName || ''} ${currentUserData.lastName || ''}`.trim() || 'Programmer Name';
+  const organizationName = currentUserData.organizationName || 'Organization Name';
+  const email = currentUser?.email || 'email@example.com';
+  const phone = currentUserData.phone || 'Not specified';
+  const website = currentUserData.website || '';
+  const about = currentUserData.organizationAbout || 'No description available';
 
-/**
- * Create an artist card element
- */
-function createArtistCard(artist) {
-  const card = document.createElement('div');
-  card.className = 'bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer';
-  
-  // Profile picture
-  const profilePic = artist.profilePicUrl || "https://placehold.co/400x400/e0e7ff/6366f1?text=No+Photo";
-  
-  // Age
-  const age = artist.dob ? calculateAge(artist.dob) : null;
-  const ageText = age ? `${age} years old` : 'Age not specified';
-  
-  // Genres
-  const genresHTML = artist.genres && artist.genres.length > 0
-    ? artist.genres.map(g => `<span class="inline-block bg-indigo-100 text-indigo-800 px-2 py-1 rounded text-xs">${g}</span>`).join(' ')
-    : '<span class="text-gray-500 text-sm">No genres</span>';
-  
-  card.innerHTML = `
-    <div class="aspect-w-4 aspect-h-3">
-      <img src="${profilePic}" alt="${artist.stageName || 'Artist'}" class="w-full h-48 object-cover">
-    </div>
-    <div class="p-4">
-      <h3 class="text-xl font-bold text-gray-900 mb-1">${artist.stageName || 'No Stage Name'}</h3>
-      <p class="text-sm text-gray-600 mb-2">${artist.firstName || ''} ${artist.lastName || ''}</p>
-      <p class="text-sm text-gray-600 mb-2"><i data-lucide="map-pin" class="inline w-4 h-4"></i> ${artist.location || 'Location not specified'}</p>
-      <p class="text-sm text-gray-600 mb-3"><i data-lucide="calendar" class="inline w-4 h-4"></i> ${ageText}</p>
-      <div class="mb-3">
-        ${genresHTML}
+  previewContent.innerHTML = `
+    <div class="p-6">
+      <!-- Header with profile pic and basic info -->
+      <div class="flex items-start space-x-6 mb-6">
+        <img src="${profilePicUrl}" alt="Profile" class="w-24 h-24 rounded-full object-cover border-4 border-indigo-100">
+        <div class="flex-1">
+          <h4 class="text-2xl font-bold text-gray-900">${fullName}</h4>
+          <p class="text-lg text-indigo-600 font-semibold">${organizationName}</p>
+          <div class="mt-3 space-y-1 text-sm text-gray-600">
+            <p>
+              <i data-lucide="mail" class="h-4 w-4 inline mr-2"></i>
+              <a href="mailto:${email}" class="hover:text-indigo-600">${email}</a>
+            </p>
+            <p>
+              <i data-lucide="phone" class="h-4 w-4 inline mr-2"></i>
+              ${phone}
+            </p>
+            ${website ? `
+              <p>
+                <i data-lucide="globe" class="h-4 w-4 inline mr-2"></i>
+                <a href="${website}" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-600">
+                  ${website.replace(/^https?:\/\//, '')}
+                </a>
+              </p>
+            ` : ''}
+          </div>
+        </div>
       </div>
-      <button class="w-full bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition-colors">
-        View Profile
-      </button>
+
+      <!-- About Organization -->
+      <div class="mb-4 bg-gray-50 p-4 rounded-lg">
+        <h5 class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+          <i data-lucide="building-2" class="h-4 w-4 inline mr-2"></i>
+          About ${organizationName}
+        </h5>
+        <p class="text-gray-700 text-sm leading-relaxed">${about}</p>
+      </div>
+
+      <!-- Badge -->
+      <div class="flex items-center justify-center pt-4 border-t border-gray-200">
+        <div class="inline-flex items-center px-4 py-2 bg-indigo-50 text-indigo-700 rounded-full text-sm font-medium">
+          <i data-lucide="check-circle" class="h-4 w-4 mr-2"></i>
+          Verified Programmer
+        </div>
+      </div>
     </div>
   `;
-  
-  // Add click listener
-  card.addEventListener('click', () => {
-    showArtistDetail(artist.id);
-  });
-  
-  return card;
-}
 
-/**
- * Show artist detail view (SECURED)
- */
-export async function showArtistDetail(artistId, pushHistory = true) {
-  // Security check: Only allow authenticated programmers
-  if (!requireAuth()) {
-    console.error("Show artist detail blocked: Authentication required");
-    return;
+  // Re-initialize Lucide icons for the new content
+  if (window.lucide) {
+    window.lucide.createIcons();
   }
-  
-  try {
-    console.log("Loading artist detail:", artistId);
-    
-    // Fetch artist data
-    const artistRef = doc(db, 'artists', artistId);
-    const artistSnap = await getDoc(artistRef);
-    
-    if (!artistSnap.exists()) {
-      alert("Artist not found");
-      return;
-    }
-    
-    const artist = { id: artistSnap.id, ...artistSnap.data() };
-    
-    // Vul de detail view met de data
-    populateArtistDetail(artist);
 
-    // Toon de detail view en verberg de search results
-    document.getElementById('programmer-dashboard').style.display = 'none';
-    const detailView = document.getElementById('artist-detail-view');
-    detailView.style.display = 'block';
-
-    // Store artistId in detail view for later use
-    detailView.dataset.artistId = artistId;
-
-    // Load recommendations for this artist
-    loadRecommendations(artistId);
-
-    // Setup "Write Recommendation" button (only for programmers)
-    const writeRecommendationBtn = document.getElementById('write-recommendation-btn');
-    if (writeRecommendationBtn) {
-      const currentUserData = getStore('currentUserData');
-      if (currentUserData && currentUserData.role === 'programmer') {
-        writeRecommendationBtn.classList.remove('hidden');
-        writeRecommendationBtn.onclick = () => openRecommendationModal(artistId, artist);
-      } else {
-        writeRecommendationBtn.classList.add('hidden');
-      }
-    }
-
-    // Push to browser history
-    if (pushHistory) {
-      window.history.pushState(
-        { view: 'artist-detail', artistId: artistId },
-        '',
-        `#artist/${artistId}`
-      );
-    }
-
-    // Scroll naar boven
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    // Activeer Lucide icons
-    if (window.lucide) {
-      window.lucide.createIcons();
-    }
-    
-  } catch (error) {
-    console.error("Error loading artist detail:", error);
-    alert("Could not load artist details: " + error.message);
-  }
-}
-
-/**
- * Vult de detail view met artiest data
- */
-function populateArtistDetail(artist) {
-  // Profile Picture
-  const detailProfilePic = document.getElementById('detail-profile-pic');
-  if (detailProfilePic) {
-    detailProfilePic.src = artist.profilePicUrl || "https://placehold.co/400x400/e0e7ff/6366f1?text=No+Photo";
-  }
-  
-  // Basic Info
-  document.getElementById('detail-artist-name').textContent = `${artist.firstName || ''} ${artist.lastName || ''}`.trim();
-  document.getElementById('detail-stage-name').textContent = artist.stageName || 'N/A';
-  document.getElementById('detail-location').textContent = artist.location || 'Not specified';
-  
-  // Gender
-  const genderMap = { 'f': 'Female', 'm': 'Male', 'x': 'Other' };
-  document.getElementById('detail-gender').textContent = genderMap[artist.gender] || 'Not specified';
-  
-  // Age
-  if (artist.dob) {
-    document.getElementById('detail-age').textContent = `${calculateAge(artist.dob)} years old`;
-  } else {
-    document.getElementById('detail-age').textContent = 'Age not specified';
-  }
-  
-  // Genres
-  const detailGenres = document.getElementById('detail-genres');
-  detailGenres.innerHTML = '';
-  if (artist.genres && artist.genres.length > 0) {
-    artist.genres.forEach(genre => {
-      const badge = document.createElement('span');
-      badge.className = 'inline-block bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium';
-      badge.textContent = genre;
-      detailGenres.appendChild(badge);
-    });
-  } else {
-    detailGenres.textContent = 'No genres specified';
-  }
-  
-  // Languages
-  const detailLanguages = document.getElementById('detail-languages');
-  detailLanguages.innerHTML = '';
-  if (artist.languages && artist.languages.length > 0) {
-    artist.languages.forEach(lang => {
-      const badge = document.createElement('span');
-      badge.className = 'inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium';
-      badge.textContent = lang.toUpperCase();
-      detailLanguages.appendChild(badge);
-    });
-  } else {
-    detailLanguages.textContent = 'No languages specified';
-  }
-  
-  // Bio & Pitch
-  document.getElementById('detail-bio').textContent = artist.bio || 'No bio available.';
-  document.getElementById('detail-pitch').textContent = artist.pitch || 'No pitch available.';
-  
-  // Video Material
-  if (artist.videoUrl && artist.videoUrl.trim()) {
-    document.getElementById('detail-video-section').style.display = 'block';
-    const embedUrl = getEmbedUrl(artist.videoUrl, 'video');
-    if (embedUrl) {
-      document.getElementById('detail-video-container').innerHTML = `
-        <iframe class="w-full h-full" src="${embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-      `;
-    } else {
-      document.getElementById('detail-video-container').innerHTML = `
-        <div class="flex items-center justify-center h-full">
-          <a href="${artist.videoUrl}" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-medium">View Video (External Link)</a>
-        </div>
-      `;
-    }
-  } else {
-    document.getElementById('detail-video-section').style.display = 'none';
-  }
-  
-  // Audio Material
-  if (artist.audioUrl && artist.audioUrl.trim()) {
-    document.getElementById('detail-audio-section').style.display = 'block';
-    const embedUrl = getEmbedUrl(artist.audioUrl, 'audio');
-    if (embedUrl) {
-      document.getElementById('detail-audio-container').innerHTML = `
-        <iframe class="w-full" height="166" scrolling="no" frameborder="no" allow="autoplay" src="${embedUrl}"></iframe>
-      `;
-    } else {
-      document.getElementById('detail-audio-container').innerHTML = `
-        <a href="${artist.audioUrl}" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-medium">Listen to Audio (External Link)</a>
-      `;
-    }
-  } else {
-    document.getElementById('detail-audio-section').style.display = 'none';
-  }
-  
-  // Text Material
-  if (artist.textContent && artist.textContent.trim()) {
-    document.getElementById('detail-text-section').style.display = 'block';
-    document.getElementById('detail-text-content').textContent = artist.textContent;
-  } else {
-    document.getElementById('detail-text-section').style.display = 'none';
-  }
-  
-  // Document Material
-  const documentSection = document.getElementById('detail-document-section');
-  const documentLink = document.getElementById('detail-document-link');
-  
-  if (artist.documentUrl && artist.documentUrl.trim()) {
-    documentSection.style.display = 'block';
-    documentLink.href = artist.documentUrl;
-    documentLink.textContent = artist.documentName || 'Download/View Document';
-  } else {
-    documentSection.style.display = 'none';
-  }
-  
-  // Contact Information - Access Control
-  const currentUserData = getStore('currentUserData');
-  const isPro = currentUserData && currentUserData.status === 'pro';
-  
-  if (isPro) {
-    // Show contact info for Pro users
-    document.getElementById('detail-trial-message').style.display = 'none';
-    document.getElementById('detail-contact-info').style.display = 'block';
-    
-    document.getElementById('detail-email').textContent = artist.email || 'Not available';
-    document.getElementById('detail-email').href = `mailto:${artist.email || ''}`;
-    
-    document.getElementById('detail-phone').textContent = artist.phone || 'Not available';
-    document.getElementById('detail-phone').href = `tel:${artist.phone || ''}`;
-    
-    // Setup Send Message button
-    const sendMessageBtn = document.getElementById('send-message-btn');
-    if (sendMessageBtn) {
-      // Remove any existing listeners
-      const newBtn = sendMessageBtn.cloneNode(true);
-      sendMessageBtn.parentNode.replaceChild(newBtn, sendMessageBtn);
-      
-      // Add new listener
-      newBtn.addEventListener('click', () => {
-        openMessageModal(artist);
-      });
-    }
-  } else {
-    // Show upgrade message for Trial users
-    document.getElementById('detail-trial-message').style.display = 'block';
-    document.getElementById('detail-contact-info').style.display = 'none';
-  }
-}
-
-/**
- * Converteert een video/audio URL naar een embed URL
- */
-function getEmbedUrl(url, type) {
-  if (!url) return null;
-  
-  if (type === 'video') {
-    // YouTube
-    const youtubeMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
-    if (youtubeMatch) {
-      return `https://www.youtube.com/embed/${youtubeMatch[1]}`;
-    }
-    
-    // Vimeo
-    const vimeoMatch = url.match(/vimeo\.com\/(\d+)/);
-    if (vimeoMatch) {
-      return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
-    }
-  }
-  
-  if (type === 'audio') {
-    // SoundCloud
-    if (url.includes('soundcloud.com')) {
-      return `https://w.soundcloud.com/player/?url=${encodeURIComponent(url)}&color=%23ff5500&auto_play=false&hide_related=false&show_comments=true&show_user=true&show_reposts=false&show_teaser=true`;
-    }
-    
-    // Spotify
-    const spotifyMatch = url.match(/spotify\.com\/(track|album|playlist)\/([^?]+)/);
-    if (spotifyMatch) {
-      return `https://open.spotify.com/embed/${spotifyMatch[1]}/${spotifyMatch[2]}`;
-    }
-  }
-  
-  return null;
-}
-
-/**
- * Gaat terug naar de search results view (SECURED)
- */
-function showSearchView() {
-  // Security check
-  if (!requireAuth()) {
-    return;
-  }
-  
-  document.getElementById('artist-detail-view').style.display = 'none';
-  document.getElementById('programmer-dashboard').style.display = 'block';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  console.log("Programmer public preview rendered");
 }

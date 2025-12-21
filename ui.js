@@ -10,6 +10,7 @@ import { getStore } from './store.js';
 // Importeer de functies die we nodig hebben van andere modules
 import { handleLogout } from './auth.js';
 import { renderArtistDashboard, populateArtistEditor } from './artist-dashboard.js';
+import { renderProgrammerDashboard } from './programmer-dashboard.js';
 import { loadArtists, renderArtistSearch } from './artist-search.js';
 import { loadConversations } from './messaging.js';
 import { populateProgrammerEditor } from './programmer-profile.js'; 
@@ -150,6 +151,9 @@ export function showDashboard() {
     elements.artistDashboard.classList.add('hidden');
     elements.programmerDashboard.style.display = 'block';
     elements.programmerDashboard.classList.remove('hidden');
+
+    // Render the programmer dashboard HTML
+    renderProgrammerDashboard();
 
     const pendingView = elements.programmerPendingView;
     const trialView = elements.programmerTrialView;
