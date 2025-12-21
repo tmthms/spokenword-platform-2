@@ -197,8 +197,30 @@ export function handleLogout() {
  */
 export function monitorAuthState() {
   const loadingView = document.getElementById('loading-view');
-  
+
+  console.log('[AUTH] Setting up onAuthStateChanged listener...');
+
+  // Add a timeout to prevent infinite loading
+  const loadingTimeout = setTimeout(() => {
+    console.error('[AUTH] ⚠️ Auth state listener did not fire within 10 seconds!');
+    console.error('[AUTH] This usually means Firebase is not initialized correctly.');
+    if (loadingView) {
+      loadingView.innerHTML = `
+        <div class="text-center p-8 max-w-lg mx-auto bg-white shadow-lg rounded-lg">
+          <h1 class="text-2xl font-bold mb-4 text-red-600">Initialization Error</h1>
+          <p class="mb-4">Firebase authentication failed to initialize.</p>
+          <p class="text-sm text-gray-600">Please check the browser console for details.</p>
+          <button onclick="location.reload()" class="mt-4 bg-indigo-600 text-white px-4 py-2 rounded">
+            Retry
+          </button>
+        </div>
+      `;
+    }
+  }, 10000); // 10 second timeout
+
   onAuthStateChanged(auth, async (user) => {
+    // Clear the timeout since auth state changed
+    clearTimeout(loadingTimeout);
     if (user) {
       // Gebruiker is ingelogd
       console.log("Auth state change: User logged in:", user.uid);

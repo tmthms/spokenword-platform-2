@@ -4,6 +4,30 @@
  * Het importeert alle modules en start de app.
  */
 
+// Global error handler for uncaught errors
+window.addEventListener('error', (event) => {
+  console.error('❌ GLOBAL ERROR:', event.error);
+  const loadingView = document.getElementById('loading-view');
+  if (loadingView && loadingView.style.display !== 'none') {
+    loadingView.innerHTML = `
+      <div class="text-center text-red-500 p-8 max-w-lg mx-auto bg-white shadow-lg rounded-lg">
+        <h1 class="text-2xl font-bold mb-4">Application Error</h1>
+        <p class="mb-4">Er is een fout opgetreden bij het laden van de applicatie.</p>
+        <p class="text-sm font-mono bg-red-100 p-3 rounded break-all mb-4">${event.error?.message || event.message}</p>
+        <button onclick="location.reload()" class="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+          Probeer opnieuw
+        </button>
+      </div>
+    `;
+    loadingView.style.display = 'block';
+  }
+});
+
+// Global promise rejection handler
+window.addEventListener('unhandledrejection', (event) => {
+  console.error('❌ UNHANDLED PROMISE REJECTION:', event.reason);
+});
+
 // Importeer de initialisatie-functies van onze modules
 import { initAuth, monitorAuthState } from './auth.js';
 import { initNavigation, showPage } from './ui.js';
@@ -21,7 +45,9 @@ import { setupUserSettings } from './user-settings.js';
  */
 function initApp() {
   try {
-    console.log("main.js is succesvol geladen...");
+    console.log("=".repeat(60));
+    console.log("🚀 Starting application initialization...");
+    console.log("=".repeat(60));
 
     // Initialize translations (default to Dutch)
     initTranslations();
@@ -54,7 +80,9 @@ function initApp() {
     // Stel de user settings listeners in (modal, language, email, password)
     setupUserSettings();
 
-    console.log("Applicatie succesvol geïnitialiseerd.");
+    console.log("=".repeat(60));
+    console.log("✅ Application initialization complete!");
+    console.log("=".repeat(60));
 
   } catch (error) {
     console.error("Fout bij initialiseren van de app:", error);

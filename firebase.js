@@ -16,12 +16,27 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID
 };
 
-// Log which environment we're using (helpful for debugging)
+// Critical: Validate Firebase config before initialization
 console.log('🔥 Firebase Environment:', import.meta.env.MODE);
 console.log('🔥 Firebase Project:', firebaseConfig.projectId);
+console.log('🔥 Firebase Config Check:', {
+  apiKey: firebaseConfig.apiKey ? '✓ Set' : '❌ MISSING',
+  authDomain: firebaseConfig.authDomain ? '✓ Set' : '❌ MISSING',
+  projectId: firebaseConfig.projectId ? '✓ Set' : '❌ MISSING'
+});
+
+// Throw error if config is invalid
+if (!firebaseConfig.apiKey || !firebaseConfig.projectId) {
+  const error = new Error('❌ CRITICAL: Firebase configuration is missing! Check .env file and Vite build process.');
+  console.error(error);
+  console.error('Current config:', firebaseConfig);
+  throw error;
+}
 
 // Initialize Firebase
+console.log('🔥 Initializing Firebase with projectId:', firebaseConfig.projectId);
 const app = initializeApp(firebaseConfig);
+console.log('✅ Firebase initialized successfully');
 
 // Initialize Firebase services
 export const auth = getAuth(app);
