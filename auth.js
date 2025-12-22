@@ -45,7 +45,7 @@ function showAuthError(formId, message) {
 /**
  * Verwerkt de inlog-poging.
  */
-async function handleLogin(e) {
+export async function handleLogin(e) {
   e.preventDefault();
   const email = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
@@ -67,7 +67,7 @@ async function handleLogin(e) {
 /**
  * Verwerkt de registratie van een nieuwe artiest.
  */
-async function handleArtistSignup(e) {
+export async function handleArtistSignup(e) {
   e.preventDefault();
   const errorEl = document.getElementById('artist-signup-error');
   errorEl.textContent = '';
@@ -129,7 +129,7 @@ async function handleArtistSignup(e) {
 /**
  * Verwerkt de registratie van een nieuwe programmeur.
  */
-async function handleProgrammerSignup(e) {
+export async function handleProgrammerSignup(e) {
   e.preventDefault();
   const errorEl = document.getElementById('programmer-signup-error');
   errorEl.textContent = '';

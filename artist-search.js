@@ -87,16 +87,41 @@ export function renderArtistSearch() {
     return;
   }
 
-  searchSection.innerHTML = `
-    <h3 class="text-2xl font-semibold mb-6" data-i18n="search_for_artists">Search for Artists</h3>
-    <!-- Filter UI -->
-    <div class="space-y-6 mb-6">
-        <!-- Text Filters Row -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <input id="filter-name" type="text" class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" data-i18n="filter_name" placeholder="Name...">
-            <input id="filter-location" type="text" class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" data-i18n="filter_location" placeholder="Location...">
+  // ✅ CLEAN SEARCH VIEW: Hide profile sections to focus on search
+  const profileOverview = document.getElementById('programmer-profile-overview');
+  const publicPreview = document.getElementById('programmer-public-preview');
+  const profileEditor = document.getElementById('programmer-profile-editor');
 
-            <select id="filter-gender" class="px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+  if (profileOverview) {
+    profileOverview.style.display = 'none';
+    profileOverview.classList.add('hidden');
+  }
+  if (publicPreview) {
+    publicPreview.style.display = 'none';
+    publicPreview.classList.add('hidden');
+  }
+  if (profileEditor) {
+    profileEditor.style.display = 'none';
+    profileEditor.classList.add('hidden');
+  }
+
+  searchSection.innerHTML = `
+    <h3 class="text-2xl font-semibold mb-4" data-i18n="search_for_artists">Search for Artists</h3>
+
+    <!-- Toggle Filters Button (Mobile Only) -->
+    <button id="toggle-filters-btn" class="md:hidden w-full bg-gray-100 text-gray-700 px-4 py-3 rounded-lg font-medium mb-4 flex items-center justify-between">
+      <span>Show Filters</span>
+      <i data-lucide="chevron-down" class="h-5 w-5"></i>
+    </button>
+
+    <!-- Filter UI -->
+    <div id="filters-container" class="space-y-3 md:space-y-6 mb-4 md:mb-6 hidden md:block">
+        <!-- Text Filters Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 md:gap-4">
+            <input id="filter-name" type="text" class="px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" data-i18n="filter_name" placeholder="Name...">
+            <input id="filter-location" type="text" class="px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" data-i18n="filter_location" placeholder="Location...">
+
+            <select id="filter-gender" class="px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
                 <option value="" data-i18n="filter_all_genders">All Genders</option>
                 <option value="f" data-i18n="filter_female">Female</option>
                 <option value="m" data-i18n="filter_male">Male</option>
@@ -105,92 +130,92 @@ export function renderArtistSearch() {
         </div>
 
         <!-- Age Filter -->
-        <div class="flex items-center space-x-4">
-            <label class="font-medium text-gray-700" data-i18n="filter_age_range">Age Range:</label>
-            <input id="filter-age-min" type="number" class="w-24 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" data-i18n="filter_age_min" placeholder="Min">
-            <span class="text-gray-500">to</span>
-            <input id="filter-age-max" type="number" class="w-24 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" data-i18n="filter_age_max" placeholder="Max">
+        <div class="flex items-center space-x-2 md:space-x-4">
+            <label class="text-sm md:text-base font-medium text-gray-700" data-i18n="filter_age_range">Age Range:</label>
+            <input id="filter-age-min" type="number" class="w-16 md:w-24 px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" data-i18n="filter_age_min" placeholder="Min">
+            <span class="text-sm md:text-base text-gray-500">to</span>
+            <input id="filter-age-max" type="number" class="w-16 md:w-24 px-2 py-1.5 md:px-3 md:py-2 text-sm md:text-base border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" data-i18n="filter_age_max" placeholder="Max">
         </div>
 
-        <!-- Checkbox Filters -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Checkbox Filters (Mobile: Compact, Desktop: Grid) -->
+        <div class="md:grid md:grid-cols-3 md:gap-6 space-y-2 md:space-y-0">
             <!-- Genres -->
             <div>
-                <label class="block font-medium text-gray-700 mb-2" data-i18n="filter_genres">Genres:</label>
-                <div class="space-y-2">
-                    <label class="flex items-center">
-                        <input type="checkbox" name="genre-filter" value="performance-poetry" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                        <span class="ml-2 text-sm text-gray-700" data-i18n="genre_performance_poetry">Performance Poetry</span>
+                <label class="block text-sm md:text-base font-medium text-gray-700 mb-1 md:mb-2" data-i18n="filter_genres">Genres:</label>
+                <div class="space-y-0.5 md:space-y-1 max-h-32 md:max-h-none overflow-y-auto md:overflow-visible">
+                    <label class="flex items-center py-0.5">
+                        <input type="checkbox" name="genre-filter" value="performance-poetry" class="h-3.5 w-3.5 md:h-4 md:w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <span class="ml-1.5 md:ml-2 text-xs md:text-sm text-gray-700" data-i18n="genre_performance_poetry">Performance Poetry</span>
                     </label>
-                    <label class="flex items-center">
-                        <input type="checkbox" name="genre-filter" value="poetry-slam" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                        <span class="ml-2 text-sm text-gray-700" data-i18n="genre_poetry_slam">Poetry Slam</span>
+                    <label class="flex items-center py-0.5">
+                        <input type="checkbox" name="genre-filter" value="poetry-slam" class="h-3.5 w-3.5 md:h-4 md:w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <span class="ml-1.5 md:ml-2 text-xs md:text-sm text-gray-700" data-i18n="genre_poetry_slam">Poetry Slam</span>
                     </label>
-                    <label class="flex items-center">
-                        <input type="checkbox" name="genre-filter" value="jazz-poetry" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                        <span class="ml-2 text-sm text-gray-700" data-i18n="genre_jazz_poetry">Jazz Poetry</span>
+                    <label class="flex items-center py-0.5">
+                        <input type="checkbox" name="genre-filter" value="jazz-poetry" class="h-3.5 w-3.5 md:h-4 md:w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <span class="ml-1.5 md:ml-2 text-xs md:text-sm text-gray-700" data-i18n="genre_jazz_poetry">Jazz Poetry</span>
                     </label>
-                    <label class="flex items-center">
-                        <input type="checkbox" name="genre-filter" value="rap" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                        <span class="ml-2 text-sm text-gray-700" data-i18n="genre_rap">Rap</span>
+                    <label class="flex items-center py-0.5">
+                        <input type="checkbox" name="genre-filter" value="rap" class="h-3.5 w-3.5 md:h-4 md:w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <span class="ml-1.5 md:ml-2 text-xs md:text-sm text-gray-700" data-i18n="genre_rap">Rap</span>
                     </label>
-                    <label class="flex items-center">
-                        <input type="checkbox" name="genre-filter" value="storytelling" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                        <span class="ml-2 text-sm text-gray-700" data-i18n="genre_storytelling">Storytelling</span>
+                    <label class="flex items-center py-0.5">
+                        <input type="checkbox" name="genre-filter" value="storytelling" class="h-3.5 w-3.5 md:h-4 md:w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <span class="ml-1.5 md:ml-2 text-xs md:text-sm text-gray-700" data-i18n="genre_storytelling">Storytelling</span>
                     </label>
-                    <label class="flex items-center">
-                        <input type="checkbox" name="genre-filter" value="comedy" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                        <span class="ml-2 text-sm text-gray-700" data-i18n="genre_comedy">Comedy</span>
+                    <label class="flex items-center py-0.5">
+                        <input type="checkbox" name="genre-filter" value="comedy" class="h-3.5 w-3.5 md:h-4 md:w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <span class="ml-1.5 md:ml-2 text-xs md:text-sm text-gray-700" data-i18n="genre_comedy">Comedy</span>
                     </label>
-                    <label class="flex items-center">
-                        <input type="checkbox" name="genre-filter" value="1-on-1" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                        <span class="ml-2 text-sm text-gray-700" data-i18n="genre_one_on_one">1-op-1 Sessies</span>
+                    <label class="flex items-center py-0.5">
+                        <input type="checkbox" name="genre-filter" value="1-on-1" class="h-3.5 w-3.5 md:h-4 md:w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <span class="ml-1.5 md:ml-2 text-xs md:text-sm text-gray-700" data-i18n="genre_one_on_one">1-op-1 Sessies</span>
                     </label>
                 </div>
             </div>
 
             <!-- Languages -->
             <div>
-                <label class="block font-medium text-gray-700 mb-2" data-i18n="filter_languages">Languages:</label>
-                <div class="space-y-2">
-                    <label class="flex items-center">
-                        <input type="checkbox" name="language-filter" value="nl" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                        <span class="ml-2 text-sm text-gray-700" data-i18n="lang_dutch">Dutch (NL)</span>
+                <label class="block text-sm md:text-base font-medium text-gray-700 mb-1 md:mb-2" data-i18n="filter_languages">Languages:</label>
+                <div class="space-y-0.5 md:space-y-1">
+                    <label class="flex items-center py-0.5">
+                        <input type="checkbox" name="language-filter" value="nl" class="h-3.5 w-3.5 md:h-4 md:w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <span class="ml-1.5 md:ml-2 text-xs md:text-sm text-gray-700" data-i18n="lang_dutch">Dutch (NL)</span>
                     </label>
-                    <label class="flex items-center">
-                        <input type="checkbox" name="language-filter" value="en" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                        <span class="ml-2 text-sm text-gray-700" data-i18n="lang_english">English (EN)</span>
+                    <label class="flex items-center py-0.5">
+                        <input type="checkbox" name="language-filter" value="en" class="h-3.5 w-3.5 md:h-4 md:w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <span class="ml-1.5 md:ml-2 text-xs md:text-sm text-gray-700" data-i18n="lang_english">English (EN)</span>
                     </label>
-                    <label class="flex items-center">
-                        <input type="checkbox" name="language-filter" value="fr" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                        <span class="ml-2 text-sm text-gray-700" data-i18n="lang_french">French (FR)</span>
+                    <label class="flex items-center py-0.5">
+                        <input type="checkbox" name="language-filter" value="fr" class="h-3.5 w-3.5 md:h-4 md:w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <span class="ml-1.5 md:ml-2 text-xs md:text-sm text-gray-700" data-i18n="lang_french">French (FR)</span>
                     </label>
                 </div>
             </div>
 
             <!-- Payment Methods -->
             <div>
-                <label class="block font-medium text-gray-700 mb-2" data-i18n="filter_payment_methods">Payment Methods:</label>
-                <div class="space-y-2">
-                    <label class="flex items-center">
-                        <input type="checkbox" name="payment-filter" value="invoice" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                        <span class="ml-2 text-sm text-gray-700" data-i18n="payment_invoice">Invoice</span>
+                <label class="block text-sm md:text-base font-medium text-gray-700 mb-1 md:mb-2" data-i18n="filter_payment_methods">Payment Methods:</label>
+                <div class="space-y-0.5 md:space-y-1 max-h-32 md:max-h-none overflow-y-auto md:overflow-visible">
+                    <label class="flex items-center py-0.5">
+                        <input type="checkbox" name="payment-filter" value="invoice" class="h-3.5 w-3.5 md:h-4 md:w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <span class="ml-1.5 md:ml-2 text-xs md:text-sm text-gray-700" data-i18n="payment_invoice">Invoice</span>
                     </label>
-                    <label class="flex items-center">
-                        <input type="checkbox" name="payment-filter" value="payrolling" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                        <span class="ml-2 text-sm text-gray-700" data-i18n="payment_payrolling">Payrolling</span>
+                    <label class="flex items-center py-0.5">
+                        <input type="checkbox" name="payment-filter" value="payrolling" class="h-3.5 w-3.5 md:h-4 md:w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <span class="ml-1.5 md:ml-2 text-xs md:text-sm text-gray-700" data-i18n="payment_payrolling">Payrolling</span>
                     </label>
-                    <label class="flex items-center">
-                        <input type="checkbox" name="payment-filter" value="sbk" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                        <span class="ml-2 text-sm text-gray-700" data-i18n="payment_sbk">Other (SBK)</span>
+                    <label class="flex items-center py-0.5">
+                        <input type="checkbox" name="payment-filter" value="sbk" class="h-3.5 w-3.5 md:h-4 md:w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <span class="ml-1.5 md:ml-2 text-xs md:text-sm text-gray-700" data-i18n="payment_sbk">Other (SBK)</span>
                     </label>
-                    <label class="flex items-center">
-                        <input type="checkbox" name="payment-filter" value="volunteer-fee" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                        <span class="ml-2 text-sm text-gray-700" data-i18n="payment_volunteer_fee">Volunteer Fee</span>
+                    <label class="flex items-center py-0.5">
+                        <input type="checkbox" name="payment-filter" value="volunteer-fee" class="h-3.5 w-3.5 md:h-4 md:w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <span class="ml-1.5 md:ml-2 text-xs md:text-sm text-gray-700" data-i18n="payment_volunteer_fee">Volunteer Fee</span>
                     </label>
-                    <label class="flex items-center">
-                        <input type="checkbox" name="payment-filter" value="other" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                        <span class="ml-2 text-sm text-gray-700" data-i18n="payment_other">Other</span>
+                    <label class="flex items-center py-0.5">
+                        <input type="checkbox" name="payment-filter" value="other" class="h-3.5 w-3.5 md:h-4 md:w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                        <span class="ml-1.5 md:ml-2 text-xs md:text-sm text-gray-700" data-i18n="payment_other">Other</span>
                     </label>
                 </div>
             </div>
@@ -205,14 +230,20 @@ export function renderArtistSearch() {
     </div>
 
     <!-- Artist List (Results) -->
-    <div id="artist-list-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <!-- Mobile: Stack vertically with gap-3, Desktop: Grid layout -->
+    <div id="artist-list-container" class="flex flex-col gap-3 md:grid md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 md:gap-4">
         <!-- Artist items will be dynamically injected here -->
     </div>
-    <p id="artist-list-empty" class="text-gray-500" data-i18n="no_artists_found">No artists found. Click 'Search' to load all artists or refine your filters.</p>
+    <p id="artist-list-empty" class="text-gray-500 text-sm md:text-base" data-i18n="no_artists_found">No artists found. Click 'Search' to load all artists or refine your filters.</p>
   `;
 
   // CRUCIAL: Re-setup event listeners after rendering
   setupArtistSearch();
+
+  // Re-initialize Lucide icons for the new content
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
 
   console.log('[RENDER ARTIST SEARCH] ✅ Artist search view rendered');
 }
@@ -224,6 +255,32 @@ export function renderArtistSearch() {
 export function setupArtistSearch() {
   console.log("[SETUP ARTIST SEARCH] Starting artist search setup...");
 
+  // Setup toggle filters button (mobile only)
+  const toggleFiltersBtn = document.getElementById('toggle-filters-btn');
+  const filtersContainer = document.getElementById('filters-container');
+
+  if (toggleFiltersBtn && filtersContainer) {
+    toggleFiltersBtn.addEventListener('click', () => {
+      const isHidden = filtersContainer.classList.contains('hidden');
+
+      if (isHidden) {
+        // Show filters
+        filtersContainer.classList.remove('hidden');
+        toggleFiltersBtn.innerHTML = '<span>Hide Filters</span><i data-lucide="chevron-up" class="h-5 w-5"></i>';
+      } else {
+        // Hide filters
+        filtersContainer.classList.add('hidden');
+        toggleFiltersBtn.innerHTML = '<span>Show Filters</span><i data-lucide="chevron-down" class="h-5 w-5"></i>';
+      }
+
+      // Re-initialize Lucide icons
+      if (window.lucide) {
+        window.lucide.createIcons();
+      }
+    });
+    console.log("[SETUP] Toggle filters button listener added");
+  }
+
   // Setup search button
   const searchButton = document.getElementById('search-artists-btn');
   if (searchButton) {
@@ -232,6 +289,9 @@ export function setupArtistSearch() {
   } else {
     console.warn("[SETUP] ⚠️ Search button not found in DOM");
   }
+
+  // Setup real-time filtering on filter inputs
+  setupFilterListeners();
 
   // Setup back button for detail view
   const backToSearchBtn = document.getElementById('back-to-search-btn');
@@ -253,6 +313,53 @@ export function setupArtistSearch() {
   setupBrowserHistory();
 
   console.log("[SETUP ARTIST SEARCH] ✅ Artist search setup complete");
+}
+
+/**
+ * Setup filter change listeners for real-time filtering
+ */
+function setupFilterListeners() {
+  // Text inputs
+  const filterName = document.getElementById('filter-name');
+  const filterLocation = document.getElementById('filter-location');
+  const filterGender = document.getElementById('filter-gender');
+  const filterAgeMin = document.getElementById('filter-age-min');
+  const filterAgeMax = document.getElementById('filter-age-max');
+
+  // Checkboxes
+  const genreCheckboxes = document.querySelectorAll('input[name="genre-filter"]');
+  const languageCheckboxes = document.querySelectorAll('input[name="language-filter"]');
+  const paymentCheckboxes = document.querySelectorAll('input[name="payment-filter"]');
+
+  // Add debounced event listeners to text inputs
+  let debounceTimer;
+  const debouncedSearch = () => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => {
+      loadArtists();
+    }, 500); // Wait 500ms after user stops typing
+  };
+
+  if (filterName) filterName.addEventListener('input', debouncedSearch);
+  if (filterLocation) filterLocation.addEventListener('input', debouncedSearch);
+  if (filterGender) filterGender.addEventListener('change', loadArtists);
+  if (filterAgeMin) filterAgeMin.addEventListener('input', debouncedSearch);
+  if (filterAgeMax) filterAgeMax.addEventListener('input', debouncedSearch);
+
+  // Add event listeners to checkboxes (immediate filtering)
+  genreCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', loadArtists);
+  });
+
+  languageCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', loadArtists);
+  });
+
+  paymentCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', loadArtists);
+  });
+
+  console.log("[SETUP] Filter listeners added for real-time filtering");
 }
 
 /**
@@ -379,6 +486,16 @@ export async function loadArtists() {
     snapshot.forEach((doc) => {
       artists.push({ id: doc.id, ...doc.data() });
     });
+
+    // Exclude current user if they are also an artist (prevents showing own profile)
+    const currentUser = getStore('currentUser');
+    if (currentUser) {
+      const beforeCount = artists.length;
+      artists = artists.filter(artist => artist.id !== currentUser.uid);
+      if (beforeCount > artists.length) {
+        console.log(`🚫 Filtered out current user's own profile`);
+      }
+    }
 
     // DEBUG: Log first artist's data structure
     if (artists.length > 0) {
@@ -562,6 +679,8 @@ function renderArtists(artists) {
 
 /**
  * Create an artist card element
+ * Mobile: Compact flex-row layout with small image
+ * Desktop: Traditional card layout
  */
 function createArtistCard(artist) {
   const card = document.createElement('div');
@@ -574,26 +693,47 @@ function createArtistCard(artist) {
   const age = artist.dob ? calculateAge(artist.dob) : null;
   const ageText = age ? `${age} years old` : 'Age not specified';
 
-  // Genres
+  // Genres (limit to 2 on mobile for compact view)
   const genresHTML = artist.genres && artist.genres.length > 0
-    ? artist.genres.map(g => `<span class="inline-block bg-indigo-100 text-indigo-800 px-2 py-1 rounded text-xs">${g}</span>`).join(' ')
-    : '<span class="text-gray-500 text-sm">No genres</span>';
+    ? artist.genres.slice(0, 2).map(g => `<span class="inline-block bg-indigo-100 text-indigo-800 px-1.5 py-0.5 md:px-2 md:py-1 rounded text-xs">${g}</span>`).join(' ') + (artist.genres.length > 2 ? '<span class="text-xs text-gray-500 ml-1">+${artist.genres.length - 2}</span>' : '')
+    : '<span class="text-gray-500 text-xs">No genres</span>';
 
+  // Mobile: Horizontal flex layout, Desktop: Vertical card layout
   card.innerHTML = `
-    <div class="aspect-w-4 aspect-h-3">
-      <img src="${profilePic}" alt="${artist.stageName || 'Artist'}" class="w-full h-48 object-cover">
-    </div>
-    <div class="p-4">
-      <h3 class="text-xl font-bold text-gray-900 mb-1">${artist.stageName || 'No Stage Name'}</h3>
-      <p class="text-sm text-gray-600 mb-2">${artist.firstName || ''} ${artist.lastName || ''}</p>
-      <p class="text-sm text-gray-600 mb-2"><i data-lucide="map-pin" class="inline w-4 h-4"></i> ${artist.location || 'Location not specified'}</p>
-      <p class="text-sm text-gray-600 mb-3"><i data-lucide="calendar" class="inline w-4 h-4"></i> ${ageText}</p>
-      <div class="mb-3">
-        ${genresHTML}
+    <!-- Mobile: Flex Row (< 768px) -->
+    <div class="md:hidden flex items-start gap-3 p-3">
+      <img src="${profilePic}" alt="${artist.stageName || 'Artist'}" class="w-20 h-20 rounded-lg object-cover flex-shrink-0">
+      <div class="flex-1 min-w-0">
+        <h3 class="text-base font-bold text-gray-900 mb-0.5 truncate">${artist.stageName || 'No Stage Name'}</h3>
+        <p class="text-xs text-gray-600 mb-1 truncate">${artist.location || 'Location not specified'}</p>
+        <div class="mb-2 flex flex-wrap gap-1">
+          ${genresHTML}
+        </div>
+        <button class="w-full bg-indigo-600 text-white py-1.5 px-3 rounded text-xs font-medium hover:bg-indigo-700 transition-colors">
+          View Profile
+        </button>
       </div>
-      <button class="w-full bg-indigo-600 text-white py-2 px-4 rounded hover:bg-indigo-700 transition-colors">
-        View Profile
-      </button>
+    </div>
+
+    <!-- Desktop: Card Layout (>= 768px) -->
+    <div class="hidden md:block">
+      <div class="aspect-w-4 aspect-h-3">
+        <img src="${profilePic}" alt="${artist.stageName || 'Artist'}" class="w-full h-48 object-cover">
+      </div>
+      <div class="p-4">
+        <h3 class="text-xl font-bold text-gray-900 mb-1 truncate">${artist.stageName || 'No Stage Name'}</h3>
+        <p class="text-sm text-gray-600 mb-2 truncate">${artist.firstName || ''} ${artist.lastName || ''}</p>
+        <p class="text-sm text-gray-600 mb-2 truncate"><i data-lucide="map-pin" class="inline w-4 h-4"></i> ${artist.location || 'Location not specified'}</p>
+        <p class="text-sm text-gray-600 mb-3 truncate"><i data-lucide="calendar" class="inline w-4 h-4"></i> ${ageText}</p>
+        <div class="mb-3 flex flex-wrap gap-1">
+          ${artist.genres && artist.genres.length > 0
+            ? artist.genres.slice(0, 3).map(g => `<span class="inline-block bg-indigo-100 text-indigo-800 px-2 py-1 rounded text-xs">${g}</span>`).join(' ') + (artist.genres.length > 3 ? '<span class="text-xs text-gray-500">+more</span>' : '')
+            : '<span class="text-gray-500 text-sm">No genres</span>'}
+        </div>
+        <button class="w-full bg-indigo-600 text-white py-2 px-4 rounded text-base hover:bg-indigo-700 transition-colors">
+          View Profile
+        </button>
+      </div>
     </div>
   `;
 

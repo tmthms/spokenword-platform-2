@@ -8,12 +8,24 @@
 import { getStore } from './store.js';
 
 // Importeer de functies die we nodig hebben van andere modules
-import { handleLogout } from './auth.js';
+import { handleLogout, handleLogin, handleArtistSignup, handleProgrammerSignup } from './auth.js';
 import { renderArtistDashboard, populateArtistEditor, setupArtistDashboard } from './artist-dashboard.js';
 import { renderProgrammerDashboard, setupProgrammerDashboard } from './programmer-dashboard.js';
 import { loadArtists, renderArtistSearch } from './artist-search.js';
 import { loadConversations } from './messaging.js';
-import { populateProgrammerEditor, renderProgrammerProfileEditor, setupProfileFormHandlers } from './programmer-profile.js'; 
+import { populateProgrammerEditor, renderProgrammerProfileEditor, setupProfileFormHandlers } from './programmer-profile.js';
+import { setNavigationVisibility, updateDesktopNav, updateMobileNavActive } from './navigation.js';
+
+// Importeer de view renderers
+import {
+  renderHome,
+  renderLogin,
+  renderSignup,
+  renderArtistSignup,
+  renderProgrammerSignup,
+  renderMessages as renderMessagesView,
+  renderDashboard as renderDashboardView
+} from './view-renderers.js'; 
 
 // --- DOM Elementen ---
 // We slaan alle belangrijke UI-elementen één keer op voor snelle toegang
@@ -53,27 +65,91 @@ const elements = {
   artistDashboard: document.getElementById('artist-dashboard'),
   programmerDashboard: document.getElementById('programmer-dashboard'),
   programmerPendingView: document.getElementById('programmer-pending-view'),
-  programmerTrialView: document.getElementById('programmer-trial-view'),
-  programmerTrialMessage: document.getElementById('programmer-trial-message'),
-  programmerProMessage: document.getElementById('programmer-pro-message'),
   programmerProfileEditor: document.getElementById('programmer-profile-editor'),
   artistSearchSection: document.getElementById('artist-search-section'),
 };
 
 /**
  * Toont één specifieke pagina-sectie en verbergt alle andere.
+ * NIEUWE ARCHITECTUUR: Alle content wordt dynamisch gerenderd in #app-content
  * @param {string} pageId - De ID van de pagina-sectie die getoond moet worden.
  */
 export function showPage(pageId) {
-  elements.pageSections.forEach(section => {
-    section.style.display = (section.id === pageId) ? 'block' : 'none';
-  });
+  const appContent = document.getElementById('app-content');
 
-  // Speciale afhandeling om dashboard sub-views te verbergen wanneer we weggaan
-  if (pageId !== 'dashboard-view') {
-    // FIX 3: Null-safe style guards
-    if (elements.artistDashboard) elements.artistDashboard.style.display = 'none';
-    if (elements.programmerDashboard) elements.programmerDashboard.style.display = 'none';
+  // KRITIEK: Maak de container ALTIJD leeg voordat we nieuwe content renderen
+  // Dit voorkomt dat oude views zichtbaar blijven
+  if (appContent) {
+    appContent.innerHTML = '';
+  }
+
+  // Render de juiste view op basis van pageId
+  switch(pageId) {
+    case 'home-view':
+      renderHome();
+      break;
+    case 'login-view':
+      renderLogin();
+      // Attach event listener to login form after rendering
+      attachLoginFormListener();
+      break;
+    case 'signup-view':
+      renderSignup();
+      break;
+    case 'artist-signup-view':
+      renderArtistSignup();
+      // Attach event listener to artist signup form after rendering
+      attachArtistSignupFormListener();
+      break;
+    case 'programmer-signup-view':
+      renderProgrammerSignup();
+      // Attach event listener to programmer signup form after rendering
+      attachProgrammerSignupFormListener();
+      break;
+    case 'messages-view':
+      renderMessagesView();
+      break;
+    case 'dashboard-view':
+      renderDashboardView();
+      break;
+    default:
+      console.warn(`Unknown page: ${pageId}`);
+      renderHome();
+  }
+
+  // Re-initialize Lucide icons after rendering new content
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 100);
+  }
+}
+
+/**
+ * Helper functions to attach form event listeners after rendering
+ */
+function attachLoginFormListener() {
+  const loginForm = document.getElementById('login-form');
+  if (loginForm) {
+    loginForm.addEventListener('submit', handleLogin);
+  } else {
+    console.warn('[UI] login-form element not found after rendering');
+  }
+}
+
+function attachArtistSignupFormListener() {
+  const artistSignupForm = document.getElementById('artist-signup-form');
+  if (artistSignupForm) {
+    artistSignupForm.addEventListener('submit', handleArtistSignup);
+  } else {
+    console.warn('[UI] artist-signup-form element not found after rendering');
+  }
+}
+
+function attachProgrammerSignupFormListener() {
+  const programmerSignupForm = document.getElementById('programmer-signup-form');
+  if (programmerSignupForm) {
+    programmerSignupForm.addEventListener('submit', handleProgrammerSignup);
+  } else {
+    console.warn('[UI] programmer-signup-form element not found after rendering');
   }
 }
 
@@ -82,24 +158,16 @@ export function showPage(pageId) {
  * @param {object | null} user - Het Firebase user-object (of null als uitgelogd).
  */
 export function updateNav(user) {
-  const bottomNav = document.getElementById('bottom-nav');
   const appHeader = document.getElementById('app-header');
   const navLogoutMobile = document.getElementById('nav-logout-mobile');
   const userEmailMobile = document.getElementById('user-email-mobile');
 
   if (user) {
-    // Ingelogd
-    // FIX 3: Null-safe style guards
-    if (elements.authLinks) elements.authLinks.style.display = 'none';
-    if (elements.userMenu) elements.userMenu.style.display = 'flex';
-    if (elements.userEmailSpan) elements.userEmailSpan.textContent = user.email;
-    if (elements.navDashboard) elements.navDashboard.style.display = 'block';
-    if (elements.navMessages) elements.navMessages.style.display = 'block';
+    // Ingelogd - Show navigation using centralized function
+    setNavigationVisibility(true);
 
-    // Show bottom navigation
-    if (bottomNav) {
-      bottomNav.classList.remove('hidden');
-    }
+    // Update desktop nav with current user data
+    updateDesktopNav();
 
     // Show app header
     if (appHeader) {
@@ -117,52 +185,13 @@ export function updateNav(user) {
       userEmailMobile.classList.remove('hidden');
     }
 
-    // ⭐ NEW: Update dashboard button text based on role
-    const currentUserData = getStore('currentUserData');
-    const navDashboardText = document.getElementById('nav-dashboard-text');
-
-    if (currentUserData) {
-      // Update nav-dashboard text
-      if (navDashboardText) {
-        if (currentUserData.role === 'artist') {
-          navDashboardText.textContent = 'Dashboard';
-        } else if (currentUserData.role === 'programmer') {
-          navDashboardText.textContent = 'Search Artists';
-        }
-      }
-
-      // Show Settings button only for programmers
-      if (currentUserData.role === 'programmer') {
-        if (elements.navSettings) {
-          elements.navSettings.style.display = 'inline-block';
-          elements.navSettings.classList.remove('hidden');
-        }
-      } else {
-        if (elements.navSettings) {
-          elements.navSettings.style.display = 'none';
-          elements.navSettings.classList.add('hidden');
-        }
-      }
-    }
-
     // Re-initialize icons
     if (window.lucide) {
       setTimeout(() => lucide.createIcons(), 100);
     }
   } else {
-    // Uitgelogd
-    // FIX 3: Null-safe style guards
-    if (elements.authLinks) elements.authLinks.style.display = 'block';
-    if (elements.userMenu) elements.userMenu.style.display = 'none';
-    if (elements.userEmailSpan) elements.userEmailSpan.textContent = '';
-    if (elements.navDashboard) elements.navDashboard.style.display = 'none';
-    if (elements.navMessages) elements.navMessages.style.display = 'none';
-    if (elements.navSettings) elements.navSettings.style.display = 'none';
-
-    // Hide bottom navigation
-    if (bottomNav) {
-      bottomNav.classList.add('hidden');
-    }
+    // Uitgelogd - Hide navigation using centralized function
+    setNavigationVisibility(false);
 
     // Hide app header
     if (appHeader) {
@@ -193,72 +222,76 @@ export function showDashboard() {
     return;
   }
 
+  // STAP 1: Render de dashboard container structuur
+  showPage('dashboard-view');
+
+  // STAP 2: Render de specifieke dashboard content op basis van rol
   const { role, status } = currentUserData;
 
   if (role === 'artist') {
-    // FIX 3: Null-safe style guards
-    if (elements.artistDashboard) {
-      elements.artistDashboard.style.display = 'block';
-      elements.artistDashboard.classList.remove('hidden');
+    // Get the dynamically rendered containers
+    const artistDashboard = document.getElementById('artist-dashboard');
+    const programmerDashboard = document.getElementById('programmer-dashboard');
+
+    if (artistDashboard) {
+      artistDashboard.style.display = 'block';
+      artistDashboard.classList.remove('hidden');
     }
-    if (elements.programmerDashboard) {
-      elements.programmerDashboard.style.display = 'none';
-      elements.programmerDashboard.classList.add('hidden');
+    if (programmerDashboard) {
+      programmerDashboard.style.display = 'none';
+      programmerDashboard.classList.add('hidden');
     }
+
     // Render the artist dashboard HTML
     renderArtistDashboard();
-    // ⭐ FIX: Setup dashboard AFTER rendering HTML (so form exists)
+    // Setup dashboard AFTER rendering HTML (so form exists)
     setupArtistDashboard();
     // Vul de "Edit Profile" velden met de data van de artiest
     populateArtistEditor();
   } else if (role === 'programmer') {
-    // FIX 3: Null-safe style guards
-    if (elements.artistDashboard) {
-      elements.artistDashboard.style.display = 'none';
-      elements.artistDashboard.classList.add('hidden');
+    // Get the dynamically rendered containers
+    const artistDashboard = document.getElementById('artist-dashboard');
+    const programmerDashboard = document.getElementById('programmer-dashboard');
+
+    if (artistDashboard) {
+      artistDashboard.style.display = 'none';
+      artistDashboard.classList.add('hidden');
     }
-    if (elements.programmerDashboard) {
-      elements.programmerDashboard.style.display = 'block';
-      elements.programmerDashboard.classList.remove('hidden');
+    if (programmerDashboard) {
+      programmerDashboard.style.display = 'block';
+      programmerDashboard.classList.remove('hidden');
     }
 
     // Render the programmer dashboard HTML
     renderProgrammerDashboard();
-    // ⭐ FIX: Setup dashboard AFTER rendering HTML (so elements exist)
+    // Setup dashboard AFTER rendering HTML (so elements exist)
     setupProgrammerDashboard();
 
-    const pendingView = elements.programmerPendingView;
-    const trialView = elements.programmerTrialView;
-    const trialMessage = elements.programmerTrialMessage;
-    const proMessage = elements.programmerProMessage;
+    // Get pending view dynamically
+    const pendingView = document.getElementById('programmer-pending-view');
 
-    // Hide profile editor and show search section
-    if (elements.programmerProfileEditor) {
-      elements.programmerProfileEditor.classList.add('hidden');
-      elements.programmerProfileEditor.style.display = 'none';
+    // Get profile editor dynamically
+    const programmerProfileEditor = document.getElementById('programmer-profile-editor');
+    if (programmerProfileEditor) {
+      programmerProfileEditor.classList.add('hidden');
+      programmerProfileEditor.style.display = 'none';
     }
-    if (elements.artistSearchSection) elements.artistSearchSection.style.display = 'block';
+
+    // Get artist search section dynamically
+    const artistSearchSection = document.getElementById('artist-search-section');
+    if (artistSearchSection) {
+      artistSearchSection.style.display = 'block';
+      artistSearchSection.classList.remove('hidden');
+    }
 
     if (status === 'pending') {
       // Verberg de zoekfilters, toon "pending" bericht
-      // FIX 3: Null-safe style guards
       if (pendingView) pendingView.style.display = 'block';
-      if (trialView) trialView.style.display = 'none';
-      if (elements.artistSearchSection) elements.artistSearchSection.style.display = 'none';
+      const artistSearchSectionPending = document.getElementById('artist-search-section');
+      if (artistSearchSectionPending) artistSearchSectionPending.style.display = 'none';
     } else {
       // Toon de zoekfilters en verberg "pending"
-      // FIX 3: Null-safe style guards
       if (pendingView) pendingView.style.display = 'none';
-      if (trialView) trialView.style.display = 'block';
-
-      // Toon het juiste bericht (Trial of Pro)
-      if (status === 'pro') {
-        if (trialMessage) trialMessage.style.display = 'none';
-        if (proMessage) proMessage.style.display = 'block';
-      } else {
-        if (trialMessage) trialMessage.style.display = 'block';
-        if (proMessage) proMessage.style.display = 'none';
-      }
 
       // Render the artist search view dynamically
       renderArtistSearch();
@@ -268,8 +301,10 @@ export function showDashboard() {
     }
   }
 
-  // Toon ten slotte de hoofd-dashboard pagina
-  showPage('dashboard-view');
+  // Re-initialize Lucide icons
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 100);
+  }
 }
 
 /**
@@ -283,42 +318,62 @@ export function showProgrammerSettings() {
     return;
   }
 
-  // Show dashboard page
+  // STAP 1: Render de dashboard container structuur
   showPage('dashboard-view');
 
+  // STAP 2: Get the dynamically rendered containers
+  const artistDashboard = document.getElementById('artist-dashboard');
+  const programmerDashboard = document.getElementById('programmer-dashboard');
+
   // Show programmer dashboard
-  // FIX 3: Null-safe style guards
-  if (elements.artistDashboard) {
-    elements.artistDashboard.style.display = 'none';
-    elements.artistDashboard.classList.add('hidden');
+  if (artistDashboard) {
+    artistDashboard.style.display = 'none';
+    artistDashboard.classList.add('hidden');
   }
-  if (elements.programmerDashboard) {
-    elements.programmerDashboard.style.display = 'block';
-    elements.programmerDashboard.classList.remove('hidden');
+  if (programmerDashboard) {
+    programmerDashboard.style.display = 'block';
+    programmerDashboard.classList.remove('hidden');
   }
 
-  // Hide the pending/trial views and artist search section
-  const pendingView = elements.programmerPendingView;
-  const trialView = elements.programmerTrialView;
+  // Render the programmer dashboard HTML first
+  renderProgrammerDashboard();
+  // Setup dashboard AFTER rendering HTML
+  setupProgrammerDashboard();
 
+  // Get dynamically rendered elements
+  const pendingView = document.getElementById('programmer-pending-view');
+  const artistSearchSection = document.getElementById('artist-search-section');
+
+  // Hide the pending view and artist search section
   if (pendingView) pendingView.style.display = 'none';
-  if (trialView) trialView.style.display = 'none';
-  if (elements.artistSearchSection) elements.artistSearchSection.style.display = 'none';
+  if (artistSearchSection) {
+    artistSearchSection.style.display = 'none';
+    artistSearchSection.classList.add('hidden');
+  }
 
-  // Show the profile overview
+  // Show the profile overview AND public preview
   const profileOverview = document.getElementById('programmer-profile-overview');
+  const publicPreview = document.getElementById('programmer-public-preview');
+
   if (profileOverview) {
     profileOverview.style.display = 'block';
     profileOverview.classList.remove('hidden');
   }
+  if (publicPreview) {
+    publicPreview.style.display = 'block';
+    publicPreview.classList.remove('hidden');
+  }
+
+  // Get the profile editor dynamically
+  const programmerProfileEditor = document.getElementById('programmer-profile-editor');
 
   // Show the profile editor
-  if (elements.programmerProfileEditor) {
+  if (programmerProfileEditor) {
     // Render the editor HTML first
     renderProgrammerProfileEditor();
 
-    elements.programmerProfileEditor.classList.remove('hidden');
-    elements.programmerProfileEditor.style.display = 'block';
+    programmerProfileEditor.classList.remove('hidden');
+    programmerProfileEditor.style.display = 'block';
 
     // Setup form handlers after rendering
     setupProfileFormHandlers();
@@ -328,8 +383,13 @@ export function showProgrammerSettings() {
 
     // Scroll to the profile editor
     setTimeout(() => {
-      elements.programmerProfileEditor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      programmerProfileEditor.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
+  }
+
+  // Re-initialize Lucide icons
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 100);
   }
 }
 
@@ -338,8 +398,11 @@ export function showProgrammerSettings() {
  */
 export function showMessages() {
   console.log("Showing messages view");
+
+  // Render the messages view
   showPage('messages-view');
-  // Laad conversaties
+
+  // Laad conversaties AFTER rendering the view
   loadConversations();
 }
 
@@ -359,8 +422,17 @@ export function initNavigation() {
   if (elements.navLogout) elements.navLogout.addEventListener('click', handleLogout);
 
   // Homepagina CTA-knoppen
-  elements.homeCtaArtist.addEventListener('click', () => showPage('artist-signup-view'));
-  elements.homeCtaProgrammer.addEventListener('click', () => showPage('programmer-signup-view'));
+  if (elements.homeCtaArtist) {
+    elements.homeCtaArtist.addEventListener('click', () => showPage('artist-signup-view'));
+  } else {
+    console.warn('⚠️ Skipped listener for missing element: homeCtaArtist');
+  }
+
+  if (elements.homeCtaProgrammer) {
+    elements.homeCtaProgrammer.addEventListener('click', () => showPage('programmer-signup-view'));
+  } else {
+    console.warn('⚠️ Skipped listener for missing element: homeCtaProgrammer');
+  }
 
   // Home login button (nieuwe button)
   const homeLoginBtn = document.getElementById('home-login-btn');
@@ -369,8 +441,17 @@ export function initNavigation() {
   }
 
   // Signup-keuzeknoppen
-  elements.signupChoiceArtist.addEventListener('click', () => showPage('artist-signup-view'));
-  elements.signupChoiceProgrammer.addEventListener('click', () => showPage('programmer-signup-view'));
+  if (elements.signupChoiceArtist) {
+    elements.signupChoiceArtist.addEventListener('click', () => showPage('artist-signup-view'));
+  } else {
+    console.warn('⚠️ Skipped listener for missing element: signupChoiceArtist');
+  }
+
+  if (elements.signupChoiceProgrammer) {
+    elements.signupChoiceProgrammer.addEventListener('click', () => showPage('programmer-signup-view'));
+  } else {
+    console.warn('⚠️ Skipped listener for missing element: signupChoiceProgrammer');
+  }
 
   // Back buttons (nieuwe navigatie)
   const backFromLoginBtn = document.getElementById('back-to-home-from-login');
@@ -401,6 +482,9 @@ export function initNavigation() {
 
   // Bottom Navigation
   setupBottomNavigation();
+
+  // Desktop Navigation
+  setupDesktopNavigation();
 }
 
 /**
@@ -420,23 +504,25 @@ function setupBottomNavigation() {
     // Update active state
     updateBottomNavActive(navAction);
 
+    // ⭐ BUG FIX 3: Update URL hash when navigating on mobile bottom nav
     // Handle navigation
     switch(navAction) {
-      case 'home':
-        showDashboard();
-        break;
       case 'search':
+        window.location.hash = '#search';
         showDashboard(); // Show search (dashboard for programmers)
         break;
       case 'messages':
+        window.location.hash = '#messages';
         showMessages();
         break;
       case 'profile':
         // Show profile (dashboard for artists, settings for programmers)
         const currentUserData = getStore('currentUserData');
         if (currentUserData?.role === 'artist') {
+          window.location.hash = '#profile';
           showDashboard();
         } else if (currentUserData?.role === 'programmer') {
+          window.location.hash = '#settings';
           showProgrammerSettings();
         }
         break;
@@ -451,17 +537,65 @@ function setupBottomNavigation() {
 
 /**
  * Update active state of bottom navigation items
+ * (Wrapper function - delegates to navigation.js)
  */
 function updateBottomNavActive(activeNav) {
-  const bottomNav = document.getElementById('bottom-nav');
-  if (!bottomNav) return;
+  updateMobileNavActive(activeNav);
+}
 
-  const allItems = bottomNav.querySelectorAll('.bottom-nav-item');
-  allItems.forEach(item => {
-    if (item.dataset.nav === activeNav) {
-      item.classList.add('active');
-    } else {
-      item.classList.remove('active');
-    }
+/**
+ * Setup desktop navigation with dropdown and search
+ */
+function setupDesktopNavigation() {
+  const desktopNav = document.getElementById('desktop-top-nav');
+  if (!desktopNav) return;
+
+  // Desktop nav items
+  const desktopSearch = document.getElementById('desktop-nav-search');
+  const desktopMessages = document.getElementById('desktop-nav-messages');
+  const desktopProfileBtn = document.getElementById('desktop-profile-btn');
+  const desktopDropdown = document.getElementById('desktop-profile-dropdown');
+
+  // ⭐ BUG FIX 3: Update URL hash when navigating on desktop
+  // Menu actions
+  if (desktopSearch) desktopSearch.addEventListener('click', () => {
+    window.location.hash = '#search';
+    showDashboard();
+  });
+  if (desktopMessages) desktopMessages.addEventListener('click', () => {
+    window.location.hash = '#messages';
+    showMessages();
+  });
+
+  // Profile dropdown toggle
+  if (desktopProfileBtn && desktopDropdown) {
+    desktopProfileBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      desktopDropdown.classList.toggle('hidden');
+    });
+
+    // Close dropdown when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!desktopProfileBtn.contains(e.target) && !desktopDropdown.contains(e.target)) {
+        desktopDropdown.classList.add('hidden');
+      }
+    });
+  }
+
+  // Dropdown menu items
+  const settingsBtn = document.getElementById('desktop-settings');
+  const logoutBtn = document.getElementById('desktop-logout');
+
+  // ⭐ BUG FIX 3: Update URL hash for settings
+  if (settingsBtn) settingsBtn.addEventListener('click', () => {
+    desktopDropdown.classList.add('hidden');
+    window.location.hash = '#settings';
+    showProgrammerSettings();
+  });
+
+  if (logoutBtn) logoutBtn.addEventListener('click', () => {
+    desktopDropdown.classList.add('hidden');
+    handleLogout();
   });
 }
+

@@ -28,10 +28,10 @@ export function renderArtistDashboard() {
             </button>
         </h3>
 
-        <div class="flex flex-col md:flex-row gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Profile Picture -->
             <div class="flex-shrink-0">
-                <img id="artist-overview-pic" src="https://placehold.co/200x200/e0e7ff/6366f1?text=A" alt="Profile" class="h-48 w-48 object-cover rounded-lg shadow-lg">
+                <img id="artist-overview-pic" src="https://placehold.co/200x200/e0e7ff/6366f1?text=A" alt="Profile" class="h-48 w-48 md:h-64 md:w-64 object-cover rounded-lg shadow-lg">
             </div>
 
             <!-- Profile Info -->
@@ -367,7 +367,7 @@ export function renderArtistDashboard() {
 
     <!-- Version Badge (Artist Dashboard) -->
     <div class="text-center py-6 text-xs text-gray-400">
-        Staging v1.0 [22-12-2025]
+        Staging v2.0 (Desktop Update) [22-12-2025]
     </div>
   `;
 

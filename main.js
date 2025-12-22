@@ -38,6 +38,7 @@ import { setupMessaging } from './messaging.js';
 import { initTranslations } from './translations.js';
 import { setupRecommendations } from './recommendations.js';
 import { setupUserSettings } from './user-settings.js';
+import { renderDesktopNav, renderMobileNav } from './navigation.js';
 
 /**
  * initApp
@@ -51,6 +52,10 @@ function initApp() {
 
     // Initialize translations (default to Dutch)
     initTranslations();
+
+    // Render navigation components (will be hidden until user logs in)
+    renderDesktopNav();
+    renderMobileNav();
 
     // Stel de navigatieknoppen in (Login, Home, etc.)
     initNavigation();

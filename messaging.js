@@ -522,23 +522,75 @@ export async function openConversation(conversationId) {
     const chatContainer = document.getElementById('chat-container');
     const chatHeader = document.getElementById('chat-header');
 
+    // ⭐ MOBILE FIX: Get the chat area wrapper (parent of chatContainer)
+    const chatAreaWrapper = chatContainer?.parentElement;
+
+    // ⭐ BUG FIX 2: Hide conversation list on mobile when opening chat
+    const conversationsList = document.querySelector('.md\\:w-1\\/3');
+    if (conversationsList) {
+      conversationsList.classList.add('hidden', 'md:block');
+    }
+
+    // ⭐ MOBILE FIX: Make chat area wrapper visible on mobile
+    if (chatAreaWrapper) {
+      // Remove 'hidden' class and add mobile visibility
+      chatAreaWrapper.classList.remove('hidden');
+      chatAreaWrapper.classList.add('flex', 'w-full', 'md:w-2/3');
+      chatAreaWrapper.style.display = 'flex';
+    }
+
     if (chatPlaceholder) chatPlaceholder.style.display = 'none';
     if (chatContainer) {
-  chatContainer.classList.remove('hidden');
-  chatContainer.style.display = 'flex';
-  // ⭐ NEW: Store conversation ID for message form
-  chatContainer.dataset.conversationId = conversationId;
-}
+      chatContainer.classList.remove('hidden');
+      chatContainer.classList.add('flex');
+      chatContainer.style.display = 'flex';
+      // ⭐ NEW: Store conversation ID for message form
+      chatContainer.dataset.conversationId = conversationId;
+    }
 
-    // Update chat header with participant info
+    // Update chat header with participant info (add back button for mobile)
     if (chatHeader) {
       chatHeader.innerHTML = `
-        <div>
-          <h3 class="text-lg font-semibold text-gray-900">${otherParticipantName}</h3>
-          <p class="text-sm text-gray-500">${otherParticipantRole}</p>
-          ${conversation.subject ? `<p class="text-sm text-gray-600 mt-1"><strong>Subject:</strong> ${conversation.subject}</p>` : ''}
+        <div class="flex items-center">
+          <button id="back-to-conversations-mobile" class="mr-3 md:hidden text-gray-600 hover:text-gray-900">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <div>
+            <h3 class="text-lg font-semibold text-gray-900">${otherParticipantName}</h3>
+            <p class="text-sm text-gray-500">${otherParticipantRole}</p>
+            ${conversation.subject ? `<p class="text-sm text-gray-600 mt-1"><strong>Subject:</strong> ${conversation.subject}</p>` : ''}
+          </div>
         </div>
       `;
+
+      // ⭐ BUG FIX 2: Add event listener for mobile back button
+      const backBtn = document.getElementById('back-to-conversations-mobile');
+      if (backBtn) {
+        backBtn.addEventListener('click', () => {
+          // ⭐ MOBILE FIX: Hide chat area wrapper on mobile
+          if (chatAreaWrapper) {
+            chatAreaWrapper.classList.add('hidden', 'md:flex');
+            chatAreaWrapper.classList.remove('flex', 'w-full');
+            chatAreaWrapper.style.display = '';
+          }
+          // Hide chat container
+          if (chatContainer) {
+            chatContainer.classList.add('hidden');
+            chatContainer.style.display = 'none';
+          }
+          // Show conversation list
+          if (conversationsList) {
+            conversationsList.classList.remove('hidden', 'md:block');
+            conversationsList.classList.add('block');
+          }
+          // Show placeholder on desktop
+          if (chatPlaceholder) {
+            chatPlaceholder.style.display = '';
+          }
+        });
+      }
     }
 
     // Markeer conversatie als gelezen

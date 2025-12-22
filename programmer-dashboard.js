@@ -29,15 +29,6 @@ export function renderProgrammerDashboard() {
         <div id="programmer-pending-view" class="hidden">
             <p class="mb-4 text-lg p-4 bg-yellow-100 text-yellow-800 rounded-md" data-i18n="pending_approval">Your account is <strong>pending admin approval</strong>. You will be notified by email once it's published.</p>
         </div>
-
-        <!-- View voor "Trial" of "Pro" -->
-        <div id="programmer-trial-view">
-            <p id="programmer-pro-message" class="mb-4 text-lg hidden" data-i18n="pro_account">You have a <strong>PRO Account</strong>. Enjoy full access to the database.</p>
-            <p id="programmer-trial-message" class="mb-4 text-lg" data-i18n="trial_account">You are currently on your <strong>7-Day Free Trial</strong>.</p>
-            <button id="upgrade-pro-btn" class="bg-yellow-500 text-white px-5 py-2 rounded-md font-medium hover:bg-yellow-600" data-i18n="upgrade_to_pro">
-                Upgrade to PRO (Coming Soon)
-            </button>
-        </div>
     </div>
 
     <!-- Programmer Profile Overview Card -->
@@ -49,10 +40,10 @@ export function renderProgrammerDashboard() {
             </button>
         </h3>
 
-        <div class="flex flex-col md:flex-row gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Profile Picture -->
             <div class="flex-shrink-0">
-                <img id="programmer-overview-pic" src="https://placehold.co/200x200/e0e7ff/6366f1?text=P" alt="Profile" class="h-48 w-48 object-cover rounded-lg shadow-lg">
+                <img id="programmer-overview-pic" src="https://placehold.co/200x200/e0e7ff/6366f1?text=P" alt="Profile" class="h-48 w-48 md:h-64 md:w-64 object-cover rounded-lg shadow-lg">
             </div>
 
             <!-- Profile Info -->
@@ -122,7 +113,7 @@ export function renderProgrammerDashboard() {
 
     <!-- Version Badge (Programmer Dashboard) -->
     <div class="text-center py-6 text-xs text-gray-400">
-        Staging v1.0 [22-12-2025]
+        Staging v2.0 (Desktop Update) [22-12-2025]
     </div>
   `;
 
@@ -170,8 +161,11 @@ function setupEditProfileButton() {
   // Use event delegation on the container
   // This works even if the button is re-rendered
   container.addEventListener('click', (e) => {
-    // Check if the clicked element is the edit button
-    if (e.target.id === 'edit-programmer-profile-btn' || e.target.closest('#edit-programmer-profile-btn')) {
+    // Check if the clicked element is the edit button or any child of it
+    const clickedBtn = e.target.closest('#edit-programmer-profile-btn');
+    if (clickedBtn) {
+      e.preventDefault();
+      e.stopPropagation();
       console.log("[PROGRAMMER DASHBOARD] Edit profile button clicked");
 
       // Import the functions we need
