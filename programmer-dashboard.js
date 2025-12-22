@@ -119,6 +119,11 @@ export function renderProgrammerDashboard() {
     <div id="artist-search-section" class="bg-white p-8 rounded-lg shadow-xl">
         <!-- Content will be injected dynamically -->
     </div>
+
+    <!-- Version Badge (Programmer Dashboard) -->
+    <div class="text-center py-6 text-xs text-gray-400">
+        Staging v1.0 [22-12-2025]
+    </div>
   `;
 
   console.log("Programmer dashboard HTML rendered");
@@ -137,7 +142,78 @@ export function setupProgrammerDashboard() {
   // Setup public profile preview
   setupPublicPreview();
 
+  // ⭐ FIX: Setup edit profile button click handler
+  setupEditProfileButton();
+
   console.log("[SETUP PROGRAMMER DASHBOARD] ✅ Programmer dashboard setup complete");
+}
+
+/**
+ * Setup edit profile button click handler
+ * Uses event delegation on the container for reliability
+ */
+function setupEditProfileButton() {
+  const container = document.getElementById('programmer-dashboard');
+  const editor = document.getElementById('programmer-profile-editor');
+
+  if (!container || !editor) {
+    console.warn("[SETUP EDIT BTN] Dashboard container or editor not found");
+    return;
+  }
+
+  // Check if listener is already attached to prevent duplicates
+  if (container.dataset.editListenerAttached === 'true') {
+    console.log("[PROGRAMMER DASHBOARD] Edit button listener already attached, skipping");
+    return;
+  }
+
+  // Use event delegation on the container
+  // This works even if the button is re-rendered
+  container.addEventListener('click', (e) => {
+    // Check if the clicked element is the edit button
+    if (e.target.id === 'edit-programmer-profile-btn' || e.target.closest('#edit-programmer-profile-btn')) {
+      console.log("[PROGRAMMER DASHBOARD] Edit profile button clicked");
+
+      // Import the functions we need
+      import('./programmer-profile.js').then(module => {
+        const isHidden = editor.classList.contains('hidden') || editor.style.display === 'none';
+
+        if (isHidden) {
+          // Show editor
+          console.log("[PROGRAMMER DASHBOARD] Showing editor");
+          module.renderProgrammerProfileEditor();
+          editor.classList.remove('hidden');
+          editor.style.display = 'block';
+
+          // Setup form handlers after rendering
+          module.setupProfileFormHandlers();
+
+          // Populate with current data
+          module.populateProgrammerEditor();
+
+          // Scroll to editor
+          setTimeout(() => {
+            editor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 100);
+        } else {
+          // Hide editor
+          console.log("[PROGRAMMER DASHBOARD] Hiding editor, showing overview");
+          editor.classList.add('hidden');
+          editor.style.display = 'none';
+
+          // Refresh the profile overview
+          displayProgrammerProfileOverview();
+        }
+      }).catch(error => {
+        console.error("[EDIT BTN] Error loading programmer-profile.js:", error);
+      });
+    }
+  });
+
+  // Mark listener as attached
+  container.dataset.editListenerAttached = 'true';
+
+  console.log("[PROGRAMMER DASHBOARD] Edit button listener attached via event delegation");
 }
 
 /**

@@ -364,6 +364,11 @@ export function renderArtistDashboard() {
             <!-- Recommendations will be inserted here dynamically -->
         </div>
     </div>
+
+    <!-- Version Badge (Artist Dashboard) -->
+    <div class="text-center py-6 text-xs text-gray-400">
+        Staging v1.0 [22-12-2025]
+    </div>
   `;
 
   console.log("Artist dashboard HTML rendered");
@@ -514,34 +519,53 @@ function calculateAge(dob) {
 
 /**
  * Setup edit profile button with toggle
+ * Uses event delegation on the container for reliability
  */
 function setupEditProfileButton() {
-  const editBtn = document.getElementById('edit-artist-profile-btn');
+  const container = document.getElementById('artist-dashboard');
   const editor = document.getElementById('artist-profile-editor');
   const overview = document.getElementById('artist-profile-overview');
-  
-  if (!editBtn || !editor || !overview) return;
-  
-  // Remove old listeners by cloning
-  const newBtn = editBtn.cloneNode(true);
-  editBtn.parentNode.replaceChild(newBtn, editBtn);
-  
-  // Add new listener
-  newBtn.addEventListener('click', () => {
-    const isHidden = editor.classList.contains('hidden');
-    
-    if (isHidden) {
-      // Show editor, hide overview
-      editor.classList.remove('hidden');
-      overview.classList.add('hidden');
-      populateArtistEditor();
-    } else {
-      // Hide editor, show overview
-      editor.classList.add('hidden');
-      overview.classList.remove('hidden');
-      displayArtistProfileOverview();
+
+  if (!container || !editor || !overview) {
+    console.warn("Artist dashboard elements not found for edit button setup");
+    return;
+  }
+
+  // Check if listener is already attached to prevent duplicates
+  if (container.dataset.editListenerAttached === 'true') {
+    console.log("[ARTIST DASHBOARD] Edit button listener already attached, skipping");
+    return;
+  }
+
+  // Use event delegation on the container
+  // This works even if the button is re-rendered
+  container.addEventListener('click', (e) => {
+    // Check if the clicked element is the edit button
+    if (e.target.id === 'edit-artist-profile-btn' || e.target.closest('#edit-artist-profile-btn')) {
+      console.log("[ARTIST DASHBOARD] Edit profile button clicked");
+
+      const isHidden = editor.classList.contains('hidden');
+
+      if (isHidden) {
+        // Show editor, hide overview
+        console.log("[ARTIST DASHBOARD] Showing editor");
+        editor.classList.remove('hidden');
+        overview.classList.add('hidden');
+        populateArtistEditor();
+      } else {
+        // Hide editor, show overview
+        console.log("[ARTIST DASHBOARD] Hiding editor, showing overview");
+        editor.classList.add('hidden');
+        overview.classList.remove('hidden');
+        displayArtistProfileOverview();
+      }
     }
   });
+
+  // Mark listener as attached
+  container.dataset.editListenerAttached = 'true';
+
+  console.log("[ARTIST DASHBOARD] Edit button listener attached via event delegation");
 }
 
 /**

@@ -82,6 +82,11 @@ export function showPage(pageId) {
  * @param {object | null} user - Het Firebase user-object (of null als uitgelogd).
  */
 export function updateNav(user) {
+  const bottomNav = document.getElementById('bottom-nav');
+  const appHeader = document.getElementById('app-header');
+  const navLogoutMobile = document.getElementById('nav-logout-mobile');
+  const userEmailMobile = document.getElementById('user-email-mobile');
+
   if (user) {
     // Ingelogd
     // FIX 3: Null-safe style guards
@@ -91,10 +96,31 @@ export function updateNav(user) {
     if (elements.navDashboard) elements.navDashboard.style.display = 'block';
     if (elements.navMessages) elements.navMessages.style.display = 'block';
 
+    // Show bottom navigation
+    if (bottomNav) {
+      bottomNav.classList.remove('hidden');
+    }
+
+    // Show app header
+    if (appHeader) {
+      appHeader.classList.remove('hidden');
+    }
+
+    // Show mobile logout button
+    if (navLogoutMobile) {
+      navLogoutMobile.classList.remove('hidden');
+    }
+
+    // Update mobile email
+    if (userEmailMobile) {
+      userEmailMobile.textContent = user.email;
+      userEmailMobile.classList.remove('hidden');
+    }
+
     // ⭐ NEW: Update dashboard button text based on role
     const currentUserData = getStore('currentUserData');
     const navDashboardText = document.getElementById('nav-dashboard-text');
-    
+
     if (currentUserData) {
       // Update nav-dashboard text
       if (navDashboardText) {
@@ -104,7 +130,7 @@ export function updateNav(user) {
           navDashboardText.textContent = 'Search Artists';
         }
       }
-      
+
       // Show Settings button only for programmers
       if (currentUserData.role === 'programmer') {
         if (elements.navSettings) {
@@ -118,6 +144,11 @@ export function updateNav(user) {
         }
       }
     }
+
+    // Re-initialize icons
+    if (window.lucide) {
+      setTimeout(() => lucide.createIcons(), 100);
+    }
   } else {
     // Uitgelogd
     // FIX 3: Null-safe style guards
@@ -127,6 +158,26 @@ export function updateNav(user) {
     if (elements.navDashboard) elements.navDashboard.style.display = 'none';
     if (elements.navMessages) elements.navMessages.style.display = 'none';
     if (elements.navSettings) elements.navSettings.style.display = 'none';
+
+    // Hide bottom navigation
+    if (bottomNav) {
+      bottomNav.classList.add('hidden');
+    }
+
+    // Hide app header
+    if (appHeader) {
+      appHeader.classList.add('hidden');
+    }
+
+    // Hide mobile elements
+    if (navLogoutMobile) {
+      navLogoutMobile.classList.add('hidden');
+    }
+
+    if (userEmailMobile) {
+      userEmailMobile.textContent = '';
+      userEmailMobile.classList.add('hidden');
+    }
   }
 }
 
@@ -298,26 +349,119 @@ export function showMessages() {
  * DIT IS DE FIX: Exporteert de functie met de juiste naam 'initNavigation'.
  */
 export function initNavigation() {
-  elements.navHome.addEventListener('click', () => showPage('home-view'));
-  elements.navLogin.addEventListener('click', () => showPage('login-view'));
-  elements.navSignup.addEventListener('click', () => showPage('signup-view'));
-
-  // De Dashboard knop toont het *juiste* dashboard
-  elements.navDashboard.addEventListener('click', showDashboard);
-
-  // De Messages knop toont de conversations lijst
-  elements.navMessages.addEventListener('click', showMessages);
-
-  // Settings button for programmers
-  elements.navSettings.addEventListener('click', showProgrammerSettings);
-
-  elements.navLogout.addEventListener('click', handleLogout);
+  // Top navigation (deprecated but keep for compatibility)
+  if (elements.navHome) elements.navHome.addEventListener('click', () => showPage('home-view'));
+  if (elements.navLogin) elements.navLogin.addEventListener('click', () => showPage('login-view'));
+  if (elements.navSignup) elements.navSignup.addEventListener('click', () => showPage('signup-view'));
+  if (elements.navDashboard) elements.navDashboard.addEventListener('click', showDashboard);
+  if (elements.navMessages) elements.navMessages.addEventListener('click', showMessages);
+  if (elements.navSettings) elements.navSettings.addEventListener('click', showProgrammerSettings);
+  if (elements.navLogout) elements.navLogout.addEventListener('click', handleLogout);
 
   // Homepagina CTA-knoppen
   elements.homeCtaArtist.addEventListener('click', () => showPage('artist-signup-view'));
   elements.homeCtaProgrammer.addEventListener('click', () => showPage('programmer-signup-view'));
 
+  // Home login button (nieuwe button)
+  const homeLoginBtn = document.getElementById('home-login-btn');
+  if (homeLoginBtn) {
+    homeLoginBtn.addEventListener('click', () => showPage('login-view'));
+  }
+
   // Signup-keuzeknoppen
   elements.signupChoiceArtist.addEventListener('click', () => showPage('artist-signup-view'));
   elements.signupChoiceProgrammer.addEventListener('click', () => showPage('programmer-signup-view'));
+
+  // Back buttons (nieuwe navigatie)
+  const backFromLoginBtn = document.getElementById('back-to-home-from-login');
+  if (backFromLoginBtn) {
+    backFromLoginBtn.addEventListener('click', () => showPage('home-view'));
+  }
+
+  const backFromSignupBtn = document.getElementById('back-to-home-from-signup');
+  if (backFromSignupBtn) {
+    backFromSignupBtn.addEventListener('click', () => showPage('home-view'));
+  }
+
+  const backFromArtistSignup = document.getElementById('back-from-artist-signup');
+  if (backFromArtistSignup) {
+    backFromArtistSignup.addEventListener('click', () => showPage('signup-view'));
+  }
+
+  const backFromProgrammerSignup = document.getElementById('back-from-programmer-signup');
+  if (backFromProgrammerSignup) {
+    backFromProgrammerSignup.addEventListener('click', () => showPage('signup-view'));
+  }
+
+  // Mobile logout button
+  const navLogoutMobile = document.getElementById('nav-logout-mobile');
+  if (navLogoutMobile) {
+    navLogoutMobile.addEventListener('click', handleLogout);
+  }
+
+  // Bottom Navigation
+  setupBottomNavigation();
+}
+
+/**
+ * Setup bottom navigation with event delegation
+ */
+function setupBottomNavigation() {
+  const bottomNav = document.getElementById('bottom-nav');
+  if (!bottomNav) return;
+
+  // Use event delegation on the bottom nav container
+  bottomNav.addEventListener('click', (e) => {
+    const navItem = e.target.closest('.bottom-nav-item');
+    if (!navItem) return;
+
+    const navAction = navItem.dataset.nav;
+
+    // Update active state
+    updateBottomNavActive(navAction);
+
+    // Handle navigation
+    switch(navAction) {
+      case 'home':
+        showDashboard();
+        break;
+      case 'search':
+        showDashboard(); // Show search (dashboard for programmers)
+        break;
+      case 'messages':
+        showMessages();
+        break;
+      case 'profile':
+        // Show profile (dashboard for artists, settings for programmers)
+        const currentUserData = getStore('currentUserData');
+        if (currentUserData?.role === 'artist') {
+          showDashboard();
+        } else if (currentUserData?.role === 'programmer') {
+          showProgrammerSettings();
+        }
+        break;
+    }
+
+    // Re-initialize icons after navigation
+    if (window.lucide) {
+      setTimeout(() => lucide.createIcons(), 100);
+    }
+  });
+}
+
+/**
+ * Update active state of bottom navigation items
+ */
+function updateBottomNavActive(activeNav) {
+  const bottomNav = document.getElementById('bottom-nav');
+  if (!bottomNav) return;
+
+  const allItems = bottomNav.querySelectorAll('.bottom-nav-item');
+  allItems.forEach(item => {
+    if (item.dataset.nav === activeNav) {
+      item.classList.add('active');
+    } else {
+      item.classList.remove('active');
+    }
+  });
 }
