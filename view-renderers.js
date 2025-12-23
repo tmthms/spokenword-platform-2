@@ -512,7 +512,155 @@ export function renderDashboard() {
 
       <!-- Artist Detail View -->
       <div id="artist-detail-view" class="hidden">
-        <!-- Artist detail content will be rendered here -->
+        <!-- ✅ FIX: Complete Artist Detail View HTML Structure -->
+        <div class="bg-white min-h-screen">
+          <!-- Back Button -->
+          <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
+            <button id="back-to-search-btn" class="flex items-center text-indigo-600 hover:text-indigo-800 font-medium">
+              <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+              Back to Search
+            </button>
+          </div>
+
+          <!-- Artist Profile Content -->
+          <div class="px-6 py-8 max-w-4xl mx-auto">
+            <!-- Profile Header -->
+            <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+              <div class="flex flex-col md:flex-row items-start md:items-center gap-6 mb-6">
+                <img id="detail-profile-pic" src="" alt="Artist" class="h-32 w-32 md:h-48 md:w-48 rounded-full object-cover border-4 border-indigo-100">
+                <div class="flex-1">
+                  <h1 id="detail-artist-name" class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Artist Name</h1>
+                  <h2 id="detail-stage-name" class="text-xl md:text-2xl text-indigo-600 font-semibold mb-4">Stage Name</h2>
+                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-gray-700">
+                    <div class="flex items-center">
+                      <i data-lucide="map-pin" class="h-5 w-5 mr-2 text-indigo-600"></i>
+                      <span id="detail-location">Location</span>
+                    </div>
+                    <div class="flex items-center">
+                      <i data-lucide="calendar" class="h-5 w-5 mr-2 text-indigo-600"></i>
+                      <span id="detail-age">Age</span>
+                    </div>
+                    <div class="flex items-center">
+                      <i data-lucide="user" class="h-5 w-5 mr-2 text-indigo-600"></i>
+                      <span id="detail-gender">Gender</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Genres & Languages -->
+              <div class="space-y-4">
+                <div>
+                  <h3 class="text-sm font-semibold text-gray-700 mb-2">Genres</h3>
+                  <div id="detail-genres" class="flex flex-wrap gap-2"></div>
+                </div>
+                <div>
+                  <h3 class="text-sm font-semibold text-gray-700 mb-2">Languages</h3>
+                  <div id="detail-languages" class="flex flex-wrap gap-2"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Bio & Pitch -->
+            <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+              <h3 class="text-xl font-bold text-gray-900 mb-4">Biography</h3>
+              <p id="detail-bio" class="text-gray-700 whitespace-pre-wrap mb-6">Bio content</p>
+
+              <h3 class="text-xl font-bold text-gray-900 mb-4">Pitch</h3>
+              <p id="detail-pitch" class="text-gray-700 whitespace-pre-wrap">Pitch content</p>
+            </div>
+
+            <!-- Media Section -->
+            <!-- Video -->
+            <div id="detail-video-section" class="bg-white rounded-xl shadow-lg p-8 mb-6" style="display: none;">
+              <h3 class="text-xl font-bold text-gray-900 mb-4">Video</h3>
+              <div id="detail-video-container" class="aspect-video bg-gray-100 rounded-lg overflow-hidden"></div>
+            </div>
+
+            <!-- Audio -->
+            <div id="detail-audio-section" class="bg-white rounded-xl shadow-lg p-8 mb-6" style="display: none;">
+              <h3 class="text-xl font-bold text-gray-900 mb-4">Audio</h3>
+              <div id="detail-audio-container" class="bg-gray-100 rounded-lg p-4"></div>
+            </div>
+
+            <!-- Text Material -->
+            <div id="detail-text-section" class="bg-white rounded-xl shadow-lg p-8 mb-6" style="display: none;">
+              <h3 class="text-xl font-bold text-gray-900 mb-4">Text Material</h3>
+              <div id="detail-text-content" class="prose max-w-none text-gray-700 whitespace-pre-wrap"></div>
+            </div>
+
+            <!-- Document -->
+            <div id="detail-document-section" class="bg-white rounded-xl shadow-lg p-8 mb-6" style="display: none;">
+              <h3 class="text-xl font-bold text-gray-900 mb-4">Document</h3>
+              <a id="detail-document-link" href="#" target="_blank" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium">
+                <i data-lucide="file-text" class="h-5 w-5 mr-2"></i>
+                <span>View Document</span>
+              </a>
+            </div>
+
+            <!-- Contact Section (Pro Only) -->
+            <div id="detail-trial-message" class="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-6" style="display: none;">
+              <div class="flex items-start">
+                <i data-lucide="lock" class="h-6 w-6 text-yellow-600 mr-3 flex-shrink-0 mt-1"></i>
+                <div>
+                  <h3 class="text-lg font-bold text-yellow-900 mb-2">Upgrade to Pro to Contact Artists</h3>
+                  <p class="text-yellow-800">Contact information and messaging are available for Pro members only. Upgrade your account to unlock direct contact with artists.</p>
+                </div>
+              </div>
+            </div>
+
+            <div id="detail-contact-info" class="bg-white rounded-xl shadow-lg p-8 mb-6" style="display: none;">
+              <h3 class="text-xl font-bold text-gray-900 mb-4">Contact Information</h3>
+              <div class="space-y-3">
+                <div class="flex items-center">
+                  <i data-lucide="mail" class="h-5 w-5 mr-3 text-indigo-600"></i>
+                  <a id="detail-email" href="mailto:" class="text-indigo-600 hover:text-indigo-800">Email</a>
+                </div>
+                <div class="flex items-center">
+                  <i data-lucide="phone" class="h-5 w-5 mr-3 text-indigo-600"></i>
+                  <a id="detail-phone" href="tel:" class="text-indigo-600 hover:text-indigo-800">Phone</a>
+                </div>
+              </div>
+              <button id="send-message-btn" class="mt-6 w-full bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-indigo-700 transition-colors">
+                <i data-lucide="send" class="h-5 w-5 inline mr-2"></i>
+                Send Message
+              </button>
+            </div>
+
+            <!-- Recommendations Section -->
+            <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
+              <div class="flex items-center justify-between mb-6">
+                <h3 class="text-xl font-bold text-gray-900">Recommendations</h3>
+                <button id="write-recommendation-btn" class="hidden bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700">
+                  <i data-lucide="star" class="h-4 w-4 inline mr-2"></i>
+                  Write Recommendation
+                </button>
+              </div>
+
+              <!-- Loading State -->
+              <div id="recommendations-loading" class="text-center py-8" style="display: none;">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                <p class="text-gray-600 mt-4">Loading recommendations...</p>
+              </div>
+
+              <!-- Error State -->
+              <div id="recommendations-error" class="text-center py-8 text-red-600" style="display: none;">
+                Error loading recommendations
+              </div>
+
+              <!-- Empty State -->
+              <div id="recommendations-empty" class="text-center py-8 bg-gray-50 rounded-lg" style="display: none;">
+                <p class="text-gray-600">No recommendations yet.</p>
+              </div>
+
+              <!-- Recommendations List -->
+              <div id="recommendations-list" class="space-y-4" style="display: none;"></div>
+            </div>
+
+          </div>
+        </div>
       </div>
     </div>
   `;

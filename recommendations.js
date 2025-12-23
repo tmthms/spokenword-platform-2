@@ -7,7 +7,7 @@ import { collection, addDoc, query, where, getDocs, orderBy, serverTimestamp, do
 import { db } from './firebase.js';
 import { getStore } from './store.js';
 import { t } from './translations.js';
-import { sendRecommendationNotification } from './messaging.js';
+import { sendRecommendationNotification } from './src/modules/messaging/messaging-controller.js';
 
 /**
  * Setup recommendation modal and form
@@ -172,7 +172,7 @@ async function handleRecommendationSubmit(e) {
     // Clear form
     e.target.reset();
 
-    // Close modal after 2 seconds
+    // ✅ FIX: Close modal immediately after 1 second (faster UX)
     setTimeout(() => {
       closeRecommendationModal();
       // Reload recommendations if on artist detail page
@@ -180,7 +180,7 @@ async function handleRecommendationSubmit(e) {
       if (currentArtistId === artistId) {
         loadRecommendations(artistId);
       }
-    }, 2000);
+    }, 1000);
 
   } catch (error) {
     console.error("Error submitting recommendation:", error);

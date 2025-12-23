@@ -863,13 +863,18 @@ export function loadArtistRecommendations() {
     return;
   }
 
-  // Check if recommendations section exists in HTML before loading
-  const recommendationsSection = document.getElementById('recommendations-list');
+  // ✅ FIX: Make recommendations section visible
+  const recommendationsSection = document.getElementById('artist-recommendations-section');
   if (!recommendationsSection) {
     console.log("Recommendations section not found in HTML, skipping load");
     return;
   }
 
+  // Show the recommendations section
+  recommendationsSection.classList.remove('hidden');
+  recommendationsSection.style.display = 'block';
+
+  // Load recommendations
   loadRecommendations(currentUser.uid);
 }
 

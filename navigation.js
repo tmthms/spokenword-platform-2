@@ -43,8 +43,9 @@ export function renderDesktopNav() {
             <button id="desktop-nav-search" class="text-gray-700 hover:text-indigo-600 font-medium">
               Zoeken
             </button>
-            <button id="desktop-nav-messages" class="text-gray-700 hover:text-indigo-600 font-medium">
+            <button id="desktop-nav-messages" class="relative text-gray-700 hover:text-indigo-600 font-medium">
               Berichten
+              <span id="messages-badge-desktop" class="notification-badge hidden">0</span>
             </button>
 
             <!-- Profile Menu Dropdown -->
@@ -96,7 +97,7 @@ export function renderMobileNav() {
       <button class="bottom-nav-item" data-nav="messages">
         <div class="relative">
           <i data-lucide="message-circle" class="bottom-nav-icon"></i>
-          <span id="messages-badge-bottom" class="notification-badge hidden">0</span>
+          <span id="messages-badge-mobile" class="notification-badge hidden">0</span>
         </div>
         <span class="bottom-nav-label">Berichten</span>
       </button>

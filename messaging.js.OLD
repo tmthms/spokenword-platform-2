@@ -207,8 +207,9 @@ async function createConversation(programmerId, programmerData, artist, subject)
 
 /**
  * Voegt een bericht toe aan een conversatie
+ * ✅ FIX: Exported for use in ui.js
  */
-async function addMessage(conversationId, senderId, senderData, messageText) {
+export async function addMessage(conversationId, senderId, senderData, messageText) {
   // 1. Voeg bericht toe aan messages subcollection
   const messageData = {
     senderId: senderId,
@@ -445,23 +446,49 @@ async function displayConversations(conversations) {
 }
 
 /**
- * Update de unread badge in de navigatie
+ * ✨ ENHANCED: Update all unread badges in navigation (desktop, mobile, legacy)
  */
 function updateUnreadBadge(conversations, currentUserId) {
-  const badge = document.getElementById('messages-badge');
-  
-  if (!badge) return;
-  
+  // Get all badge elements
+  const badgeDesktop = document.getElementById('messages-badge-desktop');
+  const badgeMobile = document.getElementById('messages-badge-mobile');
+  const badgeLegacy = document.getElementById('messages-badge'); // Legacy badge
+
   // Tel unread conversaties
-  const unreadCount = conversations.filter(conv => 
+  const unreadCount = conversations.filter(conv =>
     conv.unreadBy && conv.unreadBy.includes(currentUserId)
   ).length;
-  
-  if (unreadCount > 0) {
-    badge.textContent = unreadCount;
-    badge.classList.remove('hidden');
-  } else {
-    badge.classList.add('hidden');
+
+  console.log(`[MESSAGING] Updating badges: ${unreadCount} unread conversations`);
+
+  // Update desktop badge
+  if (badgeDesktop) {
+    if (unreadCount > 0) {
+      badgeDesktop.textContent = unreadCount;
+      badgeDesktop.classList.remove('hidden');
+    } else {
+      badgeDesktop.classList.add('hidden');
+    }
+  }
+
+  // Update mobile badge
+  if (badgeMobile) {
+    if (unreadCount > 0) {
+      badgeMobile.textContent = unreadCount;
+      badgeMobile.classList.remove('hidden');
+    } else {
+      badgeMobile.classList.add('hidden');
+    }
+  }
+
+  // Update legacy badge (if it exists)
+  if (badgeLegacy) {
+    if (unreadCount > 0) {
+      badgeLegacy.textContent = unreadCount;
+      badgeLegacy.classList.remove('hidden');
+    } else {
+      badgeLegacy.classList.add('hidden');
+    }
   }
 }
 
@@ -612,8 +639,9 @@ export async function openConversation(conversationId) {
 
 /**
  * Laadt alle berichten van een conversatie
+ * ✅ FIX: Exported for use in ui.js
  */
-async function loadMessages(conversationId) {
+export async function loadMessages(conversationId) {
   const messagesContainer = document.getElementById('messages-container');
 
   if (!messagesContainer) {
@@ -713,6 +741,66 @@ setTimeout(() => {
     behavior: 'smooth'
   });
 }, 100);
+}
+
+/**
+ * ✨ OPTIMISTIC UI: Append a single message to the UI immediately
+ * @param {object} message - Message data to append
+ */
+export function appendMessageToUI(message) {
+  const messagesContainer = document.getElementById('messages-container');
+  const currentUser = getStore('currentUser');
+
+  if (!messagesContainer || !currentUser) return;
+
+  // Remove "no messages" placeholder if it exists
+  const placeholder = messagesContainer.querySelector('p.text-gray-500');
+  if (placeholder) {
+    placeholder.remove();
+  }
+
+  const isOwnMessage = message.senderId === currentUser.uid;
+
+  // Format timestamp
+  let timeAgo = 'Just now';
+  if (message.createdAt && message.createdAt.toDate) {
+    const date = message.createdAt.toDate();
+    timeAgo = formatTimeAgo(date);
+  }
+
+  // Get profile picture with proper fallback
+  const profilePic = message.senderProfilePic ||
+                    'https://placehold.co/48x48/e0e7ff/6366f1?text=' +
+                    encodeURIComponent(message.senderName?.charAt(0) || '?');
+
+  // Create message bubble
+  const messageDiv = document.createElement('div');
+  messageDiv.className = `flex items-start space-x-3 mb-4 ${isOwnMessage ? 'flex-row-reverse space-x-reverse' : ''}`;
+
+  messageDiv.innerHTML = `
+    <div class="flex-shrink-0">
+      <img src="${profilePic}"
+           alt="${message.senderName}"
+           class="h-10 w-10 rounded-full object-cover">
+    </div>
+
+    <div class="max-w-xl ${isOwnMessage ? 'bg-indigo-100' : 'bg-gray-100'} rounded-lg p-4 shadow-sm">
+      <div class="flex items-center mb-2">
+        <span class="font-semibold text-sm ${isOwnMessage ? 'text-indigo-900' : 'text-gray-900'}">${message.senderName}</span>
+        <span class="text-xs text-gray-500 ml-2 capitalize">${message.senderRole || ''}</span>
+      </div>
+      <p class="text-gray-800 whitespace-pre-wrap">${message.text}</p>
+      <p class="text-xs text-gray-500 mt-2">${timeAgo}</p>
+    </div>
+  `;
+
+  // Append message
+  messagesContainer.appendChild(messageDiv);
+
+  // Smooth scroll to the new message
+  setTimeout(() => {
+    messageDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
+  }, 50);
 }
 
 /**
@@ -970,17 +1058,13 @@ export function setupMessaging() {
   }
   
   // Form submit
-  // Form submit
   const messageForm = document.getElementById('send-message-form');
   if (messageForm) {
-  messageForm.addEventListener('submit', handleSendMessage);
+    messageForm.addEventListener('submit', handleSendMessage);
   }
 
-// ⭐ NEW: Inline message form (for replies in chat)
-const inlineMessageForm = document.getElementById('message-form');
-if (inlineMessageForm) {
-  inlineMessageForm.addEventListener('submit', handleInlineMessageSubmit);
-}
+  // ✅ FIX: Inline message form (for replies in chat) is now handled by global event delegation in ui.js
+  // No longer adding listener here to avoid conflicts
 
 // FASE 3: Reply form
 const replyForm = document.getElementById('reply-form');

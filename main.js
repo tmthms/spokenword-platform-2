@@ -33,7 +33,7 @@ import { monitorAuthState } from './auth.js';
 import { initNavigation, setupGlobalFormHandlers } from './ui.js';
 import { setupProgrammerProfile } from './programmer-profile.js';
 import { setupArtistSearch } from './artist-search.js'; // Artist search & detail view
-import { setupMessaging } from './messaging.js';
+import { setupMessaging } from './src/modules/messaging/messaging-controller.js';
 import { initTranslations } from './translations.js';
 import { setupRecommendations } from './recommendations.js';
 import { setupUserSettings } from './user-settings.js';

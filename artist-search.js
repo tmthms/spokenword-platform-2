@@ -11,7 +11,7 @@
 import { collection, getDocs, query, where, doc, getDoc } from "firebase/firestore";
 import { db } from './firebase.js';
 import { getStore } from './store.js';
-import { openMessageModal } from './messaging.js';
+import { openMessageModal } from './src/modules/messaging/messaging-controller.js';
 import { loadRecommendations, openRecommendationModal } from './recommendations.js';
 
 /**

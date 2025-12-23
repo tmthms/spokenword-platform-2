@@ -19,7 +19,7 @@ import { auth, db } from './firebase.js'; // Haal de geïnitialiseerde 'auth' en
 import { showPage, updateNav, showDashboard } from './ui.js';
 import { setStore } from './store.js';
 import { fetchUserData } from './data.js';
-import { setupBadgeListener, stopBadgeListener } from './messaging.js';
+import { setupBadgeListener, stopBadgeListener } from './src/modules/messaging/messaging-controller.js';
 import { getCheckboxValues } from './checkbox-helpers.js';
 
 // --- HULPFUNCTIES ---

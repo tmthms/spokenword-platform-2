@@ -12,7 +12,7 @@ import { handleLogout, handleLogin, handleArtistSignup, handleProgrammerSignup }
 import { renderArtistDashboard, populateArtistEditor, setupArtistDashboard } from './artist-dashboard.js';
 import { renderProgrammerDashboard, setupProgrammerDashboard } from './programmer-dashboard.js';
 import { loadArtists, renderArtistSearch } from './artist-search.js';
-import { loadConversations } from './messaging.js';
+import { loadConversations } from './src/modules/messaging/messaging-controller.js';
 import { populateProgrammerEditor, renderProgrammerProfileEditor, setupProfileFormHandlers } from './programmer-profile.js';
 import { setNavigationVisibility, updateDesktopNav, updateMobileNavActive } from './navigation.js';
 
@@ -158,10 +158,78 @@ export function setupGlobalFormHandlers() {
       await handleProgrammerSignup(e);
       return;
     }
+
+    // ✅ FIX: Message form (inline chat messages)
+    if (form.id === 'message-form') {
+      console.log('[UI] ✅ Message form submit intercepted');
+      await handleInlineMessageSubmit(e);
+      return;
+    }
   }, { capture: true }); // CRITICAL: Capture phase ensures we intercept FIRST
 
   globalFormHandlersInitialized = true;
   console.log('[UI] ✅ Global form handlers initialized successfully');
+}
+
+/**
+ * ✨ OPTIMISTIC UI: Handle inline message form submission (chat replies)
+ * Messages are added to UI immediately without re-rendering the entire chat
+ */
+async function handleInlineMessageSubmit(e) {
+  e.preventDefault();
+
+  const messageInput = document.getElementById('message-input');
+  const messageText = messageInput?.value.trim();
+
+  if (!messageText) return;
+
+  const chatContainer = document.getElementById('chat-container');
+  const conversationId = chatContainer?.dataset.conversationId;
+
+  if (!conversationId) {
+    console.error('[UI] No conversation ID found');
+    return;
+  }
+
+  try {
+    const currentUser = getStore('currentUser');
+    const currentUserData = getStore('currentUserData');
+
+    if (!currentUser || !currentUserData) {
+      throw new Error('User not logged in');
+    }
+
+    console.log('[UI] Sending message to conversation:', conversationId);
+
+    // ✨ OPTIMISTIC UI: Create message object for immediate display
+    const optimisticMessage = {
+      senderId: currentUser.uid,
+      senderName: `${currentUserData.firstName} ${currentUserData.lastName}`,
+      senderRole: currentUserData.role,
+      senderProfilePic: currentUserData.profilePicUrl || '',
+      text: messageText,
+      createdAt: null, // Will show "Just now"
+      read: false
+    };
+
+    // Clear input immediately (better UX)
+    messageInput.value = '';
+
+    // Import messaging functions dynamically
+    const { addMessage, appendMessageToUI } = await import('./src/modules/messaging/messaging-controller.js');
+
+    // ✨ OPTIMISTIC UI: Add message to UI immediately (no re-render!)
+    appendMessageToUI(optimisticMessage);
+
+    // Send message to Firestore in background
+    await addMessage(conversationId, currentUser.uid, currentUserData, messageText);
+
+    console.log('[UI] ✅ Message sent successfully with optimistic UI');
+
+  } catch (error) {
+    console.error('[UI] Error sending message:', error);
+    alert('Failed to send message. Please try again.');
+  }
 }
 
 
