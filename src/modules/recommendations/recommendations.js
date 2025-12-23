@@ -4,10 +4,10 @@
  */
 
 import { collection, addDoc, query, where, getDocs, orderBy, serverTimestamp, doc, getDoc, deleteDoc } from "firebase/firestore";
-import { db } from './firebase.js';
-import { getStore } from './store.js';
-import { t } from './translations.js';
-import { sendRecommendationNotification } from './src/modules/messaging/messaging-controller.js';
+import { db } from '../../services/firebase.js';
+import { getStore } from '../../utils/store.js';
+import { t } from '../../utils/translations.js';
+import { sendRecommendationNotification } from '../messaging/messaging-controller.js';
 
 /**
  * Setup recommendation modal and form

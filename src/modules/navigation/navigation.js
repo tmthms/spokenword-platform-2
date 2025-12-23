@@ -4,7 +4,7 @@
  * This ensures consistent navigation state across all views.
  */
 
-import { getStore } from './store.js';
+import { getStore } from '../../utils/store.js';
 
 /**
  * Renders the desktop top navigation bar
@@ -28,7 +28,7 @@ export function renderDesktopNav() {
   }
 
   container.innerHTML = `
-    <nav id="desktop-top-nav" class="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <nav id="desktop-top-nav" class="hidden md:block bg-white border-b border-gray-200 sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-6 py-4">
         <div class="flex items-center justify-between">
           <!-- Logo -->
@@ -39,11 +39,11 @@ export function renderDesktopNav() {
           </div>
 
           <!-- Menu Items -->
-          <div class="flex items-center space-x-6">
-            <button id="desktop-nav-search" class="text-gray-700 hover:text-indigo-600 font-medium">
-              Zoeken
+          <div class="flex items-center space-x-8">
+            <button id="desktop-nav-profile" class="text-gray-700 hover:text-indigo-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+              Profiel
             </button>
-            <button id="desktop-nav-messages" class="relative text-gray-700 hover:text-indigo-600 font-medium">
+            <button id="desktop-nav-messages" class="relative text-gray-700 hover:text-indigo-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
               Berichten
               <span id="messages-badge-desktop" class="notification-badge hidden">0</span>
             </button>
@@ -56,12 +56,15 @@ export function renderDesktopNav() {
               </button>
 
               <!-- Dropdown Menu (hidden by default) -->
-              <div id="desktop-profile-dropdown" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-200">
-                <button id="desktop-settings" class="block w-full text-left px-4 py-2 text-gray-700 hover:bg-gray-100">
-                  Settings
+              <div id="desktop-profile-dropdown" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-200">
+                <button id="desktop-profile-settings" class="block w-full text-left px-4 py-2.5 text-gray-700 hover:bg-gray-100 font-medium">
+                  Profiel Instellingen
+                </button>
+                <button id="desktop-account-settings" class="block w-full text-left px-4 py-2.5 text-gray-700 hover:bg-gray-100 font-medium">
+                  Account Instellingen
                 </button>
                 <hr class="my-1 border-gray-200">
-                <button id="desktop-logout" class="block w-full text-left px-4 py-2 text-red-600 hover:bg-red-50">
+                <button id="desktop-logout" class="block w-full text-left px-4 py-2.5 text-red-600 hover:bg-red-50 font-medium">
                   Logout
                 </button>
               </div>
@@ -88,22 +91,17 @@ export function renderMobileNav() {
     return;
   }
 
+  const currentUserData = getStore('currentUserData');
+
   container.innerHTML = `
     <nav id="bottom-nav" class="bottom-nav">
       <button class="bottom-nav-item active" data-nav="search">
         <i data-lucide="search" class="bottom-nav-icon"></i>
         <span class="bottom-nav-label">Zoeken</span>
       </button>
-      <button class="bottom-nav-item" data-nav="messages">
-        <div class="relative">
-          <i data-lucide="message-circle" class="bottom-nav-icon"></i>
-          <span id="messages-badge-mobile" class="notification-badge hidden">0</span>
-        </div>
-        <span class="bottom-nav-label">Berichten</span>
-      </button>
-      <button class="bottom-nav-item" data-nav="profile">
-        <i data-lucide="user" class="bottom-nav-icon"></i>
-        <span class="bottom-nav-label">Profiel</span>
+      <button class="bottom-nav-item" data-nav="settings">
+        <i data-lucide="settings" class="bottom-nav-icon"></i>
+        <span class="bottom-nav-label">Instellingen</span>
       </button>
     </nav>
   `;

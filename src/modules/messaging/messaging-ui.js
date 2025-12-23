@@ -105,21 +105,21 @@ export async function displayConversations(conversations, currentUserId, onConve
                data-view-profile="${conversation.otherParticipantId}"
                data-profile-role="${conversation.otherParticipantRole}">
 
-          <!-- Hover Tooltip -->
+          <!-- Hover Tooltip (Subtle & Smaller) -->
           <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 translate-y-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
-            <div class="bg-gray-900 text-white text-xs px-2 py-1 rounded shadow-lg whitespace-nowrap mt-1">
-              <svg class="inline-block h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            <div class="bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-md whitespace-nowrap mt-1">
+              <svg class="inline-block h-2.5 w-2.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
               </svg>
               View profile
             </div>
           </div>
 
-          <!-- Click indicator icon -->
-          <div class="absolute bottom-0 right-0 h-5 w-5 bg-indigo-500 rounded-full flex items-center justify-center shadow-md opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            <svg class="h-3 w-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+          <!-- Click indicator icon (Smaller & More Subtle) -->
+          <div class="absolute bottom-0 right-0 h-4 w-4 bg-indigo-500 rounded-full flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-90 transition-opacity duration-200">
+            <svg class="h-2 w-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/>
             </svg>
           </div>
         </div>
@@ -128,7 +128,7 @@ export async function displayConversations(conversations, currentUserId, onConve
         <div class="flex-1 min-w-0">
           <div class="flex items-center mb-1">
             <h3 class="text-lg font-semibold ${isUnread ? 'text-indigo-900' : 'text-gray-900'} truncate">${otherParticipantName}</h3>
-            ${isUnread ? '<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-500 text-white flex-shrink-0">New</span>' : ''}
+            ${isUnread ? '<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-red-500 text-white flex-shrink-0">New</span>' : ''}
             <span class="ml-2 text-sm text-gray-500 capitalize flex-shrink-0">${conversation.otherParticipantRole}</span>
           </div>
           <p class="text-sm text-gray-700 mb-1"><strong>Subject:</strong> ${conversation.subject || 'No subject'}</p>
@@ -285,10 +285,20 @@ export function appendMessageToUI(message, currentUserId) {
   // Append message
   messagesContainer.appendChild(messageDiv);
 
-  // Smooth scroll to the new message
-  setTimeout(() => {
-    messageDiv.scrollIntoView({ behavior: 'smooth', block: 'end' });
-  }, 50);
+  // Smooth scroll to the new message (keep focus on message + input field)
+  // Use requestAnimationFrame for better scroll performance
+  requestAnimationFrame(() => {
+    messagesContainer.scrollTo({
+      top: messagesContainer.scrollHeight,
+      behavior: 'smooth'
+    });
+
+    // Keep focus on input field after sending
+    const messageInput = document.getElementById('message-input');
+    if (messageInput) {
+      messageInput.focus();
+    }
+  });
 }
 
 /**

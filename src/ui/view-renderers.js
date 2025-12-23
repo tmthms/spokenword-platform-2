@@ -65,7 +65,7 @@ export function renderHome() {
 
       <!-- Version Badge -->
       <div class="text-center py-6 text-xs text-gray-400">
-        Staging v2.0 (Desktop Update) [22-12-2025]
+        Release v2.5 [Final Build] - 23-12-2025
       </div>
     </div>
   `;
@@ -448,10 +448,16 @@ export function renderMessages() {
           <!-- Conversation List -->
           <div class="w-full md:w-1/3 border-r border-gray-200 overflow-y-auto bg-white">
             <div id="conversations-loading" class="p-4 text-gray-500 text-center">
-              Gesprekken laden...
+              <!-- Loading skeleton inserted by JS -->
             </div>
-            <div id="conversations-empty" class="p-4 text-gray-500 text-center hidden">
-              Nog geen gesprekken. Stuur een bericht naar een artiest!
+            <div id="conversations-empty" class="p-8 text-center hidden">
+              <div class="flex flex-col items-center justify-center py-12">
+                <svg class="h-16 w-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+                </svg>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">Geen berichten</h3>
+                <p class="text-sm text-gray-500 max-w-xs">Je hebt nog geen gesprekken. Stuur een bericht naar een artiest om te beginnen!</p>
+              </div>
             </div>
             <div id="conversations-list" class="divide-y divide-gray-200 hidden">
               <!-- Conversations will be loaded here -->
@@ -494,6 +500,88 @@ export function renderMessages() {
 }
 
 /**
+ * Renders the Account Settings view
+ */
+export function renderAccountSettings() {
+  const appContent = document.getElementById('app-content');
+  appContent.innerHTML = `
+    <div id="account-settings-view" class="min-h-screen bg-gray-50 py-8 px-6">
+      <div class="max-w-3xl mx-auto">
+        <!-- Header -->
+        <div class="mb-8">
+          <h1 class="text-4xl font-bold text-gray-900 tracking-tight mb-2">Account Settings</h1>
+          <p class="text-gray-600">Manage your email and password</p>
+        </div>
+
+        <!-- Change Email Section -->
+        <div class="bg-white p-10 rounded-3xl shadow-sm border border-gray-100 mb-6">
+          <div class="mb-6 pb-6 border-b border-gray-100">
+            <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Change Email</h2>
+            <p class="text-sm text-gray-500 mt-1">Update your account email address</p>
+          </div>
+
+          <form id="change-email-form" class="space-y-4">
+            <div>
+              <label for="new-email" class="block text-sm font-semibold text-gray-700 mb-2">New Email Address</label>
+              <input id="new-email" type="email" required
+                     class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                     placeholder="your.new.email@example.com">
+            </div>
+            <div>
+              <label for="confirm-email-password" class="block text-sm font-semibold text-gray-700 mb-2">Current Password (for verification)</label>
+              <input id="confirm-email-password" type="password" required
+                     class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                     placeholder="Enter your current password">
+            </div>
+            <button type="submit"
+                    class="w-full bg-indigo-600 text-white px-6 py-4 rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-sm hover:shadow">
+              Update Email
+            </button>
+            <p id="email-success" class="text-green-600 text-sm text-center"></p>
+            <p id="email-error" class="text-red-600 text-sm text-center"></p>
+          </form>
+        </div>
+
+        <!-- Change Password Section -->
+        <div class="bg-white p-10 rounded-3xl shadow-sm border border-gray-100 mb-6">
+          <div class="mb-6 pb-6 border-b border-gray-100">
+            <h2 class="text-2xl font-bold text-gray-900 tracking-tight">Change Password</h2>
+            <p class="text-sm text-gray-500 mt-1">Update your account password</p>
+          </div>
+
+          <form id="change-password-form" class="space-y-4">
+            <div>
+              <label for="current-password" class="block text-sm font-semibold text-gray-700 mb-2">Current Password</label>
+              <input id="current-password" type="password" required
+                     class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                     placeholder="Enter your current password">
+            </div>
+            <div>
+              <label for="new-password" class="block text-sm font-semibold text-gray-700 mb-2">New Password</label>
+              <input id="new-password" type="password" required minlength="6"
+                     class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                     placeholder="Enter new password (min. 6 characters)">
+            </div>
+            <div>
+              <label for="confirm-password" class="block text-sm font-semibold text-gray-700 mb-2">Confirm New Password</label>
+              <input id="confirm-password" type="password" required minlength="6"
+                     class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+                     placeholder="Confirm new password">
+            </div>
+            <button type="submit"
+                    class="w-full bg-indigo-600 text-white px-6 py-4 rounded-2xl font-bold hover:bg-indigo-700 transition-all shadow-sm hover:shadow">
+              Update Password
+            </button>
+            <p id="password-success" class="text-green-600 text-sm text-center"></p>
+            <p id="password-error" class="text-red-600 text-sm text-center"></p>
+          </form>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/**
  * Renders the Dashboard view (wrapper for artist/programmer dashboards)
  */
 export function renderDashboard() {
@@ -506,7 +594,7 @@ export function renderDashboard() {
       </div>
 
       <!-- Programmer Dashboard -->
-      <div id="programmer-dashboard" class="hidden">
+      <div id="programmer-dashboard">
         <!-- Content rendered by renderProgrammerDashboard() in programmer-dashboard.js -->
       </div>
 

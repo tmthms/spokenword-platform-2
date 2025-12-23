@@ -1,8 +1,8 @@
 // BELANGRIJKE FIX: 'getDoc' hier geïmporteerd
 import { doc, getDoc } from "firebase/firestore";
 import { db } from './firebase.js';
-import { setStore } from './store.js';
-import { setLanguage } from './translations.js';
+import { setStore } from '../utils/store.js';
+import { setLanguage } from '../utils/translations.js';
 
 /**
  * Haalt de profielgegevens van de gebruiker op uit Firestore

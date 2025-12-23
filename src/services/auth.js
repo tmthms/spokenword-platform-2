@@ -5,22 +5,26 @@
  */
 
 // Importeer de Firebase-services die we nodig hebben
-import { 
-  getAuth, 
+import {
+  getAuth,
   onAuthStateChanged,
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
-  signOut 
+  signOut,
+  updateEmail,
+  updatePassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential
 } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
+import { doc, setDoc, updateDoc } from "firebase/firestore";
 import { auth, db } from './firebase.js'; // Haal de geïnitialiseerde 'auth' en 'db' op
 
 // Importeer de UI-functies en de "store" (globale state)
-import { showPage, updateNav, showDashboard } from './ui.js';
-import { setStore } from './store.js';
+import { showPage, updateNav, showDashboard } from '../ui/ui.js';
+import { setStore, getStore } from '../utils/store.js';
 import { fetchUserData } from './data.js';
-import { setupBadgeListener, stopBadgeListener } from './src/modules/messaging/messaging-controller.js';
-import { getCheckboxValues } from './checkbox-helpers.js';
+import { setupBadgeListener, stopBadgeListener } from '../modules/messaging/messaging-controller.js';
+import { getCheckboxValues } from '../utils/checkbox-helpers.js';
 
 // --- HULPFUNCTIES ---
 
@@ -258,6 +262,66 @@ export function monitorAuthState() {
     // FIX 3: Null-safe style guard
     if (loadingView) loadingView.style.display = 'none';
   });
+}
+
+/**
+ * Updates user email address
+ * @param {string} newEmail - New email address
+ * @param {string} currentPassword - Current password for reauthentication
+ * @returns {Promise<void>}
+ */
+export async function updateUserEmail(newEmail, currentPassword) {
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error("No user logged in");
+  }
+
+  // Reauthenticate user before email change (Firebase requirement)
+  const credential = EmailAuthProvider.credential(user.email, currentPassword);
+  await reauthenticateWithCredential(user, credential);
+
+  // Update email in Firebase Auth
+  await updateEmail(user, newEmail);
+
+  // Update email in Firestore users collection
+  const userDocRef = doc(db, `users/${user.uid}`);
+  await updateDoc(userDocRef, { email: newEmail });
+
+  // Update email in role-specific collection (artists or programmers)
+  const currentUserData = getStore('currentUserData');
+  if (currentUserData?.role === 'artist') {
+    const artistDocRef = doc(db, `artists/${user.uid}`);
+    await updateDoc(artistDocRef, { email: newEmail });
+  } else if (currentUserData?.role === 'programmer') {
+    const programmerDocRef = doc(db, `programmers/${user.uid}`);
+    await updateDoc(programmerDocRef, { email: newEmail });
+  }
+
+  console.log('[AUTH] Email updated successfully');
+}
+
+/**
+ * Updates user password
+ * @param {string} currentPassword - Current password for reauthentication
+ * @param {string} newPassword - New password
+ * @returns {Promise<void>}
+ */
+export async function updateUserPassword(currentPassword, newPassword) {
+  const user = auth.currentUser;
+
+  if (!user) {
+    throw new Error("No user logged in");
+  }
+
+  // Reauthenticate user before password change (Firebase requirement)
+  const credential = EmailAuthProvider.credential(user.email, currentPassword);
+  await reauthenticateWithCredential(user, credential);
+
+  // Update password in Firebase Auth
+  await updatePassword(user, newPassword);
+
+  console.log('[AUTH] Password updated successfully');
 }
 
 // ⭐ REMOVED: initAuth() - all form handling is now done via global event delegation in ui.js

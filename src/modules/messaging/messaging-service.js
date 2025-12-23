@@ -5,7 +5,7 @@
  */
 
 import { collection, addDoc, doc, setDoc, getDoc, serverTimestamp, query, where, getDocs, orderBy, onSnapshot } from "firebase/firestore";
-import { db } from '../../../firebase.js';
+import { db } from '../../services/firebase.js';
 
 /**
  * Zoekt naar een bestaande conversatie tussen twee users
@@ -50,35 +50,40 @@ export async function findExistingConversation(userId1, userId2) {
  * @returns {Promise<string>} Conversation ID
  */
 export async function createConversation(programmerId, programmerData, artist, subject) {
-  const artistId = artist.uid || artist.id;
+  try {
+    const artistId = artist.uid || artist.id;
 
-  const conversationData = {
-    participants: [programmerId, artistId],
-    participantNames: {
-      [programmerId]: `${programmerData.firstName} ${programmerData.lastName}`,
-      [artistId]: artist.stageName || `${artist.firstName} ${artist.lastName}`
-    },
-    participantRoles: {
-      [programmerId]: 'programmer',
-      [artistId]: 'artist'
-    },
-    participantEmails: {
-      [programmerId]: programmerData.email,
-      [artistId]: artist.email
-    },
-    participantProfilePics: {
-      [programmerId]: programmerData.profilePicUrl || '',
-      [artistId]: artist.profilePicUrl || ''
-    },
-    subject: subject,
-    lastMessage: '',
-    lastMessageAt: serverTimestamp(),
-    unreadBy: [artistId],
-    createdAt: serverTimestamp()
-  };
+    const conversationData = {
+      participants: [programmerId, artistId],
+      participantNames: {
+        [programmerId]: `${programmerData.firstName} ${programmerData.lastName}`,
+        [artistId]: artist.stageName || `${artist.firstName} ${artist.lastName}`
+      },
+      participantRoles: {
+        [programmerId]: 'programmer',
+        [artistId]: 'artist'
+      },
+      participantEmails: {
+        [programmerId]: programmerData.email,
+        [artistId]: artist.email
+      },
+      participantProfilePics: {
+        [programmerId]: programmerData.profilePicUrl || '',
+        [artistId]: artist.profilePicUrl || ''
+      },
+      subject: subject,
+      lastMessage: '',
+      lastMessageAt: serverTimestamp(),
+      unreadBy: [artistId],
+      createdAt: serverTimestamp()
+    };
 
-  const docRef = await addDoc(collection(db, 'conversations'), conversationData);
-  return docRef.id;
+    const docRef = await addDoc(collection(db, 'conversations'), conversationData);
+    return docRef.id;
+  } catch (error) {
+    console.error("Error creating conversation:", error);
+    throw new Error("Failed to create conversation. Please try again.");
+  }
 }
 
 /**
@@ -90,32 +95,37 @@ export async function createConversation(programmerId, programmerData, artist, s
  * @returns {Promise<void>}
  */
 export async function addMessage(conversationId, senderId, senderData, messageText) {
-  // 1. Voeg bericht toe aan messages subcollection
-  const messageData = {
-    senderId: senderId,
-    senderName: `${senderData.firstName} ${senderData.lastName}`,
-    senderRole: senderData.role,
-    senderProfilePic: senderData.profilePicUrl || '',
-    text: messageText,
-    createdAt: serverTimestamp(),
-    read: false
-  };
+  try {
+    // 1. Voeg bericht toe aan messages subcollection
+    const messageData = {
+      senderId: senderId,
+      senderName: `${senderData.firstName} ${senderData.lastName}`,
+      senderRole: senderData.role,
+      senderProfilePic: senderData.profilePicUrl || '',
+      text: messageText,
+      createdAt: serverTimestamp(),
+      read: false
+    };
 
-  await addDoc(collection(db, `conversations/${conversationId}/messages`), messageData);
+    await addDoc(collection(db, `conversations/${conversationId}/messages`), messageData);
 
-  // 2. Update de conversatie met laatste bericht info
-  const conversationRef = doc(db, 'conversations', conversationId);
-  const conversationSnap = await getDoc(conversationRef);
-  const conversationData = conversationSnap.data();
+    // 2. Update de conversatie met laatste bericht info
+    const conversationRef = doc(db, 'conversations', conversationId);
+    const conversationSnap = await getDoc(conversationRef);
+    const conversationData = conversationSnap.data();
 
-  // Bepaal wie de ontvanger is (de andere participant)
-  const receiverId = conversationData.participants.find(id => id !== senderId);
+    // Bepaal wie de ontvanger is (de andere participant)
+    const receiverId = conversationData.participants.find(id => id !== senderId);
 
-  await setDoc(conversationRef, {
-    lastMessage: messageText.substring(0, 100),
-    lastMessageAt: serverTimestamp(),
-    unreadBy: [receiverId]
-  }, { merge: true });
+    await setDoc(conversationRef, {
+      lastMessage: messageText.substring(0, 100),
+      lastMessageAt: serverTimestamp(),
+      unreadBy: [receiverId]
+    }, { merge: true });
+  } catch (error) {
+    console.error("Error adding message:", error);
+    throw new Error("Failed to send message. Please try again.");
+  }
 }
 
 /**
@@ -124,21 +134,26 @@ export async function addMessage(conversationId, senderId, senderData, messageTe
  * @returns {Promise<Array>} Array of conversation objects
  */
 export async function fetchConversations(userId) {
-  const conversationsRef = collection(db, 'conversations');
-  const q = query(
-    conversationsRef,
-    where('participants', 'array-contains', userId),
-    orderBy('lastMessageAt', 'desc')
-  );
+  try {
+    const conversationsRef = collection(db, 'conversations');
+    const q = query(
+      conversationsRef,
+      where('participants', 'array-contains', userId),
+      orderBy('lastMessageAt', 'desc')
+    );
 
-  const querySnapshot = await getDocs(q);
+    const querySnapshot = await getDocs(q);
 
-  const conversations = [];
-  querySnapshot.forEach((doc) => {
-    conversations.push({ id: doc.id, ...doc.data() });
-  });
+    const conversations = [];
+    querySnapshot.forEach((doc) => {
+      conversations.push({ id: doc.id, ...doc.data() });
+    });
 
-  return conversations;
+    return conversations;
+  } catch (error) {
+    console.error("Error fetching conversations:", error);
+    throw new Error("Failed to load conversations. Please refresh the page.");
+  }
 }
 
 /**
@@ -147,17 +162,22 @@ export async function fetchConversations(userId) {
  * @returns {Promise<Array>} Array of message objects
  */
 export async function fetchMessages(conversationId) {
-  const messagesRef = collection(db, `conversations/${conversationId}/messages`);
-  const q = query(messagesRef, orderBy('createdAt', 'asc'));
+  try {
+    const messagesRef = collection(db, `conversations/${conversationId}/messages`);
+    const q = query(messagesRef, orderBy('createdAt', 'asc'));
 
-  const querySnapshot = await getDocs(q);
+    const querySnapshot = await getDocs(q);
 
-  const messages = [];
-  querySnapshot.forEach((doc) => {
-    messages.push({ id: doc.id, ...doc.data() });
-  });
+    const messages = [];
+    querySnapshot.forEach((doc) => {
+      messages.push({ id: doc.id, ...doc.data() });
+    });
 
-  return messages;
+    return messages;
+  } catch (error) {
+    console.error("Error fetching messages:", error);
+    throw new Error("Failed to load messages. Please refresh the page.");
+  }
 }
 
 /**
@@ -166,14 +186,19 @@ export async function fetchMessages(conversationId) {
  * @returns {Promise<object|null>} Conversation object or null
  */
 export async function fetchConversation(conversationId) {
-  const conversationRef = doc(db, 'conversations', conversationId);
-  const conversationSnap = await getDoc(conversationRef);
+  try {
+    const conversationRef = doc(db, 'conversations', conversationId);
+    const conversationSnap = await getDoc(conversationRef);
 
-  if (!conversationSnap.exists()) {
-    return null;
+    if (!conversationSnap.exists()) {
+      return null;
+    }
+
+    return { id: conversationSnap.id, ...conversationSnap.data() };
+  } catch (error) {
+    console.error("Error fetching conversation:", error);
+    throw new Error("Failed to load conversation. Please refresh the page.");
   }
-
-  return { id: conversationSnap.id, ...conversationSnap.data() };
 }
 
 /**
@@ -199,8 +224,6 @@ export async function markConversationAsRead(conversationId, userId) {
       await setDoc(conversationRef, {
         unreadBy: newUnreadBy
       }, { merge: true });
-
-      console.log("Conversation marked as read");
     }
 
   } catch (error) {
@@ -313,8 +336,6 @@ export async function sendRecommendationNotification(artistId, artistEmail, arti
     const notificationText = `I've written a recommendation for you! Here's what I said:\n\n"${recommendationText}"\n\nYou can view all your recommendations in your artist dashboard.`;
 
     await addMessage(conversationId, programmerId, programmerData, notificationText);
-
-    console.log("Recommendation notification sent successfully");
 
   } catch (error) {
     console.error("Error sending recommendation notification:", error);

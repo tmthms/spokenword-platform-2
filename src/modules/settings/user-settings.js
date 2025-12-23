@@ -3,7 +3,7 @@
  * Handles user account settings: language, email, and password changes
  */
 
-import { auth, db } from './firebase.js';
+import { auth, db } from '../../services/firebase.js';
 import {
   updateEmail,
   updatePassword,
@@ -11,8 +11,8 @@ import {
   reauthenticateWithCredential
 } from 'firebase/auth';
 import { doc, updateDoc } from 'firebase/firestore';
-import { getStore } from './store.js';
-import { getCurrentLanguage, setLanguage, t, applyTranslations } from './translations.js';
+import { getStore } from '../../utils/store.js';
+import { getCurrentLanguage, setLanguage, t, applyTranslations } from '../../utils/translations.js';
 
 /**
  * Setup user settings functionality

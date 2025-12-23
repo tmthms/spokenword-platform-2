@@ -5,16 +5,17 @@
  */
 
 // Importeer de "store" (globale state) om de data van de ingelogde gebruiker te lezen
-import { getStore } from './store.js';
+import { getStore } from '../utils/store.js';
 
 // Importeer de functies die we nodig hebben van andere modules
-import { handleLogout, handleLogin, handleArtistSignup, handleProgrammerSignup } from './auth.js';
-import { renderArtistDashboard, populateArtistEditor, setupArtistDashboard } from './artist-dashboard.js';
-import { renderProgrammerDashboard, setupProgrammerDashboard } from './programmer-dashboard.js';
-import { loadArtists, renderArtistSearch } from './artist-search.js';
-import { loadConversations } from './src/modules/messaging/messaging-controller.js';
-import { populateProgrammerEditor, renderProgrammerProfileEditor, setupProfileFormHandlers } from './programmer-profile.js';
-import { setNavigationVisibility, updateDesktopNav, updateMobileNavActive } from './navigation.js';
+import { handleLogout, handleLogin, handleArtistSignup, handleProgrammerSignup, updateUserEmail, updateUserPassword } from '../services/auth.js';
+import { setupArtistDashboard, populateArtistEditor } from '../modules/dashboard/dashboard-controller.js';
+import { renderProgrammerDashboard, setupProgrammerDashboard } from '../modules/programmer/programmer-dashboard.js';
+import { loadArtists, setupArtistSearch } from '../modules/search/search-controller.js';
+import { renderArtistSearch } from '../modules/search/search-ui.js';
+import { loadConversations } from '../modules/messaging/messaging-controller.js';
+import { populateProgrammerEditor, renderProgrammerProfileEditor, setupProfileFormHandlers } from '../modules/programmer/programmer-profile.js';
+import { setNavigationVisibility, updateDesktopNav, updateMobileNavActive } from '../modules/navigation/navigation.js';
 
 // Importeer de view renderers
 import {
@@ -24,7 +25,8 @@ import {
   renderArtistSignup,
   renderProgrammerSignup,
   renderMessages as renderMessagesView,
-  renderDashboard as renderDashboardView
+  renderDashboard as renderDashboardView,
+  renderAccountSettings
 } from './view-renderers.js'; 
 
 // --- DOM Elementen ---
@@ -73,14 +75,23 @@ const elements = {
  * Toont één specifieke pagina-sectie en verbergt alle andere.
  * NIEUWE ARCHITECTUUR: Alle content wordt dynamisch gerenderd in #app-content
  * @param {string} pageId - De ID van de pagina-sectie die getoond moet worden.
+ * @param {boolean} updateHistory - Whether to update browser history (default: true)
  */
-export function showPage(pageId) {
+export function showPage(pageId, updateHistory = true) {
   const appContent = document.getElementById('app-content');
 
   // KRITIEK: Maak de container ALTIJD leeg voordat we nieuwe content renderen
   // Dit voorkomt dat oude views zichtbaar blijven
   if (appContent) {
     appContent.innerHTML = '';
+  }
+
+  // Update browser history with hash
+  if (updateHistory) {
+    const hash = pageId.replace('-view', '');
+    if (window.location.hash !== `#${hash}`) {
+      window.history.pushState({ pageId }, '', `#${hash}`);
+    }
   }
 
   // Render de juiste view op basis van pageId
@@ -105,6 +116,11 @@ export function showPage(pageId) {
       break;
     case 'dashboard-view':
       renderDashboardView();
+      break;
+    case 'account-settings-view':
+      renderAccountSettings();
+      // Setup account settings form handlers after rendering
+      setupAccountSettingsHandlers();
       break;
     default:
       console.warn(`Unknown page: ${pageId}`);
@@ -216,7 +232,7 @@ async function handleInlineMessageSubmit(e) {
     messageInput.value = '';
 
     // Import messaging functions dynamically
-    const { addMessage, appendMessageToUI } = await import('./src/modules/messaging/messaging-controller.js');
+    const { addMessage, appendMessageToUI } = await import('../modules/messaging/messaging-controller.js');
 
     // ✨ OPTIMISTIC UI: Add message to UI immediately (no re-render!)
     appendMessageToUI(optimisticMessage);
@@ -293,19 +309,24 @@ export function updateNav(user) {
 /**
  * Helper: Show/hide artist search section consistently
  * @param {boolean} show - Whether to show (true) or hide (false) the search section
+ * Note: Full visibility forcing happens in loadArtists() via forceSearchResultsVisible()
  */
 function toggleArtistSearchSection(show) {
   const artistSearchSection = document.getElementById('artist-search-section');
-  if (artistSearchSection) {
-    if (show) {
-      artistSearchSection.style.display = 'block';
-      artistSearchSection.classList.remove('hidden');
-      console.log('[UI] Artist search section shown');
-    } else {
-      artistSearchSection.style.display = 'none';
-      artistSearchSection.classList.add('hidden');
-      console.log('[UI] Artist search section hidden');
-    }
+  if (!artistSearchSection) return;
+
+  if (show) {
+    // 🔥 NUCLEAR VISIBILITY FORCING
+    artistSearchSection.style.display = 'block';
+    artistSearchSection.style.opacity = '1';
+    artistSearchSection.style.visibility = 'visible';
+    artistSearchSection.style.zIndex = '1';
+    artistSearchSection.classList.remove('hidden');
+    console.log('[UI] 🔥 Artist search section FORCED VISIBLE');
+  } else {
+    artistSearchSection.style.display = 'none';
+    artistSearchSection.classList.add('hidden');
+    console.log('[UI] Artist search section hidden');
   }
 }
 
@@ -370,12 +391,8 @@ export function showDashboard() {
       programmerDashboard.classList.add('hidden');
     }
 
-    // Render the artist dashboard HTML
-    renderArtistDashboard();
-    // Setup dashboard AFTER rendering HTML (so form exists)
+    // Setup dashboard (handles rendering + initialization internally)
     setupArtistDashboard();
-    // Vul de "Edit Profile" velden met de data van de artiest
-    populateArtistEditor();
   } else if (role === 'programmer') {
     // Get the dynamically rendered containers
     const artistDashboard = document.getElementById('artist-dashboard');
@@ -386,8 +403,13 @@ export function showDashboard() {
       artistDashboard.classList.add('hidden');
     }
     if (programmerDashboard) {
+      // 🔥 FORCE VISIBILITY on programmer dashboard
       programmerDashboard.style.display = 'block';
+      programmerDashboard.style.opacity = '1';
+      programmerDashboard.style.visibility = 'visible';
+      programmerDashboard.style.zIndex = '1';
       programmerDashboard.classList.remove('hidden');
+      console.log('[UI] 👀 Programmer dashboard FORCED VISIBLE');
     }
 
     // Render the programmer dashboard HTML
@@ -422,6 +444,9 @@ export function showDashboard() {
 
       // Render the artist search view dynamically
       renderArtistSearch();
+
+      // ✅ FIX: Setup search after rendering HTML (so event listeners can attach)
+      setupArtistSearch();
 
       // Auto-load all artists when dashboard loads
       loadArtists();
@@ -614,27 +639,16 @@ function setupBottomNavigation() {
     // Update active state
     updateBottomNavActive(navAction);
 
-    // ⭐ BUG FIX 3: Update URL hash when navigating on mobile bottom nav
-    // Handle navigation
+    // Handle navigation (showPage/showDashboard/etc. handle hash updates now)
     switch(navAction) {
-      case 'search':
-        window.location.hash = '#search';
-        showDashboard(); // Show search (dashboard for programmers)
+      case 'profile':
+        showDashboard(); // Show profile/dashboard (updates hash internally)
         break;
       case 'messages':
-        window.location.hash = '#messages';
-        showMessages();
+        showMessages(); // Updates hash internally
         break;
-      case 'profile':
-        // Show profile (dashboard for artists, settings for programmers)
-        const currentUserData = getStore('currentUserData');
-        if (currentUserData?.role === 'artist') {
-          window.location.hash = '#profile';
-          showDashboard();
-        } else if (currentUserData?.role === 'programmer') {
-          window.location.hash = '#settings';
-          showProgrammerSettings();
-        }
+      case 'settings':
+        showAccountSettings(); // Updates hash internally
         break;
     }
 
@@ -660,26 +674,31 @@ function updateBottomNavActive(activeNav) {
 function setupDesktopNavigation() {
   // ✅ Use event delegation on document body to catch clicks from dynamically rendered nav
   document.body.addEventListener('click', (e) => {
-    // Desktop Search
-    if (e.target.closest('#desktop-nav-search')) {
-      window.location.hash = '#search';
-      showDashboard();
+    // Desktop Profile
+    if (e.target.closest('#desktop-nav-profile')) {
+      showDashboard(); // Updates hash internally
       return;
     }
 
     // Desktop Messages
     if (e.target.closest('#desktop-nav-messages')) {
-      window.location.hash = '#messages';
-      showMessages();
+      showMessages(); // Updates hash internally
       return;
     }
 
-    // Desktop Settings
-    if (e.target.closest('#desktop-settings')) {
+    // Desktop Profile Settings (Programmer: edit profile, Artist: edit profile)
+    if (e.target.closest('#desktop-profile-settings')) {
       const dropdown = document.getElementById('desktop-profile-dropdown');
       if (dropdown) dropdown.classList.add('hidden');
-      window.location.hash = '#settings';
-      showProgrammerSettings();
+      showProgrammerSettings(); // Updates hash internally
+      return;
+    }
+
+    // Desktop Account Settings (Email/Password)
+    if (e.target.closest('#desktop-account-settings')) {
+      const dropdown = document.getElementById('desktop-profile-dropdown');
+      if (dropdown) dropdown.classList.add('hidden');
+      showAccountSettings(); // Updates hash internally
       return;
     }
 
@@ -716,5 +735,107 @@ function setupDesktopNavigation() {
   });
 
   console.log('[UI] Desktop navigation event delegation setup complete');
+}
+
+/**
+ * Setup Account Settings form handlers
+ * Called after rendering the Account Settings view
+ */
+function setupAccountSettingsHandlers() {
+  const changeEmailForm = document.getElementById('change-email-form');
+  const changePasswordForm = document.getElementById('change-password-form');
+
+  if (!changeEmailForm || !changePasswordForm) {
+    console.warn('[UI] Account settings forms not found');
+    return;
+  }
+
+  // Handle email change
+  changeEmailForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const newEmail = document.getElementById('new-email').value;
+    const currentPassword = document.getElementById('confirm-email-password').value;
+    const successMsg = document.getElementById('email-success');
+    const errorMsg = document.getElementById('email-error');
+    const submitBtn = e.submitter || e.target.querySelector('button[type="submit"]');
+
+    // Reset messages
+    successMsg.textContent = '';
+    errorMsg.textContent = '';
+
+    // Disable button
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Updating...';
+
+    try {
+      await updateUserEmail(newEmail, currentPassword);
+      successMsg.textContent = '✓ Email updated successfully! Please log in again with your new email.';
+
+      // Clear form
+      changeEmailForm.reset();
+
+      // Log out user after email change (Firebase requirement)
+      setTimeout(() => {
+        handleLogout();
+      }, 2000);
+    } catch (error) {
+      console.error('[UI] Error updating email:', error);
+      errorMsg.textContent = `Error: ${error.message}`;
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Update Email';
+    }
+  });
+
+  // Handle password change
+  changePasswordForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const currentPassword = document.getElementById('current-password').value;
+    const newPassword = document.getElementById('new-password').value;
+    const confirmPassword = document.getElementById('confirm-password').value;
+    const successMsg = document.getElementById('password-success');
+    const errorMsg = document.getElementById('password-error');
+    const submitBtn = e.submitter || e.target.querySelector('button[type="submit"]');
+
+    // Reset messages
+    successMsg.textContent = '';
+    errorMsg.textContent = '';
+
+    // Validate passwords match
+    if (newPassword !== confirmPassword) {
+      errorMsg.textContent = 'New passwords do not match';
+      return;
+    }
+
+    // Disable button
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Updating...';
+
+    try {
+      await updateUserPassword(currentPassword, newPassword);
+      successMsg.textContent = '✓ Password updated successfully!';
+
+      // Clear form
+      changePasswordForm.reset();
+    } catch (error) {
+      console.error('[UI] Error updating password:', error);
+      errorMsg.textContent = `Error: ${error.message}`;
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Update Password';
+    }
+  });
+
+  console.log('[UI] Account settings handlers setup complete');
+}
+
+/**
+ * Shows the Account Settings page
+ */
+export function showAccountSettings() {
+  console.log('[UI] Showing account settings view');
+  showPage('account-settings-view');
 }
 

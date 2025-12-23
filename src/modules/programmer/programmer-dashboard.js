@@ -8,7 +8,7 @@
  * Artist search is handled by artist-search.js
  */
 
-import { getStore } from './store.js';
+import { getStore } from '../../utils/store.js';
 
 /**
  * Renders the programmer dashboard HTML structure
@@ -22,98 +22,104 @@ export function renderProgrammerDashboard() {
   }
 
   container.innerHTML = `
-    <div class="bg-white p-8 rounded-lg shadow-xl mb-6">
-        <h3 class="text-2xl font-semibold mb-2" data-i18n="programmer_dashboard">Programmer Dashboard</h3>
-
-        <!-- View voor "Pending" -->
-        <div id="programmer-pending-view" class="hidden">
-            <p class="mb-4 text-lg p-4 bg-yellow-100 text-yellow-800 rounded-md" data-i18n="pending_approval">Your account is <strong>pending admin approval</strong>. You will be notified by email once it's published.</p>
+    <!-- View voor "Pending" -->
+    <div id="programmer-pending-view" class="hidden bg-yellow-50 border border-yellow-200 p-8 rounded-2xl shadow-sm mb-6">
+        <div class="flex items-start space-x-4">
+            <i data-lucide="clock" class="h-8 w-8 text-yellow-600 flex-shrink-0 mt-1"></i>
+            <div>
+                <h3 class="text-xl font-bold text-yellow-900 mb-2">Account Pending Approval</h3>
+                <p class="text-yellow-800 leading-relaxed" data-i18n="pending_approval">
+                    Your account is <strong>pending admin approval</strong>. You will be notified by email once it's published.
+                </p>
+            </div>
         </div>
     </div>
 
-    <!-- Programmer Profile Overview Card -->
-    <div id="programmer-profile-overview" class="bg-white p-8 rounded-lg shadow-xl mb-6">
-        <h3 class="text-2xl font-semibold mb-6 flex items-center justify-between">
-            <span>Your Profile</span>
-            <button id="edit-programmer-profile-btn" class="text-sm bg-indigo-600 text-white px-5 py-2 rounded-md font-medium hover:bg-indigo-700">
+    <!-- Programmer Profile Overview Card (Apple Style) -->
+    <div id="programmer-profile-overview" class="bg-white p-10 rounded-3xl shadow-sm border border-gray-100 mb-8">
+        <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
+            <h3 class="text-3xl font-bold text-gray-900 tracking-tight">Your Profile</h3>
+            <button id="edit-programmer-profile-btn" class="bg-indigo-600 text-white px-6 py-3 rounded-2xl font-semibold hover:bg-indigo-700 transition-all shadow-sm hover:shadow">
                 Edit Profile
             </button>
-        </h3>
+        </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
             <!-- Profile Picture -->
-            <div class="flex-shrink-0">
-                <img id="programmer-overview-pic" src="https://placehold.co/200x200/e0e7ff/6366f1?text=P" alt="Profile" class="h-48 w-48 md:h-64 md:w-64 object-cover rounded-lg shadow-lg">
+            <div class="flex justify-center md:justify-start">
+                <img id="programmer-overview-pic" src="https://placehold.co/200x200/e0e7ff/6366f1?text=P" alt="Profile" class="w-52 h-52 md:w-72 md:h-72 object-cover rounded-3xl shadow-lg border border-gray-100">
             </div>
 
             <!-- Profile Info -->
-            <div class="flex-1">
-                <h4 id="programmer-overview-name" class="text-3xl font-bold text-gray-900 mb-2">Programmer Name</h4>
-                <p id="programmer-overview-org" class="text-xl text-indigo-600 font-semibold mb-4">Organization Name</p>
+            <div class="space-y-5">
+                <div class="pb-5 border-b border-gray-50">
+                    <h4 id="programmer-overview-name" class="text-4xl font-bold text-gray-900 tracking-tight mb-2">Programmer Name</h4>
+                    <p id="programmer-overview-org" class="text-2xl text-indigo-600 font-semibold">Organization Name</p>
+                </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
-                    <div>
-                        <span class="font-semibold">Email:</span>
-                        <span id="programmer-overview-email" class="ml-2">email@example.com</span>
+                <div class="grid grid-cols-2 gap-4 text-sm">
+                    <div class="bg-gray-50 p-3 rounded-xl">
+                        <span class="block text-xs font-semibold text-gray-500 mb-1">EMAIL</span>
+                        <span id="programmer-overview-email" class="font-medium text-gray-900">email@example.com</span>
                     </div>
-                    <div>
-                        <span class="font-semibold">Phone:</span>
-                        <span id="programmer-overview-phone" class="ml-2">Phone</span>
+                    <div class="bg-gray-50 p-3 rounded-xl">
+                        <span class="block text-xs font-semibold text-gray-500 mb-1">PHONE</span>
+                        <span id="programmer-overview-phone" class="font-medium text-gray-900">Phone</span>
                     </div>
-                    <div class="col-span-2">
-                        <span class="font-semibold">Website:</span>
-                        <a id="programmer-overview-website" href="#" target="_blank" class="ml-2 text-indigo-600 hover:text-indigo-800">Website</a>
+                    <div class="col-span-2 bg-gray-50 p-3 rounded-xl">
+                        <span class="block text-xs font-semibold text-gray-500 mb-1">WEBSITE</span>
+                        <a id="programmer-overview-website" href="#" target="_blank" class="font-medium text-indigo-600 hover:text-indigo-800 transition-colors">Website</a>
                     </div>
                 </div>
 
-                <div class="mt-4">
-                    <p class="font-semibold text-gray-700">About Organization:</p>
-                    <p id="programmer-overview-about" class="text-gray-600 mt-1">Organization description here</p>
+                <div class="bg-gray-50 p-4 rounded-xl">
+                    <p class="text-xs font-semibold text-gray-500 mb-2">ABOUT ORGANIZATION</p>
+                    <p id="programmer-overview-about" class="text-gray-700 leading-relaxed">Organization description here</p>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Programmer Profile Editor (rendered by programmer-profile.js) -->
-    <div id="programmer-profile-editor" class="bg-white p-8 rounded-lg shadow-xl mb-6 hidden">
+    <div id="programmer-profile-editor" class="hidden">
         <!-- Content will be rendered by renderProgrammerProfileEditor() -->
     </div>
 
-    <!-- Programmer Public Preview Section -->
-    <div id="programmer-public-preview" class="bg-white p-8 rounded-lg shadow-xl mb-6">
-        <div class="flex items-center justify-between mb-6">
-            <h3 class="text-2xl font-semibold">Public Profile Preview</h3>
-            <button id="refresh-programmer-preview-btn" class="text-sm bg-indigo-600 text-white px-4 py-2 rounded-md font-medium hover:bg-indigo-700">
+    <!-- Programmer Public Preview Section (Apple Style) -->
+    <div id="programmer-public-preview" class="bg-white p-10 rounded-3xl shadow-sm border border-gray-100 mb-8">
+        <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
+            <h3 class="text-3xl font-bold text-gray-900 tracking-tight">Public Profile Preview</h3>
+            <button id="refresh-programmer-preview-btn" class="bg-indigo-600 text-white px-5 py-3 rounded-2xl font-semibold hover:bg-indigo-700 transition-all shadow-sm hover:shadow">
                 <i data-lucide="refresh-cw" class="h-4 w-4 inline mr-1"></i>
                 Refresh Preview
             </button>
         </div>
 
-        <div class="bg-gray-50 p-6 rounded-lg border-2 border-dashed border-gray-300">
-            <p class="text-sm text-gray-600 mb-4">
-                <i data-lucide="info" class="h-4 w-4 inline mr-1"></i>
+        <div class="bg-gray-50 p-8 rounded-3xl border-2 border-dashed border-gray-200">
+            <p class="text-sm text-gray-600 mb-4 flex items-center">
+                <i data-lucide="info" class="h-4 w-4 mr-2 flex-shrink-0"></i>
                 This is how artists see your profile when they view your organization information.
             </p>
 
             <!-- Preview Content Container -->
-            <div id="programmer-preview-content" class="bg-white rounded-lg shadow-lg">
+            <div id="programmer-preview-content" class="bg-white rounded-2xl shadow-sm border border-gray-100">
                 <!-- Preview will be rendered here -->
                 <div class="text-center py-12 text-gray-500">
                     <i data-lucide="eye" class="h-12 w-12 mx-auto mb-4 text-gray-400"></i>
-                    <p>Click "Refresh Preview" to see how your profile looks</p>
+                    <p class="font-medium">Click "Refresh Preview" to see how your profile looks</p>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Search and Filter Section (Content rendered dynamically by renderArtistSearch() in artist-search.js) -->
-    <div id="artist-search-section" class="bg-white p-8 rounded-lg shadow-xl">
+    <div id="artist-search-section" class="bg-white p-4 md:p-8 lg:p-10 rounded-2xl md:rounded-3xl shadow-sm border border-gray-100" style="min-height: 400px; display: block; opacity: 1; visibility: visible;">
         <!-- Content will be injected dynamically -->
     </div>
 
     <!-- Version Badge (Programmer Dashboard) -->
     <div class="text-center py-6 text-xs text-gray-400">
-        Staging v2.0 (Desktop Update) [22-12-2025]
+        Staging v2.1 (Modular Dashboard) [23-12-2025]
     </div>
   `;
 
@@ -320,7 +326,7 @@ export function renderPublicPreview() {
     return;
   }
 
-  // Generate preview HTML
+  // Generate preview HTML with Apple styling
   const profilePicUrl = currentUserData.profilePicUrl ||
     `https://placehold.co/200x200/e0e7ff/6366f1?text=${encodeURIComponent((currentUserData.firstName || 'P').charAt(0))}`;
 
@@ -333,45 +339,45 @@ export function renderPublicPreview() {
 
   previewContent.innerHTML = `
     <div class="p-6">
-      <!-- Header with profile pic and basic info -->
-      <div class="flex items-start space-x-6 mb-6">
-        <img src="${profilePicUrl}" alt="Profile" class="w-24 h-24 rounded-full object-cover border-4 border-indigo-100">
+      <!-- Header with profile pic and basic info (Apple Style) -->
+      <div class="flex flex-col md:flex-row items-start space-y-4 md:space-y-0 md:space-x-6 mb-6">
+        <img src="${profilePicUrl}" alt="Profile" class="w-28 h-28 rounded-2xl object-cover shadow-sm border-2 border-gray-100">
         <div class="flex-1">
-          <h4 class="text-2xl font-bold text-gray-900">${fullName}</h4>
-          <p class="text-lg text-indigo-600 font-semibold">${organizationName}</p>
-          <div class="mt-3 space-y-1 text-sm text-gray-600">
-            <p>
-              <i data-lucide="mail" class="h-4 w-4 inline mr-2"></i>
-              <a href="mailto:${email}" class="hover:text-indigo-600">${email}</a>
-            </p>
-            <p>
-              <i data-lucide="phone" class="h-4 w-4 inline mr-2"></i>
-              ${phone}
-            </p>
+          <h4 class="text-2xl font-bold text-gray-900 tracking-tight">${fullName}</h4>
+          <p class="text-lg text-indigo-600 font-semibold mt-1">${organizationName}</p>
+          <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+            <div class="bg-gray-50 p-2.5 rounded-xl flex items-center">
+              <i data-lucide="mail" class="h-4 w-4 mr-2 text-gray-500 flex-shrink-0"></i>
+              <a href="mailto:${email}" class="text-gray-700 hover:text-indigo-600 transition-colors truncate">${email}</a>
+            </div>
+            <div class="bg-gray-50 p-2.5 rounded-xl flex items-center">
+              <i data-lucide="phone" class="h-4 w-4 mr-2 text-gray-500 flex-shrink-0"></i>
+              <span class="text-gray-700">${phone}</span>
+            </div>
             ${website ? `
-              <p>
-                <i data-lucide="globe" class="h-4 w-4 inline mr-2"></i>
-                <a href="${website}" target="_blank" rel="noopener noreferrer" class="hover:text-indigo-600">
+              <div class="col-span-full bg-gray-50 p-2.5 rounded-xl flex items-center">
+                <i data-lucide="globe" class="h-4 w-4 mr-2 text-gray-500 flex-shrink-0"></i>
+                <a href="${website}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 transition-colors truncate">
                   ${website.replace(/^https?:\/\//, '')}
                 </a>
-              </p>
+              </div>
             ` : ''}
           </div>
         </div>
       </div>
 
-      <!-- About Organization -->
-      <div class="mb-4 bg-gray-50 p-4 rounded-lg">
-        <h5 class="text-sm font-semibold text-gray-700 mb-2 flex items-center">
+      <!-- About Organization (Apple Style) -->
+      <div class="mb-4 bg-gray-50 p-4 rounded-xl">
+        <h5 class="text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide flex items-center">
           <i data-lucide="building-2" class="h-4 w-4 inline mr-2"></i>
           About ${organizationName}
         </h5>
-        <p class="text-gray-700 text-sm leading-relaxed">${about}</p>
+        <p class="text-gray-700 leading-relaxed">${about}</p>
       </div>
 
-      <!-- Badge -->
-      <div class="flex items-center justify-center pt-4 border-t border-gray-200">
-        <div class="inline-flex items-center px-4 py-2 bg-indigo-50 text-indigo-700 rounded-full text-sm font-medium">
+      <!-- Badge (Apple Style) -->
+      <div class="flex items-center justify-center pt-4 border-t border-gray-100">
+        <div class="inline-flex items-center px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl text-sm font-semibold">
           <i data-lucide="check-circle" class="h-4 w-4 mr-2"></i>
           Verified Programmer
         </div>

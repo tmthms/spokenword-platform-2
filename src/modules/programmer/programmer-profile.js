@@ -3,11 +3,11 @@
  * Handles profile editing functionality for programmers
  */
 
-import { getStore, setStore } from './store.js';
+import { getStore, setStore } from '../../utils/store.js';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { doc, updateDoc } from "firebase/firestore";
-import { db } from './firebase.js';
-import { setLanguage } from './translations.js';
+import { db } from '../../services/firebase.js';
+import { setLanguage } from '../../utils/translations.js';
 import { displayProgrammerProfileOverview, renderPublicPreview } from './programmer-dashboard.js';
 
 /**
@@ -22,105 +22,104 @@ export function renderProgrammerProfileEditor() {
   }
 
   container.innerHTML = `
-    <h3 class="text-2xl font-semibold mb-6">Edit Your Profile</h3>
-    <form id="programmer-profile-form" class="space-y-6">
-      <!-- Profile Picture -->
-      <div class="border-b border-gray-200 pb-6">
-        <label class="block text-sm font-medium text-gray-700 mb-2">Profile Picture</label>
-        <div class="flex items-center space-x-4">
-          <img id="programmer-profile-pic-preview"
-               src="https://placehold.co/100x100/e0e7ff/6366f1?text=P"
-               alt="Profile Preview"
-               class="h-24 w-24 rounded-full object-cover border-2 border-gray-200">
-          <div>
-            <input id="programmer-edit-profile-pic"
-                   type="file"
-                   accept="image/*"
-                   class="block text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
-            <p class="text-xs text-gray-500 mt-1">Max 5MB. JPG, PNG, GIF accepted.</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Personal Details -->
-      <div class="border-b border-gray-200 pb-6">
-        <h4 class="text-lg font-semibold mb-4">Personal Details</h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label for="programmer-edit-firstname" class="block text-sm font-medium text-gray-700 mb-1">First Name *</label>
-            <input id="programmer-edit-firstname"
-                   type="text"
-                   required
-                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-          </div>
-          <div>
-            <label for="programmer-edit-lastname" class="block text-sm font-medium text-gray-700 mb-1">Last Name *</label>
-            <input id="programmer-edit-lastname"
-                   type="text"
-                   required
-                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-          </div>
-          <div>
-            <label for="programmer-edit-phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-            <input id="programmer-edit-phone"
-                   type="tel"
-                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-          </div>
-        </div>
-      </div>
-
-      <!-- Organization Details -->
-      <div class="border-b border-gray-200 pb-6">
-        <h4 class="text-lg font-semibold mb-4">Organization Details</h4>
-        <div class="grid grid-cols-1 gap-4">
-          <div>
-            <label for="programmer-edit-org-name" class="block text-sm font-medium text-gray-700 mb-1">Organization Name *</label>
-            <input id="programmer-edit-org-name"
-                   type="text"
-                   required
-                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-          </div>
-          <div>
-            <label for="programmer-edit-website" class="block text-sm font-medium text-gray-700 mb-1">Website</label>
-            <input id="programmer-edit-website"
-                   type="url"
-                   placeholder="https://..."
-                   class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-          </div>
-          <div>
-            <label for="programmer-edit-org-about" class="block text-sm font-medium text-gray-700 mb-1">About Organization</label>
-            <textarea id="programmer-edit-org-about"
-                      rows="4"
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-          </div>
-        </div>
-      </div>
-
-      <!-- Preferences -->
-      <div class="border-b border-gray-200 pb-6">
-        <h4 class="text-lg font-semibold mb-4">Preferences</h4>
+    <div class="bg-white p-10 rounded-3xl shadow-lg border border-gray-100">
+      <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
         <div>
-          <label for="programmer-edit-language" class="block text-sm font-medium text-gray-700 mb-1">Language</label>
-          <select id="programmer-edit-language"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-            <option value="nl">Nederlands</option>
-            <option value="en">English</option>
-          </select>
+          <h3 class="text-3xl font-bold text-gray-900 tracking-tight">Edit Your Profile</h3>
+          <p class="text-sm text-gray-500 mt-2">Update your information below. Fields marked with * are required.</p>
         </div>
-      </div>
-
-      <!-- Submit Button -->
-      <div class="flex items-center justify-between">
-        <div class="flex-1">
-          <p id="programmer-profile-success" class="text-green-600 text-sm"></p>
-          <p id="programmer-profile-error" class="text-red-500 text-sm"></p>
-        </div>
-        <button type="submit"
-                class="bg-indigo-600 text-white px-6 py-2 rounded-md font-medium hover:bg-indigo-700">
-          Save Profile Changes
+        <button id="cancel-edit-profile-btn" type="button" class="text-gray-600 hover:text-gray-900 font-semibold transition-colors px-4 py-2 rounded-xl hover:bg-gray-50">
+          Cancel
         </button>
       </div>
-    </form>
+
+      <form id="programmer-profile-form" class="space-y-10">
+        <!-- Profile Picture (Apple Style) -->
+        <div class="border-b border-gray-100 pb-8">
+          <h5 class="text-xl font-bold text-gray-900 mb-6">Profile Picture</h5>
+          <div class="flex items-center gap-8">
+            <img id="programmer-profile-pic-preview"
+                 src="https://placehold.co/100x100/e0e7ff/6366f1?text=P"
+                 alt="Profile Preview"
+                 class="w-28 h-28 rounded-3xl object-cover shadow-md border border-gray-100">
+            <div class="flex flex-col gap-3">
+              <label for="programmer-edit-profile-pic" class="cursor-pointer bg-gray-900 text-white py-3 px-6 rounded-2xl text-sm font-semibold hover:bg-gray-800 transition-all inline-block text-center shadow-sm hover:shadow">
+                Upload New Photo
+                <input id="programmer-edit-profile-pic" type="file" accept="image/*" class="sr-only">
+              </label>
+              <p class="text-xs text-gray-500 leading-relaxed">JPG, PNG or GIF. Max 5MB.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Personal Details (Apple Style) -->
+        <div class="border-b border-gray-100 pb-6">
+          <h5 class="text-lg font-bold text-gray-900 mb-4">Personal Details</h5>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label for="programmer-edit-firstname" class="block text-sm font-semibold text-gray-700 mb-2">First Name *</label>
+              <input id="programmer-edit-firstname" type="text" required
+                     class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+            </div>
+            <div>
+              <label for="programmer-edit-lastname" class="block text-sm font-semibold text-gray-700 mb-2">Last Name *</label>
+              <input id="programmer-edit-lastname" type="text" required
+                     class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+            </div>
+            <div>
+              <label for="programmer-edit-phone" class="block text-sm font-semibold text-gray-700 mb-2">Phone Number</label>
+              <input id="programmer-edit-phone" type="tel"
+                     class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+            </div>
+          </div>
+        </div>
+
+        <!-- Organization Details (Apple Style) -->
+        <div class="border-b border-gray-100 pb-6">
+          <h5 class="text-lg font-bold text-gray-900 mb-4">Organization Details</h5>
+          <div class="grid grid-cols-1 gap-4">
+            <div>
+              <label for="programmer-edit-org-name" class="block text-sm font-semibold text-gray-700 mb-2">Organization Name *</label>
+              <input id="programmer-edit-org-name" type="text" required
+                     class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+            </div>
+            <div>
+              <label for="programmer-edit-website" class="block text-sm font-semibold text-gray-700 mb-2">Website</label>
+              <input id="programmer-edit-website" type="url" placeholder="https://..."
+                     class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+            </div>
+            <div>
+              <label for="programmer-edit-org-about" class="block text-sm font-semibold text-gray-700 mb-2">About Organization</label>
+              <textarea id="programmer-edit-org-about" rows="4"
+                        class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preferences (Apple Style) -->
+        <div class="border-b border-gray-100 pb-6">
+          <h5 class="text-lg font-bold text-gray-900 mb-4">Preferences</h5>
+          <div>
+            <label for="programmer-edit-language" class="block text-sm font-semibold text-gray-700 mb-2">Language</label>
+            <select id="programmer-edit-language"
+                    class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+              <option value="nl">Nederlands</option>
+              <option value="en">English</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Submit Button (Apple Style) -->
+        <div class="space-y-4 pt-4">
+          <button type="submit"
+                  class="w-full bg-indigo-600 text-white px-6 py-5 rounded-2xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg">
+            Save All Changes
+          </button>
+          <p id="programmer-profile-success" class="text-green-600 text-sm text-center"></p>
+          <p id="programmer-profile-error" class="text-red-600 text-sm text-center"></p>
+        </div>
+      </form>
+    </div>
   `;
 
   console.log("Programmer profile editor HTML rendered");
@@ -175,15 +174,29 @@ export function setupProgrammerProfile() {
  */
 export function setupProfileFormHandlers() {
   const form = document.getElementById('programmer-profile-form');
+  const editor = document.getElementById('programmer-profile-editor');
+  const cancelBtn = document.getElementById('cancel-edit-profile-btn');
 
-  if (!form) {
-    console.warn("Programmer profile form not found for handler setup");
+  if (!form || !editor) {
+    console.warn("Programmer profile form or editor not found for handler setup");
     return;
   }
 
   // Remove any existing listeners by cloning the form
   const newForm = form.cloneNode(true);
   form.parentNode.replaceChild(newForm, form);
+
+  // Setup cancel button
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', () => {
+      console.log("[PROFILE] Cancel button clicked - hiding editor");
+      editor.classList.add('hidden');
+      editor.style.display = 'none';
+
+      // Refresh the profile overview
+      displayProgrammerProfileOverview();
+    });
+  }
 
   // Setup profile picture preview
   setupProfilePicPreview();

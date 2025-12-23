@@ -34,6 +34,7 @@
             background: white;
             position: relative;
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.08);
+            overflow-x: hidden;
         }
 
         @media (min-width: 481px) {
@@ -128,22 +129,24 @@
             transform: scale(0.95);
         }
 
-        /* Badge for notifications */
+        /* Badge for notifications - positioned at top-right of icon */
         .notification-badge {
             position: absolute;
-            top: 4px;
-            right: 12px;
+            top: -4px;
+            right: -4px;
             background: #FF3B30;
             color: white;
             font-size: 10px;
-            font-weight: 600;
-            min-width: 16px;
-            height: 16px;
-            border-radius: 8px;
+            font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 9px;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 0 4px;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
         }
 
         /* Hide default scrollbar but keep functionality */
@@ -204,6 +207,84 @@
                 display: block;
             }
         }
+
+        /* Search Module - Pill Filters (Mobile) */
+        .pill {
+            padding: 0.5rem 1rem;
+            background-color: #f3f4f6;
+            color: #374151;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: background-color 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .pill:hover {
+            background-color: #e5e7eb;
+        }
+
+        .pill-active {
+            padding: 0.5rem 1rem;
+            background-color: #e0e7ff;
+            color: #4f46e5;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            white-space: nowrap;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* Mobile Filter Menu Slide-in */
+        .mobile-filter-menu-open {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top-left-radius: 1rem;
+            border-top-right-radius: 1rem;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            padding: 1.5rem;
+            max-height: 70vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        /* Hide scrollbar for mobile pills container */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Mobile Filter Bar - Horizontal Slide */
+        #mobile-filter-bar {
+            transform: translateY(-10px);
+            opacity: 0;
+            transition: all 0.3s ease-out;
+        }
+
+        #mobile-filter-bar:not(.hidden) {
+            transform: translateY(0);
+            opacity: 1;
+        }
     </style>
 
     <!-- Lucide Icons -->
@@ -213,7 +294,7 @@
     <link rel="stylesheet" href="/style.css">
 </head>
 
-<body class="bg-gray-50 text-gray-900 antialiased">
+<body class="bg-gray-50 text-gray-900 antialiased overflow-x-hidden">
 
     <!-- Main App Container -->
     <div id="app-container">
@@ -225,12 +306,9 @@
         <header id="app-header" class="md:hidden bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-40">
             <div class="flex items-center justify-between">
                 <h1 class="text-lg font-bold text-gray-900 tracking-tight">SPOKEN WORD PLATFORM</h1>
-                <div class="flex items-center space-x-3">
-                    <span id="user-email-mobile" class="text-xs text-gray-500 hidden"></span>
-                    <button id="nav-logout-mobile" class="hidden text-red-500 text-sm font-medium">
-                        Logout
-                    </button>
-                </div>
+                <button id="nav-logout-mobile" class="text-red-500 text-sm font-semibold px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">
+                    Logout
+                </button>
             </div>
         </header>
 

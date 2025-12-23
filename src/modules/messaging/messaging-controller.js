@@ -25,7 +25,8 @@ import {
   showProgrammerProfileModal
 } from './messaging-ui.js';
 
-import { getStore } from '../../../store.js';
+import { getStore } from '../../utils/store.js';
+import { showErrorToast, showSuccessToast } from '../../ui/toast.js';
 
 // Globale variabele om de huidige artiest bij te houden
 let currentArtistForMessage = null;
@@ -123,7 +124,6 @@ async function handleSendMessage(e) {
     if (existingConversation) {
       // Gebruik bestaande conversatie
       conversationId = existingConversation.id;
-      console.log("Using existing conversation:", conversationId);
     } else {
       // Maak nieuwe conversatie aan
       conversationId = await createConversation(
@@ -132,7 +132,6 @@ async function handleSendMessage(e) {
         currentArtistForMessage,
         subject
       );
-      console.log("Created new conversation:", conversationId);
     }
 
     // Voeg bericht toe aan conversatie
@@ -149,8 +148,12 @@ async function handleSendMessage(e) {
 
   } catch (error) {
     console.error("Error sending message:", error);
-    messageError.textContent = error.message || 'Failed to send message. Please try again.';
+    const errorMessage = error.message || 'Failed to send message. Please try again.';
+    messageError.textContent = errorMessage;
     messageError.style.display = 'block';
+
+    // Show toast notification
+    showErrorToast(errorMessage);
 
     // Re-enable button
     submitBtn.disabled = false;
@@ -176,8 +179,23 @@ export async function loadConversations() {
   const emptyEl = document.getElementById('conversations-empty');
   const listEl = document.getElementById('conversations-list');
 
-  // Toon loading state
-  if (loadingEl) loadingEl.style.display = 'block';
+  // Show loading skeleton
+  if (loadingEl) {
+    loadingEl.innerHTML = `
+      <div class="space-y-3 p-4 animate-pulse">
+        ${Array(4).fill(0).map(() => `
+          <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
+            <div class="h-12 w-12 bg-gray-200 rounded-full"></div>
+            <div class="flex-1 space-y-2">
+              <div class="h-3 bg-gray-200 rounded w-2/3"></div>
+              <div class="h-2 bg-gray-200 rounded w-1/2"></div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    loadingEl.style.display = 'block';
+  }
   if (emptyEl) emptyEl.style.display = 'none';
   if (listEl) {
     listEl.style.display = 'none';
@@ -208,6 +226,8 @@ export async function loadConversations() {
 
   } catch (error) {
     console.error("Error loading conversations:", error);
+    const errorMessage = error.message || 'Error loading conversations. Please refresh the page.';
+
     if (loadingEl) {
       loadingEl.innerHTML = `
         <div class="text-center py-8">
@@ -216,6 +236,9 @@ export async function loadConversations() {
         </div>
       `;
     }
+
+    // Show toast notification
+    showErrorToast(errorMessage);
   }
 }
 
@@ -224,8 +247,6 @@ export async function loadConversations() {
  * @param {string} conversationId - Conversation ID
  */
 export async function openConversation(conversationId) {
-  console.log("Opening conversation:", conversationId);
-
   try {
     const currentUser = getStore('currentUser');
 
