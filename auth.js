@@ -47,6 +47,7 @@ function showAuthError(formId, message) {
  */
 export async function handleLogin(e) {
   e.preventDefault();
+
   const email = document.getElementById('login-email').value;
   const password = document.getElementById('login-password').value;
   const errorEl = document.getElementById('login-error');
@@ -56,7 +57,7 @@ export async function handleLogin(e) {
 
   try {
     await signInWithEmailAndPassword(auth, email, password);
-    // De onAuthStateChanged-listener (in monitorAuthState) 
+    // De onAuthStateChanged-listener (in monitorAuthState)
     // zal de rest afhandelen (data ophalen, dashboard tonen).
   } catch (error) {
     console.error("Login mislukt:", error);
@@ -259,31 +260,4 @@ export function monitorAuthState() {
   });
 }
 
-/**
- * Voegt de event listeners toe aan de inlog- en registratieformulieren.
- * Wordt één keer uitgevoerd bij het starten van de app.
- */
-export function initAuth() {
-  // FIX 2: DOM race condition guards - check elements exist before adding listeners
-  const loginForm = document.getElementById('login-form');
-  const artistSignupForm = document.getElementById('artist-signup-form');
-  const programmerSignupForm = document.getElementById('programmer-signup-form');
-
-  if (loginForm) {
-    loginForm.addEventListener('submit', handleLogin);
-  } else {
-    console.warn('[AUTH] login-form element not found');
-  }
-
-  if (artistSignupForm) {
-    artistSignupForm.addEventListener('submit', handleArtistSignup);
-  } else {
-    console.warn('[AUTH] artist-signup-form element not found');
-  }
-
-  if (programmerSignupForm) {
-    programmerSignupForm.addEventListener('submit', handleProgrammerSignup);
-  } else {
-    console.warn('[AUTH] programmer-signup-form element not found');
-  }
-}
+// ⭐ REMOVED: initAuth() - all form handling is now done via global event delegation in ui.js

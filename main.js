@@ -29,9 +29,8 @@ window.addEventListener('unhandledrejection', (event) => {
 });
 
 // Importeer de initialisatie-functies van onze modules
-import { initAuth, monitorAuthState } from './auth.js';
-import { initNavigation, showPage } from './ui.js';
-import { getArtistSignupData, validateArtistSignupData } from './artist-signup-helpers.js';
+import { monitorAuthState } from './auth.js';
+import { initNavigation, setupGlobalFormHandlers } from './ui.js';
 import { setupProgrammerProfile } from './programmer-profile.js';
 import { setupArtistSearch } from './artist-search.js'; // Artist search & detail view
 import { setupMessaging } from './messaging.js';
@@ -50,6 +49,10 @@ function initApp() {
     console.log("🚀 Starting application initialization...");
     console.log("=".repeat(60));
 
+    // Setup global form handlers first (before any UI rendering)
+    // This ensures login/signup forms work regardless of when they're rendered
+    setupGlobalFormHandlers();
+
     // Initialize translations (default to Dutch)
     initTranslations();
 
@@ -60,15 +63,9 @@ function initApp() {
     // Stel de navigatieknoppen in (Login, Home, etc.)
     initNavigation();
 
-    // Stel de auth-formulieren in (Login, Signup, Logout knoppen)
-    initAuth();
-
     // Stel de listener in die kijkt of we in- of uitgelogd zijn
     // Deze verbergt ook de lader en toont de homepagina
     monitorAuthState();
-
-    // ⭐ NOTE: setupArtistDashboard() and setupProgrammerDashboard() are now called
-    // in ui.js showDashboard() AFTER the HTML is rendered, so event listeners can attach
 
     // Stel de listeners in voor het programmeurs-profiel (edit profile)
     setupProgrammerProfile();

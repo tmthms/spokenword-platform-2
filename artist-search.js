@@ -237,6 +237,11 @@ export function renderArtistSearch() {
     <p id="artist-list-empty" class="text-gray-500 text-sm md:text-base" data-i18n="no_artists_found">No artists found. Click 'Search' to load all artists or refine your filters.</p>
   `;
 
+  // ✅ RESET: Clear setup flag to allow re-setup after HTML render
+  if (searchSection) {
+    searchSection.dataset.setupComplete = 'false';
+  }
+
   // CRUCIAL: Re-setup event listeners after rendering
   setupArtistSearch();
 
@@ -254,6 +259,13 @@ export function renderArtistSearch() {
  */
 export function setupArtistSearch() {
   console.log("[SETUP ARTIST SEARCH] Starting artist search setup...");
+
+  // ✅ GUARD: Prevent duplicate setup
+  const artistSearchSection = document.getElementById('artist-search-section');
+  if (artistSearchSection && artistSearchSection.dataset.setupComplete === 'true') {
+    console.log("[SETUP ARTIST SEARCH] Already set up, skipping");
+    return;
+  }
 
   // Setup toggle filters button (mobile only)
   const toggleFiltersBtn = document.getElementById('toggle-filters-btn');
@@ -311,6 +323,11 @@ export function setupArtistSearch() {
 
   // Setup browser back/forward buttons (SECURED)
   setupBrowserHistory();
+
+  // ✅ Mark setup as complete
+  if (artistSearchSection) {
+    artistSearchSection.dataset.setupComplete = 'true';
+  }
 
   console.log("[SETUP ARTIST SEARCH] ✅ Artist search setup complete");
 }
@@ -660,7 +677,41 @@ function calculateAge(dob) {
 }
 
 /**
+ * Setup event delegation for artist card clicks
+ * ✅ FIX: Uses event delegation on container to handle dynamic cards
+ */
+function setupArtistCardClickHandlers() {
+  const resultsContainer = document.getElementById('artist-list-container');
+  if (!resultsContainer) {
+    console.warn('[ARTIST CARDS] Results container not found');
+    return;
+  }
+
+  // Check if listener already attached
+  if (resultsContainer.dataset.clickHandlerAttached === 'true') {
+    console.log('[ARTIST CARDS] Click handler already attached');
+    return;
+  }
+
+  // Use event delegation on the container
+  resultsContainer.addEventListener('click', (e) => {
+    // Find the closest artist card
+    const card = e.target.closest('.artist-card');
+    if (card && card.dataset.artistId) {
+      const artistId = card.dataset.artistId;
+      console.log('[ARTIST CARDS] Card clicked, artist ID:', artistId);
+      showArtistDetail(artistId);
+    }
+  });
+
+  // Mark as attached
+  resultsContainer.dataset.clickHandlerAttached = 'true';
+  console.log('[ARTIST CARDS] Click handler attached via event delegation');
+}
+
+/**
  * Render artists in the results container
+ * ✅ FIX: Uses event delegation for click handling
  */
 function renderArtists(artists) {
   const resultsContainer = document.getElementById('artist-list-container');
@@ -675,16 +726,23 @@ function renderArtists(artists) {
     const card = createArtistCard(artist);
     resultsContainer.appendChild(card);
   });
+
+  // ✅ FIX: Setup event delegation for artist card clicks (only once)
+  setupArtistCardClickHandlers();
 }
 
 /**
  * Create an artist card element
  * Mobile: Compact flex-row layout with small image
  * Desktop: Traditional card layout
+ * ✅ FIX: Uses data-artist-id for event delegation
  */
 function createArtistCard(artist) {
   const card = document.createElement('div');
-  card.className = 'bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer';
+  card.className = 'artist-card bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer';
+
+  // ✅ FIX: Add data attribute for event delegation
+  card.dataset.artistId = artist.id;
 
   // Profile picture
   const profilePic = artist.profilePicUrl || "https://placehold.co/400x400/e0e7ff/6366f1?text=No+Photo";
@@ -709,7 +767,7 @@ function createArtistCard(artist) {
         <div class="mb-2 flex flex-wrap gap-1">
           ${genresHTML}
         </div>
-        <button class="w-full bg-indigo-600 text-white py-1.5 px-3 rounded text-xs font-medium hover:bg-indigo-700 transition-colors">
+        <button class="artist-card-btn w-full bg-indigo-600 text-white py-1.5 px-3 rounded text-xs font-medium hover:bg-indigo-700 transition-colors">
           View Profile
         </button>
       </div>
@@ -730,17 +788,14 @@ function createArtistCard(artist) {
             ? artist.genres.slice(0, 3).map(g => `<span class="inline-block bg-indigo-100 text-indigo-800 px-2 py-1 rounded text-xs">${g}</span>`).join(' ') + (artist.genres.length > 3 ? '<span class="text-xs text-gray-500">+more</span>' : '')
             : '<span class="text-gray-500 text-sm">No genres</span>'}
         </div>
-        <button class="w-full bg-indigo-600 text-white py-2 px-4 rounded text-base hover:bg-indigo-700 transition-colors">
+        <button class="artist-card-btn w-full bg-indigo-600 text-white py-2 px-4 rounded text-base hover:bg-indigo-700 transition-colors">
           View Profile
         </button>
       </div>
     </div>
   `;
 
-  // Add click listener
-  card.addEventListener('click', () => {
-    showArtistDetail(artist.id);
-  });
+  // ✅ FIX: No direct click listener - using event delegation instead
 
   return card;
 }

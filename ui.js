@@ -90,21 +90,15 @@ export function showPage(pageId) {
       break;
     case 'login-view':
       renderLogin();
-      // Attach event listener to login form after rendering
-      attachLoginFormListener();
       break;
     case 'signup-view':
       renderSignup();
       break;
     case 'artist-signup-view':
       renderArtistSignup();
-      // Attach event listener to artist signup form after rendering
-      attachArtistSignupFormListener();
       break;
     case 'programmer-signup-view':
       renderProgrammerSignup();
-      // Attach event listener to programmer signup form after rendering
-      attachProgrammerSignupFormListener();
       break;
     case 'messages-view':
       renderMessagesView();
@@ -124,34 +118,52 @@ export function showPage(pageId) {
 }
 
 /**
- * Helper functions to attach form event listeners after rendering
+ * Setup global form handlers with event delegation
+ * Handles all auth forms (login, signup) regardless of when they're rendered
+ * Uses capture phase to intercept events before any other handlers
  */
-function attachLoginFormListener() {
-  const loginForm = document.getElementById('login-form');
-  if (loginForm) {
-    loginForm.addEventListener('submit', handleLogin);
-  } else {
-    console.warn('[UI] login-form element not found after rendering');
+let globalFormHandlersInitialized = false;
+
+export function setupGlobalFormHandlers() {
+  if (globalFormHandlersInitialized) {
+    console.log('[UI] Global form handlers already initialized, skipping');
+    return;
   }
+
+  console.log('[UI] Setting up global form handlers with capture phase');
+
+  // PRIMARY: Use event delegation on document (highest level) with capture phase
+  document.addEventListener('submit', async (e) => {
+    console.log('⚡️ Global SUBMIT caught:', e.target.tagName, 'id:', e.target.id);
+
+    const form = e.target;
+
+    // Login form
+    if (form.id === 'login-form') {
+      console.log('[UI] ✅ Login form submit intercepted - calling handleLogin');
+      await handleLogin(e);
+      return;
+    }
+
+    // Artist signup form
+    if (form.id === 'artist-signup-form') {
+      console.log('[UI] ✅ Artist signup form submit intercepted');
+      await handleArtistSignup(e);
+      return;
+    }
+
+    // Programmer signup form
+    if (form.id === 'programmer-signup-form') {
+      console.log('[UI] ✅ Programmer signup form submit intercepted');
+      await handleProgrammerSignup(e);
+      return;
+    }
+  }, { capture: true }); // CRITICAL: Capture phase ensures we intercept FIRST
+
+  globalFormHandlersInitialized = true;
+  console.log('[UI] ✅ Global form handlers initialized successfully');
 }
 
-function attachArtistSignupFormListener() {
-  const artistSignupForm = document.getElementById('artist-signup-form');
-  if (artistSignupForm) {
-    artistSignupForm.addEventListener('submit', handleArtistSignup);
-  } else {
-    console.warn('[UI] artist-signup-form element not found after rendering');
-  }
-}
-
-function attachProgrammerSignupFormListener() {
-  const programmerSignupForm = document.getElementById('programmer-signup-form');
-  if (programmerSignupForm) {
-    programmerSignupForm.addEventListener('submit', handleProgrammerSignup);
-  } else {
-    console.warn('[UI] programmer-signup-form element not found after rendering');
-  }
-}
 
 /**
  * Werkt de navigatiebalk bij op basis van de inlogstatus.
@@ -206,6 +218,54 @@ export function updateNav(user) {
     if (userEmailMobile) {
       userEmailMobile.textContent = '';
       userEmailMobile.classList.add('hidden');
+    }
+  }
+}
+
+/**
+ * Helper: Show/hide artist search section consistently
+ * @param {boolean} show - Whether to show (true) or hide (false) the search section
+ */
+function toggleArtistSearchSection(show) {
+  const artistSearchSection = document.getElementById('artist-search-section');
+  if (artistSearchSection) {
+    if (show) {
+      artistSearchSection.style.display = 'block';
+      artistSearchSection.classList.remove('hidden');
+      console.log('[UI] Artist search section shown');
+    } else {
+      artistSearchSection.style.display = 'none';
+      artistSearchSection.classList.add('hidden');
+      console.log('[UI] Artist search section hidden');
+    }
+  }
+}
+
+/**
+ * Helper: Show/hide profile sections (overview, preview, editor)
+ * @param {boolean} show - Whether to show (true) or hide (false)
+ */
+function toggleProfileSections(show) {
+  const profileOverview = document.getElementById('programmer-profile-overview');
+  const publicPreview = document.getElementById('programmer-public-preview');
+
+  if (profileOverview) {
+    if (show) {
+      profileOverview.style.display = 'block';
+      profileOverview.classList.remove('hidden');
+    } else {
+      profileOverview.style.display = 'none';
+      profileOverview.classList.add('hidden');
+    }
+  }
+
+  if (publicPreview) {
+    if (show) {
+      publicPreview.style.display = 'block';
+      publicPreview.classList.remove('hidden');
+    } else {
+      publicPreview.style.display = 'none';
+      publicPreview.classList.add('hidden');
     }
   }
 }
@@ -277,21 +337,20 @@ export function showDashboard() {
       programmerProfileEditor.style.display = 'none';
     }
 
-    // Get artist search section dynamically
-    const artistSearchSection = document.getElementById('artist-search-section');
-    if (artistSearchSection) {
-      artistSearchSection.style.display = 'block';
-      artistSearchSection.classList.remove('hidden');
-    }
+    // ✅ FIX: Show profile sections in dashboard view
+    toggleProfileSections(true);
 
     if (status === 'pending') {
       // Verberg de zoekfilters, toon "pending" bericht
       if (pendingView) pendingView.style.display = 'block';
-      const artistSearchSectionPending = document.getElementById('artist-search-section');
-      if (artistSearchSectionPending) artistSearchSectionPending.style.display = 'none';
+      // ✅ FIX: Hide artist search in pending state
+      toggleArtistSearchSection(false);
     } else {
       // Toon de zoekfilters en verberg "pending"
       if (pendingView) pendingView.style.display = 'none';
+
+      // ✅ FIX: Show artist search section
+      toggleArtistSearchSection(true);
 
       // Render the artist search view dynamically
       renderArtistSearch();
@@ -318,6 +377,8 @@ export function showProgrammerSettings() {
     return;
   }
 
+  console.log('[UI] Showing programmer settings view');
+
   // STAP 1: Render de dashboard container structuur
   showPage('dashboard-view');
 
@@ -342,27 +403,15 @@ export function showProgrammerSettings() {
 
   // Get dynamically rendered elements
   const pendingView = document.getElementById('programmer-pending-view');
-  const artistSearchSection = document.getElementById('artist-search-section');
 
-  // Hide the pending view and artist search section
+  // Hide the pending view
   if (pendingView) pendingView.style.display = 'none';
-  if (artistSearchSection) {
-    artistSearchSection.style.display = 'none';
-    artistSearchSection.classList.add('hidden');
-  }
 
-  // Show the profile overview AND public preview
-  const profileOverview = document.getElementById('programmer-profile-overview');
-  const publicPreview = document.getElementById('programmer-public-preview');
+  // ✅ FIX: Hide artist search section in Settings view
+  toggleArtistSearchSection(false);
 
-  if (profileOverview) {
-    profileOverview.style.display = 'block';
-    profileOverview.classList.remove('hidden');
-  }
-  if (publicPreview) {
-    publicPreview.style.display = 'block';
-    publicPreview.classList.remove('hidden');
-  }
+  // ✅ FIX: Show profile sections in Settings view
+  toggleProfileSections(true);
 
   // Get the profile editor dynamically
   const programmerProfileEditor = document.getElementById('programmer-profile-editor');
@@ -409,82 +458,75 @@ export function showMessages() {
 /**
  * Voegt alle event listeners toe voor de navigatieknoppen.
  * Wordt één keer uitgevoerd bij het laden van de app.
- * DIT IS DE FIX: Exporteert de functie met de juiste naam 'initNavigation'.
+ * ✅ Uses event delegation for all dynamically rendered elements
  */
 export function initNavigation() {
-  // Top navigation (deprecated but keep for compatibility)
-  if (elements.navHome) elements.navHome.addEventListener('click', () => showPage('home-view'));
-  if (elements.navLogin) elements.navLogin.addEventListener('click', () => showPage('login-view'));
-  if (elements.navSignup) elements.navSignup.addEventListener('click', () => showPage('signup-view'));
-  if (elements.navDashboard) elements.navDashboard.addEventListener('click', showDashboard);
-  if (elements.navMessages) elements.navMessages.addEventListener('click', showMessages);
-  if (elements.navSettings) elements.navSettings.addEventListener('click', showProgrammerSettings);
-  if (elements.navLogout) elements.navLogout.addEventListener('click', handleLogout);
+  // ✅ Global click handler with event delegation
+  document.body.addEventListener('click', (e) => {
+    // Mobile logout button
+    if (e.target.closest('#nav-logout-mobile')) {
+      console.log('[UI] Mobile logout clicked');
+      handleLogout();
+      return;
+    }
 
-  // Homepagina CTA-knoppen
-  if (elements.homeCtaArtist) {
-    elements.homeCtaArtist.addEventListener('click', () => showPage('artist-signup-view'));
-  } else {
-    console.warn('⚠️ Skipped listener for missing element: homeCtaArtist');
-  }
+    // Home CTA buttons
+    if (e.target.closest('#home-cta-artist')) {
+      showPage('artist-signup-view');
+      return;
+    }
 
-  if (elements.homeCtaProgrammer) {
-    elements.homeCtaProgrammer.addEventListener('click', () => showPage('programmer-signup-view'));
-  } else {
-    console.warn('⚠️ Skipped listener for missing element: homeCtaProgrammer');
-  }
+    if (e.target.closest('#home-cta-programmer')) {
+      showPage('programmer-signup-view');
+      return;
+    }
 
-  // Home login button (nieuwe button)
-  const homeLoginBtn = document.getElementById('home-login-btn');
-  if (homeLoginBtn) {
-    homeLoginBtn.addEventListener('click', () => showPage('login-view'));
-  }
+    // Home login button
+    if (e.target.closest('#home-login-btn')) {
+      showPage('login-view');
+      return;
+    }
 
-  // Signup-keuzeknoppen
-  if (elements.signupChoiceArtist) {
-    elements.signupChoiceArtist.addEventListener('click', () => showPage('artist-signup-view'));
-  } else {
-    console.warn('⚠️ Skipped listener for missing element: signupChoiceArtist');
-  }
+    // Signup choice buttons
+    if (e.target.closest('#signup-choice-artist')) {
+      showPage('artist-signup-view');
+      return;
+    }
 
-  if (elements.signupChoiceProgrammer) {
-    elements.signupChoiceProgrammer.addEventListener('click', () => showPage('programmer-signup-view'));
-  } else {
-    console.warn('⚠️ Skipped listener for missing element: signupChoiceProgrammer');
-  }
+    if (e.target.closest('#signup-choice-programmer')) {
+      showPage('programmer-signup-view');
+      return;
+    }
 
-  // Back buttons (nieuwe navigatie)
-  const backFromLoginBtn = document.getElementById('back-to-home-from-login');
-  if (backFromLoginBtn) {
-    backFromLoginBtn.addEventListener('click', () => showPage('home-view'));
-  }
+    // Back buttons
+    if (e.target.closest('#back-to-home-from-login')) {
+      showPage('home-view');
+      return;
+    }
 
-  const backFromSignupBtn = document.getElementById('back-to-home-from-signup');
-  if (backFromSignupBtn) {
-    backFromSignupBtn.addEventListener('click', () => showPage('home-view'));
-  }
+    if (e.target.closest('#back-to-home-from-signup')) {
+      showPage('home-view');
+      return;
+    }
 
-  const backFromArtistSignup = document.getElementById('back-from-artist-signup');
-  if (backFromArtistSignup) {
-    backFromArtistSignup.addEventListener('click', () => showPage('signup-view'));
-  }
+    if (e.target.closest('#back-from-artist-signup')) {
+      showPage('signup-view');
+      return;
+    }
 
-  const backFromProgrammerSignup = document.getElementById('back-from-programmer-signup');
-  if (backFromProgrammerSignup) {
-    backFromProgrammerSignup.addEventListener('click', () => showPage('signup-view'));
-  }
-
-  // Mobile logout button
-  const navLogoutMobile = document.getElementById('nav-logout-mobile');
-  if (navLogoutMobile) {
-    navLogoutMobile.addEventListener('click', handleLogout);
-  }
+    if (e.target.closest('#back-from-programmer-signup')) {
+      showPage('signup-view');
+      return;
+    }
+  });
 
   // Bottom Navigation
   setupBottomNavigation();
 
   // Desktop Navigation
   setupDesktopNavigation();
+
+  console.log('[UI] Navigation initialization complete with event delegation');
 }
 
 /**
@@ -545,57 +587,66 @@ function updateBottomNavActive(activeNav) {
 
 /**
  * Setup desktop navigation with dropdown and search
+ * ✅ FIX: Uses event delegation to handle dynamically rendered navigation
  */
 function setupDesktopNavigation() {
-  const desktopNav = document.getElementById('desktop-top-nav');
-  if (!desktopNav) return;
+  // ✅ Use event delegation on document body to catch clicks from dynamically rendered nav
+  document.body.addEventListener('click', (e) => {
+    // Desktop Search
+    if (e.target.closest('#desktop-nav-search')) {
+      window.location.hash = '#search';
+      showDashboard();
+      return;
+    }
 
-  // Desktop nav items
-  const desktopSearch = document.getElementById('desktop-nav-search');
-  const desktopMessages = document.getElementById('desktop-nav-messages');
-  const desktopProfileBtn = document.getElementById('desktop-profile-btn');
-  const desktopDropdown = document.getElementById('desktop-profile-dropdown');
+    // Desktop Messages
+    if (e.target.closest('#desktop-nav-messages')) {
+      window.location.hash = '#messages';
+      showMessages();
+      return;
+    }
 
-  // ⭐ BUG FIX 3: Update URL hash when navigating on desktop
-  // Menu actions
-  if (desktopSearch) desktopSearch.addEventListener('click', () => {
-    window.location.hash = '#search';
-    showDashboard();
-  });
-  if (desktopMessages) desktopMessages.addEventListener('click', () => {
-    window.location.hash = '#messages';
-    showMessages();
-  });
+    // Desktop Settings
+    if (e.target.closest('#desktop-settings')) {
+      const dropdown = document.getElementById('desktop-profile-dropdown');
+      if (dropdown) dropdown.classList.add('hidden');
+      window.location.hash = '#settings';
+      showProgrammerSettings();
+      return;
+    }
 
-  // Profile dropdown toggle
-  if (desktopProfileBtn && desktopDropdown) {
-    desktopProfileBtn.addEventListener('click', (e) => {
+    // ✅ FIX: Desktop Logout with event delegation
+    if (e.target.closest('#desktop-logout')) {
+      console.log('[UI] Desktop logout clicked');
+      const dropdown = document.getElementById('desktop-profile-dropdown');
+      if (dropdown) dropdown.classList.add('hidden');
+      handleLogout();
+      return;
+    }
+
+    // Desktop Profile Button (toggle dropdown)
+    const profileBtn = e.target.closest('#desktop-profile-btn');
+    if (profileBtn) {
       e.stopPropagation();
-      desktopDropdown.classList.toggle('hidden');
-    });
+      const dropdown = document.getElementById('desktop-profile-dropdown');
+      if (dropdown) {
+        dropdown.classList.toggle('hidden');
+      }
+      return;
+    }
 
     // Close dropdown when clicking outside
-    document.addEventListener('click', (e) => {
-      if (!desktopProfileBtn.contains(e.target) && !desktopDropdown.contains(e.target)) {
-        desktopDropdown.classList.add('hidden');
+    const dropdown = document.getElementById('desktop-profile-dropdown');
+    const profileBtnElement = document.getElementById('desktop-profile-btn');
+    if (dropdown && profileBtnElement) {
+      if (!dropdown.classList.contains('hidden') &&
+          !profileBtnElement.contains(e.target) &&
+          !dropdown.contains(e.target)) {
+        dropdown.classList.add('hidden');
       }
-    });
-  }
-
-  // Dropdown menu items
-  const settingsBtn = document.getElementById('desktop-settings');
-  const logoutBtn = document.getElementById('desktop-logout');
-
-  // ⭐ BUG FIX 3: Update URL hash for settings
-  if (settingsBtn) settingsBtn.addEventListener('click', () => {
-    desktopDropdown.classList.add('hidden');
-    window.location.hash = '#settings';
-    showProgrammerSettings();
+    }
   });
 
-  if (logoutBtn) logoutBtn.addEventListener('click', () => {
-    desktopDropdown.classList.add('hidden');
-    handleLogout();
-  });
+  console.log('[UI] Desktop navigation event delegation setup complete');
 }
 

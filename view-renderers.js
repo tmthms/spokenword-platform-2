@@ -73,6 +73,8 @@ export function renderHome() {
 
 /**
  * Renders the Login view
+ * Clean, standard implementation with proper form submission
+ * Uses global event delegation via setupGlobalFormHandlers()
  */
 export function renderLogin() {
   const appContent = document.getElementById('app-content');
@@ -95,15 +97,15 @@ export function renderLogin() {
             <input id="login-password" name="password" type="password" autocomplete="current-password" required
               class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
           </div>
-          <button type="submit"
-            class="btn-press w-full py-3 px-4 rounded-xl text-base font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mt-6">
+          <button type="submit" id="login-submit-btn"
+            class="w-full py-3 px-4 rounded-xl text-base font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors mt-6">
             Inloggen
           </button>
           <p id="login-error" class="text-red-500 text-sm mt-2 text-center"></p>
         </form>
 
         <div class="mt-6 text-center">
-          <button id="back-to-home-from-login" class="text-indigo-600 text-sm font-medium">
+          <button id="back-to-home-from-login" class="text-indigo-600 text-sm font-medium hover:text-indigo-800 transition-colors">
             ← Terug naar home
           </button>
         </div>
