@@ -1,14 +1,18 @@
 /**
  * programmer-dashboard.js
- * Manages only the programmer's profile overview (read-only display)
- * - Name, Organization, Photo, Contact Info, About
+ * Manages the programmer's profile with separate views:
+ * - Profile overview (read-only display)
+ * - Edit profile (form)
  * - Public profile preview
  *
- * Profile editing is handled by programmer-profile.js
  * Artist search is handled by artist-search.js
  */
 
-import { getStore } from '../../utils/store.js';
+import { getStore, setStore } from '../../utils/store.js';
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { doc, updateDoc } from "firebase/firestore";
+import { db } from '../../services/firebase.js';
+import { setLanguage } from '../../utils/translations.js';
 
 /**
  * Renders the programmer dashboard HTML structure
@@ -35,100 +39,374 @@ export function renderProgrammerDashboard() {
         </div>
     </div>
 
-    <!-- Programmer Profile Overview Card (Apple Style) -->
-    <div id="programmer-profile-overview" class="bg-white p-10 rounded-3xl shadow-sm border border-gray-100 mb-8">
-        <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
-            <h3 class="text-3xl font-bold text-gray-900 tracking-tight">Your Profile</h3>
-            <button id="edit-programmer-profile-btn" class="bg-indigo-600 text-white px-6 py-3 rounded-2xl font-semibold hover:bg-indigo-700 transition-all shadow-sm hover:shadow">
-                Edit Profile
-            </button>
-        </div>
+    <!-- VIEW 1: Profile Overview (main view) -->
+    <div id="programmer-profile-view" class="programmer-profile-pattern">
+      <div style="max-width: 800px; margin: 0 auto; padding: 40px 20px;">
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+        <!-- Main Profile Card -->
+        <div style="background: white; border-radius: 20px; padding: 32px; box-shadow: 0 4px 20px rgba(128, 90, 213, 0.08); border: 1px solid rgba(128, 90, 213, 0.1); margin-bottom: 20px;">
+
+          <!-- Verified Badge - Top Right -->
+          <div style="display: flex; justify-content: flex-end; margin-bottom: -20px;">
+            <span id="programmer-verified-badge" style="display: none; align-items: center; gap: 6px; color: #805ad5; font-size: 14px; font-weight: 500;">
+              <svg width="18" height="18" fill="#805ad5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Verified Programmer
+            </span>
+          </div>
+
+          <!-- Profile Header -->
+          <div style="display: flex; gap: 28px; align-items: flex-start;">
+
             <!-- Profile Picture -->
-            <div class="flex justify-center md:justify-start">
-                <img id="programmer-overview-pic" src="https://placehold.co/200x200/e0e7ff/6366f1?text=P" alt="Profile" class="w-52 h-52 md:w-72 md:h-72 object-cover rounded-3xl shadow-lg border border-gray-100">
+            <div id="programmer-profile-pic-container" style="width: 140px; height: 140px; background: linear-gradient(135deg, #e9e3f5 0%, #d4c8eb 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;">
+              <span id="programmer-profile-initial" style="font-size: 64px; font-weight: 600; color: #805ad5;">P</span>
+              <img id="programmer-profile-pic" src="" alt="Profile" style="display: none; width: 100%; height: 100%; object-fit: cover;">
             </div>
 
             <!-- Profile Info -->
-            <div class="space-y-5">
-                <div class="pb-5 border-b border-gray-50">
-                    <h4 id="programmer-overview-name" class="text-4xl font-bold text-gray-900 tracking-tight mb-2">Programmer Name</h4>
-                    <p id="programmer-overview-org" class="text-2xl text-indigo-600 font-semibold">Organization Name</p>
-                </div>
+            <div style="flex: 1;">
+              <h1 id="programmer-display-name" style="font-size: 32px; font-weight: 700; color: #805ad5; margin-bottom: 4px;">Programmer Name</h1>
+              <p id="programmer-org-name" style="font-size: 18px; color: #4a4a68; margin-bottom: 20px;">Organization Name</p>
 
-                <div class="grid grid-cols-2 gap-4 text-sm">
-                    <div class="bg-gray-50 p-3 rounded-xl">
-                        <span class="block text-xs font-semibold text-gray-500 mb-1">EMAIL</span>
-                        <span id="programmer-overview-email" class="font-medium text-gray-900">email@example.com</span>
-                    </div>
-                    <div class="bg-gray-50 p-3 rounded-xl">
-                        <span class="block text-xs font-semibold text-gray-500 mb-1">PHONE</span>
-                        <span id="programmer-overview-phone" class="font-medium text-gray-900">Phone</span>
-                    </div>
-                    <div class="col-span-2 bg-gray-50 p-3 rounded-xl">
-                        <span class="block text-xs font-semibold text-gray-500 mb-1">WEBSITE</span>
-                        <a id="programmer-overview-website" href="#" target="_blank" class="font-medium text-indigo-600 hover:text-indigo-800 transition-colors">Website</a>
-                    </div>
-                </div>
+              <!-- Contact Info Row -->
+              <div style="display: flex; flex-wrap: wrap; gap: 20px; margin-bottom: 24px;">
+                <a id="programmer-email-link" href="mailto:" style="display: flex; align-items: center; gap: 8px; color: #4a4a68; text-decoration: none; font-size: 14px;">
+                  <svg width="18" height="18" fill="none" stroke="#805ad5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                  <span id="programmer-email">email@example.com</span>
+                </a>
+                <a id="programmer-phone-link" href="tel:" style="display: none; align-items: center; gap: 8px; color: #4a4a68; text-decoration: none; font-size: 14px;">
+                  <svg width="18" height="18" fill="none" stroke="#805ad5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                  <span id="programmer-phone">Phone</span>
+                </a>
+                <a id="programmer-website-link" href="" target="_blank" style="display: none; align-items: center; gap: 8px; color: #4a4a68; text-decoration: none; font-size: 14px;">
+                  <svg width="18" height="18" fill="none" stroke="#805ad5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+                  <span id="programmer-website">website.com</span>
+                </a>
+              </div>
 
-                <div class="bg-gray-50 p-4 rounded-xl">
-                    <p class="text-xs font-semibold text-gray-500 mb-2">ABOUT ORGANIZATION</p>
-                    <p id="programmer-overview-about" class="text-gray-700 leading-relaxed">Organization description here</p>
-                </div>
+              <!-- Action Buttons -->
+              <div style="display: flex; gap: 12px;">
+                <button id="edit-programmer-profile-btn" style="padding: 12px 28px; background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%); color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer;">
+                  Edit Profile
+                </button>
+                <button id="view-public-profile-btn" style="padding: 12px 28px; background: white; color: #1a1a2e; border: 2px solid #1a1a2e; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer;">
+                  View Public Profile
+                </button>
+              </div>
             </div>
+          </div>
         </div>
+
+        <!-- About Organization Card -->
+        <div style="background: white; border-radius: 20px; padding: 28px 32px; box-shadow: 0 4px 20px rgba(128, 90, 213, 0.08); border: 1px solid rgba(128, 90, 213, 0.1);">
+          <h2 style="font-size: 22px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px;">About Organization</h2>
+          <p id="programmer-org-about" style="color: #4a4a68; font-size: 15px; line-height: 1.7;">No description available</p>
+        </div>
+
+      </div>
     </div>
 
-    <!-- Programmer Profile Editor (rendered by programmer-profile.js) -->
-    <div id="programmer-profile-editor" class="hidden">
-        <!-- Content will be rendered by renderProgrammerProfileEditor() -->
+    <!-- VIEW 2: Edit Profile (hidden by default) -->
+    <div id="programmer-edit-view" class="programmer-profile-pattern" style="display: none;">
+      <div style="max-width: 800px; margin: 0 auto; padding: 40px 20px;">
+
+        <!-- Back Button -->
+        <button id="back-from-edit-btn" style="display: flex; align-items: center; gap: 8px; background: none; border: none; color: #805ad5; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 24px; padding: 8px 0;">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          Terug naar profiel
+        </button>
+
+        <!-- Edit Form Card -->
+        <div style="background: white; border-radius: 20px; padding: 32px; box-shadow: 0 4px 20px rgba(128, 90, 213, 0.08); border: 1px solid rgba(128, 90, 213, 0.1);">
+          <h2 style="font-size: 28px; font-weight: 700; color: #1a1a2e; margin-bottom: 8px;">Edit Profile</h2>
+          <p style="color: #9ca3af; font-size: 14px; margin-bottom: 32px;">Update your information below</p>
+
+          <form id="programmer-profile-form">
+            <!-- Profile Picture -->
+            <div style="margin-bottom: 28px;">
+              <label style="display: block; font-size: 14px; font-weight: 600; color: #1a1a2e; margin-bottom: 8px;">Profile Picture</label>
+              <div style="display: flex; align-items: center; gap: 20px;">
+                <img id="programmer-edit-pic-preview" src="https://placehold.co/100x100/e9e3f5/805ad5?text=P" style="width: 100px; height: 100px; border-radius: 12px; object-fit: cover;">
+                <div>
+                  <input type="file" id="programmer-edit-profile-pic" accept="image/*" style="font-size: 14px;">
+                  <p style="font-size: 12px; color: #9ca3af; margin-top: 4px;">JPG, PNG or WebP. Max 5MB.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Name Fields -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+              <div>
+                <label style="display: block; font-size: 14px; font-weight: 600; color: #1a1a2e; margin-bottom: 8px;">First Name *</label>
+                <input type="text" id="programmer-edit-firstname" required style="width: 100%; padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 14px; outline: none;" onfocus="this.style.borderColor='#805ad5'" onblur="this.style.borderColor='#e5e7eb'">
+              </div>
+              <div>
+                <label style="display: block; font-size: 14px; font-weight: 600; color: #1a1a2e; margin-bottom: 8px;">Last Name *</label>
+                <input type="text" id="programmer-edit-lastname" required style="width: 100%; padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 14px; outline: none;" onfocus="this.style.borderColor='#805ad5'" onblur="this.style.borderColor='#e5e7eb'">
+              </div>
+            </div>
+
+            <!-- Phone -->
+            <div style="margin-bottom: 20px;">
+              <label style="display: block; font-size: 14px; font-weight: 600; color: #1a1a2e; margin-bottom: 8px;">Phone Number</label>
+              <input type="tel" id="programmer-edit-phone" style="width: 100%; padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 14px; outline: none;" onfocus="this.style.borderColor='#805ad5'" onblur="this.style.borderColor='#e5e7eb'">
+            </div>
+
+            <!-- Organization Name -->
+            <div style="margin-bottom: 20px;">
+              <label style="display: block; font-size: 14px; font-weight: 600; color: #1a1a2e; margin-bottom: 8px;">Organization Name *</label>
+              <input type="text" id="programmer-edit-org-name" required style="width: 100%; padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 14px; outline: none;" onfocus="this.style.borderColor='#805ad5'" onblur="this.style.borderColor='#e5e7eb'">
+            </div>
+
+            <!-- Website -->
+            <div style="margin-bottom: 20px;">
+              <label style="display: block; font-size: 14px; font-weight: 600; color: #1a1a2e; margin-bottom: 8px;">Website</label>
+              <input type="url" id="programmer-edit-website" placeholder="https://example.com" style="width: 100%; padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 14px; outline: none;" onfocus="this.style.borderColor='#805ad5'" onblur="this.style.borderColor='#e5e7eb'">
+            </div>
+
+            <!-- About Organization -->
+            <div style="margin-bottom: 28px;">
+              <label style="display: block; font-size: 14px; font-weight: 600; color: #1a1a2e; margin-bottom: 8px;">About Organization *</label>
+              <textarea id="programmer-edit-org-about" rows="4" required style="width: 100%; padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 14px; outline: none; resize: vertical;" onfocus="this.style.borderColor='#805ad5'" onblur="this.style.borderColor='#e5e7eb'"></textarea>
+            </div>
+
+            <!-- Submit -->
+            <div style="display: flex; gap: 12px;">
+              <button type="submit" id="save-programmer-profile-btn" style="flex: 1; padding: 14px 28px; background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;">
+                Save Changes
+              </button>
+              <button type="button" id="cancel-edit-btn" style="padding: 14px 28px; background: white; color: #4a4a68; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;">
+                Cancel
+              </button>
+            </div>
+
+            <p id="programmer-profile-success" style="display: none; color: #10b981; text-align: center; margin-top: 16px;"></p>
+            <p id="programmer-profile-error" style="display: none; color: #ef4444; text-align: center; margin-top: 16px;"></p>
+          </form>
+        </div>
+
+      </div>
     </div>
 
-    <!-- Programmer Public Preview Section (Apple Style) -->
-    <div id="programmer-public-preview" class="bg-white p-10 rounded-3xl shadow-sm border border-gray-100 mb-8">
-        <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
-            <h3 class="text-3xl font-bold text-gray-900 tracking-tight">Public Profile Preview</h3>
-            <button id="refresh-programmer-preview-btn" class="bg-indigo-600 text-white px-5 py-3 rounded-2xl font-semibold hover:bg-indigo-700 transition-all shadow-sm hover:shadow">
-                <i data-lucide="refresh-cw" class="h-4 w-4 inline mr-1"></i>
-                Refresh Preview
-            </button>
+    <!-- VIEW 3: Public Profile Preview (hidden by default) -->
+    <div id="programmer-public-view" class="programmer-profile-pattern" style="display: none;">
+      <div style="max-width: 800px; margin: 0 auto; padding: 40px 20px;">
+
+        <!-- Back Button -->
+        <button id="back-from-public-btn" style="display: flex; align-items: center; gap: 8px; background: none; border: none; color: #805ad5; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 24px; padding: 8px 0;">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+          Terug naar profiel
+        </button>
+
+        <!-- Info Banner -->
+        <div style="background: #f3e8ff; border-radius: 12px; padding: 16px 20px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px;">
+          <svg width="20" height="20" fill="none" stroke="#805ad5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <p style="color: #6b46c1; font-size: 14px;">This is how artists see your profile when they view your organization information.</p>
         </div>
 
-        <div class="bg-gray-50 p-8 rounded-3xl border-2 border-dashed border-gray-200">
-            <p class="text-sm text-gray-600 mb-4 flex items-center">
-                <i data-lucide="info" class="h-4 w-4 mr-2 flex-shrink-0"></i>
-                This is how artists see your profile when they view your organization information.
-            </p>
-
-            <!-- Preview Content Container -->
-            <div id="programmer-preview-content" class="bg-white rounded-2xl shadow-sm border border-gray-100">
-                <!-- Preview will be rendered here -->
-                <div class="text-center py-12 text-gray-500">
-                    <i data-lucide="eye" class="h-12 w-12 mx-auto mb-4 text-gray-400"></i>
-                    <p class="font-medium">Click "Refresh Preview" to see how your profile looks</p>
-                </div>
-            </div>
+        <!-- Public Profile Card -->
+        <div id="programmer-public-preview-card" style="background: white; border-radius: 20px; padding: 32px; box-shadow: 0 4px 20px rgba(128, 90, 213, 0.08); border: 1px solid rgba(128, 90, 213, 0.1);">
+          <!-- Content wordt gevuld door renderPublicPreviewCard() -->
         </div>
+
+      </div>
     </div>
 
     <!-- Search and Filter Section (Content rendered dynamically by renderArtistSearch() in artist-search.js) -->
-    <div id="artist-search-section" class="bg-white p-4 md:p-8 lg:p-10 rounded-2xl md:rounded-3xl shadow-sm border border-gray-100" style="min-height: 400px; display: block; opacity: 1; visibility: visible;">
+    <div id="artist-search-section" class="bg-white p-4 md:p-6 rounded-2xl md:rounded-3xl shadow-sm border border-gray-100" style="min-height: 400px; display: block; opacity: 1; visibility: visible;">
         <!-- Content will be injected dynamically -->
     </div>
 
     <!-- Version Badge (Programmer Dashboard) -->
     <div class="text-center py-6 text-xs text-gray-400">
-        Staging v2.1 (Modular Dashboard) [23-12-2025]
+        Staging v2.1 (Modular Dashboard) [27-12-2025]
     </div>
   `;
 
-  console.log("Programmer dashboard HTML rendered");
+  console.log("Programmer dashboard HTML rendered with 3 separate views");
+}
+
+/**
+ * Toon profile overview (main view)
+ */
+export function showProgrammerProfileView() {
+  const profileView = document.getElementById('programmer-profile-view');
+  const editView = document.getElementById('programmer-edit-view');
+  const publicView = document.getElementById('programmer-public-view');
+
+  if (profileView) profileView.style.display = 'block';
+  if (editView) editView.style.display = 'none';
+  if (publicView) publicView.style.display = 'none';
+
+  // Refresh data
+  displayProgrammerProfileOverview();
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  console.log("[NAVIGATION] Switched to profile overview");
+}
+
+/**
+ * Toon edit profile view
+ */
+export function showProgrammerEditView() {
+  const profileView = document.getElementById('programmer-profile-view');
+  const editView = document.getElementById('programmer-edit-view');
+  const publicView = document.getElementById('programmer-public-view');
+
+  if (profileView) profileView.style.display = 'none';
+  if (editView) editView.style.display = 'block';
+  if (publicView) publicView.style.display = 'none';
+
+  // Populate form with current data
+  populateProgrammerEditor();
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  console.log("[NAVIGATION] Switched to edit view");
+}
+
+/**
+ * Toon public profile view
+ */
+export function showProgrammerPublicView() {
+  const profileView = document.getElementById('programmer-profile-view');
+  const editView = document.getElementById('programmer-edit-view');
+  const publicView = document.getElementById('programmer-public-view');
+
+  if (profileView) profileView.style.display = 'none';
+  if (editView) editView.style.display = 'none';
+  if (publicView) publicView.style.display = 'block';
+
+  // Render public preview
+  renderPublicPreviewCard();
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  console.log("[NAVIGATION] Switched to public view");
+}
+
+/**
+ * Render public preview in de card (voor de separate public view page)
+ */
+function renderPublicPreviewCard() {
+  const container = document.getElementById('programmer-public-preview-card');
+  const currentUserData = getStore('currentUserData');
+  const currentUser = getStore('currentUser');
+
+  if (!container || !currentUserData) return;
+
+  const firstName = currentUserData.firstName || '';
+  const lastName = currentUserData.lastName || '';
+  const fullName = `${firstName} ${lastName}`.trim() || 'Programmer';
+  const orgName = currentUserData.organizationName || 'Organization';
+  const email = currentUser?.email || '';
+  const phone = currentUserData.phone || '';
+  const website = currentUserData.website || '';
+  const about = currentUserData.organizationAbout || 'No description available.';
+  const profilePic = currentUserData.profilePicUrl;
+  const initial = (firstName || 'P').charAt(0).toUpperCase();
+
+  container.innerHTML = `
+    <div style="display: flex; gap: 28px; align-items: flex-start; margin-bottom: 24px;">
+
+      <!-- Profile Picture -->
+      <div style="width: 120px; height: 120px; background: linear-gradient(135deg, #e9e3f5 0%, #d4c8eb 100%); border-radius: 16px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; overflow: hidden;">
+        ${profilePic
+          ? `<img src="${profilePic}" style="width: 100%; height: 100%; object-fit: cover;">`
+          : `<span style="font-size: 48px; font-weight: 600; color: #805ad5;">${initial}</span>`
+        }
+      </div>
+
+      <!-- Info -->
+      <div style="flex: 1;">
+        <h2 style="font-size: 28px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px;">${fullName}</h2>
+        <p style="font-size: 18px; color: #805ad5; font-weight: 600; margin-bottom: 16px;">${orgName}</p>
+
+        <!-- Contact -->
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          ${email ? `
+            <div style="display: flex; align-items: center; gap: 8px; color: #4a4a68; font-size: 14px;">
+              <svg width="16" height="16" fill="none" stroke="#805ad5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+              ${email}
+            </div>
+          ` : ''}
+          ${phone ? `
+            <div style="display: flex; align-items: center; gap: 8px; color: #4a4a68; font-size: 14px;">
+              <svg width="16" height="16" fill="none" stroke="#805ad5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+              ${phone}
+            </div>
+          ` : ''}
+          ${website ? `
+            <div style="display: flex; align-items: center; gap: 8px; color: #4a4a68; font-size: 14px;">
+              <svg width="16" height="16" fill="none" stroke="#805ad5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+              ${website.replace(/^https?:\/\//, '')}
+            </div>
+          ` : ''}
+        </div>
+      </div>
+    </div>
+
+    <!-- About -->
+    <div style="border-top: 1px solid #e9e3f5; padding-top: 20px; margin-bottom: 20px;">
+      <h3 style="font-size: 14px; font-weight: 600; color: #805ad5; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px;">About ${orgName}</h3>
+      <p style="color: #4a4a68; font-size: 15px; line-height: 1.7;">${about}</p>
+    </div>
+
+    <!-- Verified Badge -->
+    <div style="display: flex; justify-content: center; padding-top: 16px; border-top: 1px solid #e9e3f5;">
+      <span style="display: inline-flex; align-items: center; gap: 6px; color: #805ad5; font-size: 14px; font-weight: 500;">
+        <svg width="18" height="18" fill="#805ad5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Verified Programmer
+      </span>
+    </div>
+  `;
+
+  console.log("[PUBLIC VIEW] Public preview card rendered");
+}
+
+/**
+ * Populate edit form with current user data
+ */
+function populateProgrammerEditor() {
+  const currentUserData = getStore('currentUserData');
+
+  if (!currentUserData) {
+    console.warn("[EDIT] No user data to populate");
+    return;
+  }
+
+  // Populate form fields
+  const firstNameInput = document.getElementById('programmer-edit-firstname');
+  const lastNameInput = document.getElementById('programmer-edit-lastname');
+  const phoneInput = document.getElementById('programmer-edit-phone');
+  const orgNameInput = document.getElementById('programmer-edit-org-name');
+  const websiteInput = document.getElementById('programmer-edit-website');
+  const orgAboutInput = document.getElementById('programmer-edit-org-about');
+  const picPreview = document.getElementById('programmer-edit-pic-preview');
+
+  if (firstNameInput) firstNameInput.value = currentUserData.firstName || '';
+  if (lastNameInput) lastNameInput.value = currentUserData.lastName || '';
+  if (phoneInput) phoneInput.value = currentUserData.phone || '';
+  if (orgNameInput) orgNameInput.value = currentUserData.organizationName || '';
+  if (websiteInput) websiteInput.value = currentUserData.website || '';
+  if (orgAboutInput) orgAboutInput.value = currentUserData.organizationAbout || '';
+
+  // Update profile picture preview
+  if (picPreview && currentUserData.profilePicUrl) {
+    picPreview.src = currentUserData.profilePicUrl;
+  }
+
+  console.log("[EDIT] Form populated with current data");
 }
 
 /**
  * Setup programmer dashboard
- * Only handles the profile overview display and public preview
+ * Only handles the profile overview display and navigation
  */
 export function setupProgrammerDashboard() {
   console.log("[SETUP PROGRAMMER DASHBOARD] Starting programmer dashboard setup...");
@@ -136,84 +414,201 @@ export function setupProgrammerDashboard() {
   // Display profile overview
   displayProgrammerProfileOverview();
 
-  // Setup public profile preview
-  setupPublicPreview();
-
-  // ⭐ FIX: Setup edit profile button click handler
-  setupEditProfileButton();
+  // Setup navigation event handlers
+  setupProgrammerNavigation();
 
   console.log("[SETUP PROGRAMMER DASHBOARD] ✅ Programmer dashboard setup complete");
 }
 
 /**
- * Setup edit profile button click handler
- * Uses event delegation on the container for reliability
+ * Setup navigation event handlers using event delegation
  */
-function setupEditProfileButton() {
-  const container = document.getElementById('programmer-dashboard');
-  const editor = document.getElementById('programmer-profile-editor');
+function setupProgrammerNavigation() {
+  const dashboard = document.getElementById('programmer-dashboard');
 
-  if (!container || !editor) {
-    console.warn("[SETUP EDIT BTN] Dashboard container or editor not found");
+  if (!dashboard) {
+    console.warn("[NAVIGATION] Dashboard container not found");
     return;
   }
 
-  // Check if listener is already attached to prevent duplicates
-  if (container.dataset.editListenerAttached === 'true') {
-    console.log("[PROGRAMMER DASHBOARD] Edit button listener already attached, skipping");
+  // Prevent duplicate listeners
+  if (dashboard.dataset.navListenersAttached === 'true') {
+    console.log("[NAVIGATION] Listeners already attached, skipping");
     return;
   }
 
-  // Use event delegation on the container
-  // This works even if the button is re-rendered
-  container.addEventListener('click', (e) => {
-    // Check if the clicked element is the edit button or any child of it
-    const clickedBtn = e.target.closest('#edit-programmer-profile-btn');
-    if (clickedBtn) {
+  // Use event delegation for all navigation clicks
+  dashboard.addEventListener('click', (e) => {
+    // Edit Profile button
+    if (e.target.closest('#edit-programmer-profile-btn')) {
       e.preventDefault();
-      e.stopPropagation();
-      console.log("[PROGRAMMER DASHBOARD] Edit profile button clicked");
+      showProgrammerEditView();
+      return;
+    }
 
-      // Import the functions we need
-      import('./programmer-profile.js').then(module => {
-        const isHidden = editor.classList.contains('hidden') || editor.style.display === 'none';
+    // View Public Profile button
+    if (e.target.closest('#view-public-profile-btn')) {
+      e.preventDefault();
+      showProgrammerPublicView();
+      return;
+    }
 
-        if (isHidden) {
-          // Show editor
-          console.log("[PROGRAMMER DASHBOARD] Showing editor");
-          module.renderProgrammerProfileEditor();
-          editor.classList.remove('hidden');
-          editor.style.display = 'block';
+    // Back from Edit (both back button and cancel button)
+    if (e.target.closest('#back-from-edit-btn') || e.target.closest('#cancel-edit-btn')) {
+      e.preventDefault();
+      showProgrammerProfileView();
+      return;
+    }
 
-          // Setup form handlers after rendering
-          module.setupProfileFormHandlers();
-
-          // Populate with current data
-          module.populateProgrammerEditor();
-
-          // Scroll to editor
-          setTimeout(() => {
-            editor.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }, 100);
-        } else {
-          // Hide editor
-          console.log("[PROGRAMMER DASHBOARD] Hiding editor, showing overview");
-          editor.classList.add('hidden');
-          editor.style.display = 'none';
-
-          // Refresh the profile overview
-          displayProgrammerProfileOverview();
-        }
-      }).catch(error => {
-        console.error("[EDIT BTN] Error loading programmer-profile.js:", error);
-      });
+    // Back from Public
+    if (e.target.closest('#back-from-public-btn')) {
+      e.preventDefault();
+      showProgrammerProfileView();
+      return;
     }
   });
 
-  // Mark listener as attached
-  container.dataset.editListenerAttached = 'true';
+  // Form submit handler
+  dashboard.addEventListener('submit', (e) => {
+    if (e.target.id === 'programmer-profile-form') {
+      e.preventDefault();
+      handleProgrammerProfileSubmit(e);
+    }
+  });
 
-  console.log("[PROGRAMMER DASHBOARD] Edit button listener attached via event delegation");
+  // Profile picture preview on file select
+  dashboard.addEventListener('change', (e) => {
+    if (e.target.id === 'programmer-edit-profile-pic') {
+      const file = e.target.files?.[0];
+      const preview = document.getElementById('programmer-edit-pic-preview');
+
+      if (file && preview) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          preview.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+  });
+
+  dashboard.dataset.navListenersAttached = 'true';
+
+  console.log("[NAVIGATION] Event listeners attached via event delegation");
+}
+
+/**
+ * Handles form submission to save profile changes
+ * Navigates back to profile view after successful save
+ */
+async function handleProgrammerProfileSubmit(e) {
+  e.preventDefault();
+
+  const successMsg = document.getElementById('programmer-profile-success');
+  const errorMsg = document.getElementById('programmer-profile-error');
+  const submitBtn = document.getElementById('save-programmer-profile-btn');
+
+  // Reset messages
+  if (successMsg) successMsg.style.display = 'none';
+  if (errorMsg) errorMsg.style.display = 'none';
+
+  // Disable button
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+  }
+
+  try {
+    const currentUser = getStore('currentUser');
+    if (!currentUser) {
+      throw new Error("No user logged in");
+    }
+
+    const uid = currentUser.uid;
+    const docRef = doc(db, 'programmers', uid);
+
+    // Collect form data
+    const dataToUpdate = {
+      firstName: document.getElementById('programmer-edit-firstname')?.value.trim() || '',
+      lastName: document.getElementById('programmer-edit-lastname')?.value.trim() || '',
+      phone: document.getElementById('programmer-edit-phone')?.value.trim() || '',
+      organizationName: document.getElementById('programmer-edit-org-name')?.value.trim() || '',
+      organizationAbout: document.getElementById('programmer-edit-org-about')?.value.trim() || '',
+      website: document.getElementById('programmer-edit-website')?.value.trim() || ''
+    };
+
+    // Validate required fields
+    if (!dataToUpdate.firstName || !dataToUpdate.lastName || !dataToUpdate.organizationName) {
+      throw new Error("Please fill in all required fields (marked with *)");
+    }
+
+    // Handle profile picture upload
+    const fileInput = document.getElementById('programmer-edit-profile-pic');
+    const file = fileInput?.files?.[0];
+
+    if (file) {
+      console.log("[SAVE] Uploading profile picture...");
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('File size must be less than 5MB');
+      }
+
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Please select an image file');
+      }
+
+      const storage = getStorage();
+      const storageRef = ref(storage, `programmers/${uid}/profile.jpg`);
+
+      // Upload file
+      const snapshot = await uploadBytes(storageRef, file);
+
+      // Get download URL
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      console.log("[SAVE] Profile picture uploaded:", downloadURL);
+
+      // Add URL to data
+      dataToUpdate.profilePicUrl = downloadURL;
+    }
+
+    // Update Firestore
+    await updateDoc(docRef, dataToUpdate);
+    console.log("[SAVE] Profile updated successfully");
+
+    // Update local store
+    const currentUserData = getStore('currentUserData');
+    setStore('currentUserData', { ...currentUserData, ...dataToUpdate });
+
+    // Show success message
+    if (successMsg) {
+      successMsg.textContent = '✓ Profile updated successfully!';
+      successMsg.style.display = 'block';
+    }
+
+    // Clear file input
+    if (file && fileInput) {
+      fileInput.value = '';
+    }
+
+    // Navigate back to profile view after 1.5 seconds
+    setTimeout(() => {
+      showProgrammerProfileView();
+    }, 1500);
+
+  } catch (error) {
+    console.error("[SAVE] Error saving profile:", error);
+    if (errorMsg) {
+      errorMsg.textContent = error.message || 'Failed to save profile';
+      errorMsg.style.display = 'block';
+    }
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Save Changes';
+    }
+  }
 }
 
 /**
@@ -230,165 +625,82 @@ export function displayProgrammerProfileOverview() {
     return;
   }
 
-  // Profile Picture
-  const overviewPic = document.getElementById('programmer-overview-pic');
-  if (overviewPic) {
-    overviewPic.src = currentUserData.profilePicUrl ||
-                      `https://placehold.co/200x200/e0e7ff/6366f1?text=${encodeURIComponent((currentUserData.firstName || 'P').charAt(0))}`;
-  }
+  // Profile Picture or Initial
+  const profilePic = document.getElementById('programmer-profile-pic');
+  const profileInitial = document.getElementById('programmer-profile-initial');
 
-  // Name & Organization
-  const nameEl = document.getElementById('programmer-overview-name');
-  if (nameEl) {
-    nameEl.textContent = `${currentUserData.firstName || ''} ${currentUserData.lastName || ''}`.trim() || 'Programmer Name';
-  }
-
-  const orgEl = document.getElementById('programmer-overview-org');
-  if (orgEl) {
-    orgEl.textContent = currentUserData.organizationName || 'Organization Name';
-  }
-
-  // Contact Info
-  const emailEl = document.getElementById('programmer-overview-email');
-  if (emailEl) {
-    emailEl.textContent = currentUser?.email || 'email@example.com';
-  }
-
-  const phoneEl = document.getElementById('programmer-overview-phone');
-  if (phoneEl) {
-    phoneEl.textContent = currentUserData.phone || 'Not specified';
-  }
-
-  // Website
-  const websiteElement = document.getElementById('programmer-overview-website');
-  if (websiteElement) {
-    if (currentUserData.website) {
-      websiteElement.href = currentUserData.website;
-      websiteElement.textContent = currentUserData.website.replace(/^https?:\/\//, '');
-    } else {
-      websiteElement.href = '#';
-      websiteElement.textContent = 'Not specified';
+  if (currentUserData.profilePicUrl) {
+    if (profilePic) {
+      profilePic.src = currentUserData.profilePicUrl;
+      profilePic.style.display = 'block';
+    }
+    if (profileInitial) profileInitial.style.display = 'none';
+  } else {
+    if (profilePic) profilePic.style.display = 'none';
+    if (profileInitial) {
+      profileInitial.style.display = 'flex';
+      profileInitial.textContent = (currentUserData.firstName || 'P').charAt(0).toUpperCase();
     }
   }
 
-  // About
-  const aboutEl = document.getElementById('programmer-overview-about');
-  if (aboutEl) {
-    aboutEl.textContent = currentUserData.organizationAbout || 'No description available';
+  // Name
+  const displayName = document.getElementById('programmer-display-name');
+  if (displayName) {
+    displayName.textContent = `${currentUserData.firstName || ''} ${currentUserData.lastName || ''}`.trim() || 'Programmer Name';
+  }
+
+  // Organization name
+  const orgName = document.getElementById('programmer-org-name');
+  if (orgName) {
+    orgName.textContent = currentUserData.organizationName || 'Organization Name';
+  }
+
+  // Email
+  const emailSpan = document.getElementById('programmer-email');
+  const emailLink = document.getElementById('programmer-email-link');
+  if (emailSpan && currentUser?.email) {
+    emailSpan.textContent = currentUser.email;
+  }
+  if (emailLink) {
+    emailLink.href = `mailto:${currentUser?.email || ''}`;
+    emailLink.style.display = currentUser?.email ? 'flex' : 'none';
+  }
+
+  // Phone
+  const phoneSpan = document.getElementById('programmer-phone');
+  const phoneLink = document.getElementById('programmer-phone-link');
+  if (phoneSpan && currentUserData.phone) {
+    phoneSpan.textContent = currentUserData.phone;
+  }
+  if (phoneLink) {
+    phoneLink.href = `tel:${currentUserData.phone || ''}`;
+    phoneLink.style.display = currentUserData.phone ? 'flex' : 'none';
+  }
+
+  // Website
+  const websiteSpan = document.getElementById('programmer-website');
+  const websiteLink = document.getElementById('programmer-website-link');
+  if (websiteSpan && currentUserData.website) {
+    websiteSpan.textContent = currentUserData.website.replace(/^https?:\/\//, '');
+  }
+  if (websiteLink) {
+    websiteLink.href = currentUserData.website?.startsWith('http')
+      ? currentUserData.website
+      : `https://${currentUserData.website}`;
+    websiteLink.style.display = currentUserData.website ? 'flex' : 'none';
+  }
+
+  // About Organization
+  const orgAbout = document.getElementById('programmer-org-about');
+  if (orgAbout) {
+    orgAbout.textContent = currentUserData.organizationAbout || 'No description available';
+  }
+
+  // Verified badge (show only if verified)
+  const verifiedBadge = document.getElementById('programmer-verified-badge');
+  if (verifiedBadge) {
+    verifiedBadge.style.display = currentUserData.verified ? 'inline-flex' : 'none';
   }
 
   console.log("[PROFILE] Profile overview displayed successfully");
-}
-
-/**
- * Setup public profile preview functionality
- */
-function setupPublicPreview() {
-  const refreshBtn = document.getElementById('refresh-programmer-preview-btn');
-
-  if (!refreshBtn) {
-    console.warn("Refresh programmer preview button not found");
-    return;
-  }
-
-  // Setup refresh button click handler
-  refreshBtn.addEventListener('click', () => {
-    renderPublicPreview();
-  });
-
-  // Show initial preview
-  renderPublicPreview();
-
-  console.log("Programmer public preview setup complete");
-}
-
-/**
- * Render the public profile preview
- * Shows how the programmer's profile looks to artists
- */
-export function renderPublicPreview() {
-  const previewContent = document.getElementById('programmer-preview-content');
-  const currentUserData = getStore('currentUserData');
-  const currentUser = getStore('currentUser');
-
-  if (!previewContent) {
-    console.warn("Programmer preview content container not found");
-    return;
-  }
-
-  if (!currentUserData) {
-    console.warn("No programmer data found for preview");
-    previewContent.innerHTML = `
-      <div class="text-center py-12 text-gray-500">
-        <p>No profile data available. Please complete your profile first.</p>
-      </div>
-    `;
-    return;
-  }
-
-  // Generate preview HTML with Apple styling
-  const profilePicUrl = currentUserData.profilePicUrl ||
-    `https://placehold.co/200x200/e0e7ff/6366f1?text=${encodeURIComponent((currentUserData.firstName || 'P').charAt(0))}`;
-
-  const fullName = `${currentUserData.firstName || ''} ${currentUserData.lastName || ''}`.trim() || 'Programmer Name';
-  const organizationName = currentUserData.organizationName || 'Organization Name';
-  const email = currentUser?.email || 'email@example.com';
-  const phone = currentUserData.phone || 'Not specified';
-  const website = currentUserData.website || '';
-  const about = currentUserData.organizationAbout || 'No description available';
-
-  previewContent.innerHTML = `
-    <div class="p-6">
-      <!-- Header with profile pic and basic info (Apple Style) -->
-      <div class="flex flex-col md:flex-row items-start space-y-4 md:space-y-0 md:space-x-6 mb-6">
-        <img src="${profilePicUrl}" alt="Profile" class="w-28 h-28 rounded-2xl object-cover shadow-sm border-2 border-gray-100">
-        <div class="flex-1">
-          <h4 class="text-2xl font-bold text-gray-900 tracking-tight">${fullName}</h4>
-          <p class="text-lg text-indigo-600 font-semibold mt-1">${organizationName}</p>
-          <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
-            <div class="bg-gray-50 p-2.5 rounded-xl flex items-center">
-              <i data-lucide="mail" class="h-4 w-4 mr-2 text-gray-500 flex-shrink-0"></i>
-              <a href="mailto:${email}" class="text-gray-700 hover:text-indigo-600 transition-colors truncate">${email}</a>
-            </div>
-            <div class="bg-gray-50 p-2.5 rounded-xl flex items-center">
-              <i data-lucide="phone" class="h-4 w-4 mr-2 text-gray-500 flex-shrink-0"></i>
-              <span class="text-gray-700">${phone}</span>
-            </div>
-            ${website ? `
-              <div class="col-span-full bg-gray-50 p-2.5 rounded-xl flex items-center">
-                <i data-lucide="globe" class="h-4 w-4 mr-2 text-gray-500 flex-shrink-0"></i>
-                <a href="${website}" target="_blank" rel="noopener noreferrer" class="text-indigo-600 hover:text-indigo-800 transition-colors truncate">
-                  ${website.replace(/^https?:\/\//, '')}
-                </a>
-              </div>
-            ` : ''}
-          </div>
-        </div>
-      </div>
-
-      <!-- About Organization (Apple Style) -->
-      <div class="mb-4 bg-gray-50 p-4 rounded-xl">
-        <h5 class="text-xs font-bold text-gray-500 mb-2 uppercase tracking-wide flex items-center">
-          <i data-lucide="building-2" class="h-4 w-4 inline mr-2"></i>
-          About ${organizationName}
-        </h5>
-        <p class="text-gray-700 leading-relaxed">${about}</p>
-      </div>
-
-      <!-- Badge (Apple Style) -->
-      <div class="flex items-center justify-center pt-4 border-t border-gray-100">
-        <div class="inline-flex items-center px-4 py-2 bg-indigo-50 text-indigo-700 rounded-xl text-sm font-semibold">
-          <i data-lucide="check-circle" class="h-4 w-4 mr-2"></i>
-          Verified Programmer
-        </div>
-      </div>
-    </div>
-  `;
-
-  // Re-initialize Lucide icons for the new content
-  if (window.lucide) {
-    window.lucide.createIcons();
-  }
-
-  console.log("Programmer public preview rendered");
 }
