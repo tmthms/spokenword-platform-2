@@ -90,6 +90,33 @@ export function calculateAge(dob) {
 }
 
 /**
+ * Load all available genres from published artists
+ * @returns {Promise<Array<string>>} Sorted array of unique genres
+ */
+export async function loadAvailableGenres() {
+  try {
+    const snapshot = await getDocs(query(collection(db, 'artists'), where('published', '==', true)));
+    const genreSet = new Set();
+
+    snapshot.forEach((docSnap) => {
+      const genres = docSnap.data().genres || [];
+      genres.forEach(g => {
+        if (g && typeof g === 'string') {
+          genreSet.add(g.trim());
+        }
+      });
+    });
+
+    const genreArray = Array.from(genreSet).sort();
+    console.log(`📋 Loaded ${genreArray.length} unique genres:`, genreArray);
+    return genreArray;
+  } catch (error) {
+    console.error('❌ Error loading genres:', error);
+    return [];
+  }
+}
+
+/**
  * Fetch a single artist by ID
  * @param {string} artistId - The artist's document ID
  * @returns {Promise<object|null>} Artist data or null if not found
@@ -139,7 +166,9 @@ export async function loadArtistsData(filters = {}) {
       genreFilters = [],
       languageFilters = [],
       ageMin = null,
-      ageMax = null
+      ageMax = null,
+      energyFilters = [],
+      keywordFilters = []
     } = filters;
 
     console.log("🔍 Filter values:", {
@@ -149,7 +178,9 @@ export async function loadArtistsData(filters = {}) {
       paymentFilters,
       genreFilters,
       languageFilters,
-      ageRange: ageMin !== null || ageMax !== null ? `${ageMin || 'any'}-${ageMax || 'any'}` : 'not set'
+      ageRange: ageMin !== null || ageMax !== null ? `${ageMin || 'any'}-${ageMax || 'any'}` : 'not set',
+      energyFilters,
+      keywordFilters
     });
 
     // Build Firestore query
@@ -295,6 +326,24 @@ export async function loadArtistsData(filters = {}) {
         return meetsMin && meetsMax;
       });
       console.log(`🎂 After age filter: ${artists.length} artists`);
+    }
+
+    // Filter by energy level
+    if (energyFilters.length > 0) {
+      artists = artists.filter(artist => {
+        const artistEnergy = (artist.energyLevel || '').toLowerCase();
+        return energyFilters.includes(artistEnergy);
+      });
+      console.log(`⚡ After energy filter: ${artists.length} artists`);
+    }
+
+    // Filter by keywords
+    if (keywordFilters.length > 0) {
+      artists = artists.filter(artist => {
+        const artistKeywords = (artist.keywords || []).map(k => k.toLowerCase());
+        return keywordFilters.some(k => artistKeywords.includes(k));
+      });
+      console.log(`🏷️ After keywords filter: ${artists.length} artists`);
     }
 
     console.log(`✅ ${artists.length} artists after all filtering`);
