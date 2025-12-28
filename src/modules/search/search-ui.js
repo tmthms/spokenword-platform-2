@@ -330,7 +330,7 @@ export function renderArtists(artists) {
   const mobileGrid = document.getElementById('mobile-search-grid');
 
   const generateCard = (artist, isMobile) => {
-    const pic = artist.profilePicUrl || 'https://via.placeholder.com/300x400?text=No+Photo';
+    const pic = artist.profilePicUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(artist.stageName || 'A')}&background=e0e7ff&color=6366f1&size=300`;
     const name = artist.stageName || `${artist.firstName || ''} ${artist.lastName || ''}`.trim() || 'Unknown';
     const age = artist.dob ? calculateAge(artist.dob) : null;
     const location = artist.location || '';
@@ -340,7 +340,7 @@ export function renderArtists(artists) {
       // Mobile card: compact
       return `
         <div class="cursor-pointer" data-artist-id="${artist.id}">
-          <img src="${pic}" alt="${name}" class="w-full aspect-square object-cover rounded-xl">
+          <img src="${pic}" alt="${name}" class="w-full aspect-square object-cover rounded-xl bg-gray-100" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e0e7ff&color=6366f1&size=300'">
           <h3 class="font-medium text-sm mt-2 truncate">${name}${age ? ', ' + age : ''}</h3>
           ${genre ? `<p class="text-gray-500 text-xs truncate">${genre}</p>` : ''}
         </div>
@@ -349,7 +349,7 @@ export function renderArtists(artists) {
       // Desktop card: more detail
       return `
         <div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer" data-artist-id="${artist.id}">
-          <img src="${pic}" alt="${name}" class="w-full aspect-[3/4] object-cover">
+          <img src="${pic}" alt="${name}" class="w-full aspect-[3/4] object-cover bg-gray-100" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e0e7ff&color=6366f1&size=300'">
           <div class="p-4">
             <h3 class="font-semibold text-gray-900 truncate">${name}</h3>
             ${age ? `<p class="text-gray-500 text-sm">${age} jaar</p>` : ''}
@@ -363,12 +363,16 @@ export function renderArtists(artists) {
 
   // Render desktop grid
   if (desktopGrid) {
-    desktopGrid.innerHTML = artists.map(a => generateCard(a, false)).join('');
+    desktopGrid.innerHTML = artists.length > 0
+      ? artists.map(a => generateCard(a, false)).join('')
+      : '<p class="col-span-4 text-center text-gray-500 py-10">Geen artiesten gevonden</p>';
   }
 
   // Render mobile grid
   if (mobileGrid) {
-    mobileGrid.innerHTML = artists.map(a => generateCard(a, true)).join('');
+    mobileGrid.innerHTML = artists.length > 0
+      ? artists.map(a => generateCard(a, true)).join('')
+      : '<p class="col-span-2 text-center text-gray-500 py-10">Geen artiesten gevonden</p>';
   }
 }
 
@@ -379,7 +383,12 @@ export function populateArtistDetail(artist) {
   // Profile Picture
   const detailProfilePic = document.getElementById('detail-profile-pic');
   if (detailProfilePic) {
-    detailProfilePic.src = artist.profilePicUrl || "https://placehold.co/400x400/e0e7ff/6366f1?text=No+Photo";
+    const name = artist.stageName || `${artist.firstName || ''} ${artist.lastName || ''}`.trim() || 'A';
+    detailProfilePic.src = artist.profilePicUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e0e7ff&color=6366f1&size=400`;
+    detailProfilePic.onerror = function() {
+      this.onerror = null;
+      this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e0e7ff&color=6366f1&size=400`;
+    };
   }
 
   // Basic Info
