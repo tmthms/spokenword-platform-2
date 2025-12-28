@@ -40,6 +40,9 @@ export function renderDesktopNav() {
 
           <!-- Menu Items -->
           <div class="flex items-center space-x-8">
+            <button id="desktop-nav-search" class="text-gray-700 hover:text-indigo-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+              Zoeken
+            </button>
             <button id="desktop-nav-profile" class="text-gray-700 hover:text-indigo-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
               Profiel
             </button>

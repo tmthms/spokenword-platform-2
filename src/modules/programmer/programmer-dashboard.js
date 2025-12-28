@@ -291,6 +291,80 @@ export function showProgrammerPublicView() {
 }
 
 /**
+ * Show only search section (hide profile sections)
+ */
+export function showSearchOnlyView() {
+  console.log('[PROGRAMMER DASHBOARD] Showing search-only view');
+
+  // Hide all profile views
+  const profileView = document.getElementById('programmer-profile-view');
+  const editView = document.getElementById('programmer-edit-view');
+  const publicView = document.getElementById('programmer-public-view');
+
+  if (profileView) {
+    profileView.style.display = 'none';
+    profileView.classList.add('hidden');
+  }
+  if (editView) {
+    editView.style.display = 'none';
+    editView.classList.add('hidden');
+  }
+  if (publicView) {
+    publicView.style.display = 'none';
+    publicView.classList.add('hidden');
+  }
+
+  // Show artist search section
+  const artistSearchSection = document.getElementById('artist-search-section');
+  if (artistSearchSection) {
+    artistSearchSection.style.display = 'block';
+    artistSearchSection.style.opacity = '1';
+    artistSearchSection.style.visibility = 'visible';
+    artistSearchSection.classList.remove('hidden');
+    console.log('[PROGRAMMER DASHBOARD] Artist search section shown');
+  }
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/**
+ * Show only profile section (hide search section)
+ */
+export function showProfileOnlyView() {
+  console.log('[PROGRAMMER DASHBOARD] Showing profile-only view');
+
+  // Hide artist search section
+  const artistSearchSection = document.getElementById('artist-search-section');
+  if (artistSearchSection) {
+    artistSearchSection.style.display = 'none';
+    artistSearchSection.classList.add('hidden');
+  }
+
+  // Show profile view (default view)
+  const profileView = document.getElementById('programmer-profile-view');
+  const editView = document.getElementById('programmer-edit-view');
+  const publicView = document.getElementById('programmer-public-view');
+
+  if (profileView) {
+    profileView.style.display = 'block';
+    profileView.classList.remove('hidden');
+  }
+  if (editView) {
+    editView.style.display = 'none';
+    editView.classList.add('hidden');
+  }
+  if (publicView) {
+    publicView.style.display = 'none';
+    publicView.classList.add('hidden');
+  }
+
+  // Refresh profile data
+  displayProgrammerProfileOverview();
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/**
  * Render public preview in de card (voor de separate public view page)
  */
 function renderPublicPreviewCard() {

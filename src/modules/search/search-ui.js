@@ -1,17 +1,20 @@
 /**
  * search-ui.js
  * Handles all HTML generation for artist search
- * Premium Apple Design - Responsive filters and card layout
+ * Responsive layout - mobile pills & desktop sidebar
  */
 
-import { calculateAge } from './search-data.js';
+import { collection, getDocs } from 'firebase/firestore';
+import { db } from '../../services/firebase.js';
+import { loadArtistsData, calculateAge } from './search-data.js';
+import { showArtistDetail } from './search-controller.js';
 import { getStore } from '../../utils/store.js';
 import { openMessageModal } from '../messaging/messaging-controller.js';
 
 /**
- * Render the artist search view HTML - JavaScript-based responsive with inline styles
- * Desktop: Sidebar filters + 4-column grid
- * Mobile: Horizontal pills + 2-column grid
+ * Render the artist search view - Responsive with Tailwind
+ * Mobile: Horizontal pills + dropdown panels + 2-col grid
+ * Desktop: Sidebar filters + 4-col grid
  */
 export function renderArtistSearch() {
   const searchSection = document.getElementById('artist-search-section');
@@ -20,178 +23,149 @@ export function renderArtistSearch() {
     return;
   }
 
-  // Detect desktop vs mobile
-  const isDesktop = window.innerWidth >= 1024;
-  console.log('[RENDER] isDesktop:', isDesktop, 'width:', window.innerWidth);
+  searchSection.innerHTML = `
+    <div id="search-module-root" class="w-full max-w-7xl mx-auto py-4">
 
-  if (isDesktop) {
-    renderDesktopLayout(searchSection);
-  } else {
-    renderMobileLayout(searchSection);
-  }
+      <!-- ============ MOBILE LAYOUT ============ -->
+      <div class="lg:hidden px-4">
 
-  // Populate genres after render
+        <!-- Mobile Filter Pills -->
+        <div class="flex gap-2 overflow-x-auto pb-3 no-scrollbar mb-2">
+          <button data-action="toggle-filter" data-target="name" id="btn-filter-name"
+                  class="flex-shrink-0 px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 shadow-sm whitespace-nowrap">
+            Naam
+          </button>
+          <button data-action="toggle-filter" data-target="location" id="btn-filter-location"
+                  class="flex-shrink-0 px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 shadow-sm whitespace-nowrap">
+            Locatie
+          </button>
+          <button data-action="toggle-filter" data-target="genre" id="btn-filter-genre"
+                  class="flex-shrink-0 px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 shadow-sm whitespace-nowrap">
+            Genre
+          </button>
+        </div>
+
+        <!-- Mobile Filter Panels (hidden by default) -->
+        <div id="filter-name" class="hidden bg-white rounded-2xl p-4 mb-4 border border-gray-100 shadow-sm">
+          <div class="flex gap-2">
+            <input type="text" id="mobile-input-name" placeholder="Naam artiest..."
+                   class="flex-1 px-4 py-3 bg-gray-50 rounded-xl text-sm outline-none">
+            <button data-action="apply-filter" data-target="name"
+                    class="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="filter-location" class="hidden bg-white rounded-2xl p-4 mb-4 border border-gray-100 shadow-sm">
+          <div class="flex gap-2">
+            <input type="text" id="mobile-input-location" placeholder="Stad of regio..."
+                   class="flex-1 px-4 py-3 bg-gray-50 rounded-xl text-sm outline-none">
+            <button data-action="apply-filter" data-target="location"
+                    class="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div id="filter-genre" class="hidden bg-white rounded-2xl p-4 mb-4 border border-gray-100 shadow-sm">
+          <div id="mobile-genre-checkboxes" class="space-y-2 mb-3 max-h-48 overflow-y-auto">
+            <p class="text-gray-400 text-sm">Laden...</p>
+          </div>
+          <div class="flex justify-end">
+            <button data-action="apply-filter" data-target="genre"
+                    class="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Mobile Results Count -->
+        <p id="mobile-results-count" class="text-gray-500 text-sm mb-3">0 gevonden</p>
+
+        <!-- Mobile Results Grid (2 columns) -->
+        <div id="mobile-search-grid" class="grid grid-cols-2 gap-3">
+          <!-- Cards worden hier gerenderd -->
+        </div>
+      </div>
+
+      <!-- ============ DESKTOP LAYOUT ============ -->
+      <div class="hidden lg:flex gap-8">
+
+        <!-- Desktop Sidebar -->
+        <aside class="w-72 flex-shrink-0">
+          <div class="bg-white/70 backdrop-blur-xl border border-white/40 p-6 rounded-3xl shadow-sm sticky top-24">
+            <h2 class="text-xl font-semibold text-gray-900 mb-6">Filters</h2>
+
+            <!-- Name Input -->
+            <div class="mb-5">
+              <label class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">Naam</label>
+              <input id="desktop-input-name" type="text" placeholder="Typ een naam..."
+                     class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-purple-500/20">
+            </div>
+
+            <!-- Location Input -->
+            <div class="mb-5">
+              <label class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">Locatie</label>
+              <input id="desktop-input-location" type="text" placeholder="Stad of regio..."
+                     class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-purple-500/20">
+            </div>
+
+            <!-- Genre Checkboxes -->
+            <div class="mb-5">
+              <label class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">Genre</label>
+              <div id="desktop-genre-checkboxes" class="space-y-2">
+                <p class="text-gray-400 text-sm">Laden...</p>
+              </div>
+            </div>
+
+            <!-- Apply Button -->
+            <button id="apply-filters-btn" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl shadow-md transition-transform active:scale-95">
+              Filters Toepassen
+            </button>
+          </div>
+
+          <!-- Results Count -->
+          <div class="bg-white/70 backdrop-blur-xl border border-white/40 p-6 rounded-3xl shadow-sm mt-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-1">Resultaten</h2>
+            <p id="desktop-results-count" class="text-sm text-gray-500">0 gevonden</p>
+          </div>
+        </aside>
+
+        <!-- Desktop Results Grid (4 columns) -->
+        <main class="flex-1">
+          <div id="desktop-search-grid" class="grid grid-cols-4 gap-5">
+            <!-- Cards worden hier gerenderd -->
+          </div>
+        </main>
+      </div>
+
+    </div>
+  `;
+
+  // Populate genres
   populateGenres();
 
-  // Populate keywords after render
-  populateKeywords();
-
   // Setup interactions
-  setupSearchInteractionsInternal();
+  setupSearchInteractions();
 
   // Load artists
-  loadArtistsInternal();
+  loadArtists();
+
+  console.log('[RENDER] Search module rendered');
 }
 
-function renderDesktopLayout(container) {
-  container.innerHTML = `
-    <div id="search-module-root" style="display: flex; gap: 32px; max-width: 1280px; margin: 0 auto; padding: 20px;">
-
-      <!-- SIDEBAR -->
-      <aside style="width: 280px; flex-shrink: 0;">
-        <div style="background: #f3f4f6; border-radius: 16px; padding: 24px; position: sticky; top: 100px;">
-          <h2 style="font-size: 24px; font-weight: 700; margin-bottom: 24px;">Filters</h2>
-
-          <!-- Search Name -->
-          <div style="margin-bottom: 20px;">
-            <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px;">Search Name</label>
-            <input type="text" id="filter-name" placeholder="Search Name"
-                   style="width: 100%; padding: 10px 14px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px;">
-          </div>
-
-          <!-- Age Range -->
-          <div style="margin-bottom: 20px;">
-            <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px;">Age Range</label>
-            <div style="display: flex; gap: 8px; align-items: center;">
-              <input type="number" id="filter-age-min" placeholder="18"
-                     style="width: 100%; padding: 10px 14px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px;">
-              <span style="color: #9ca3af;">–</span>
-              <input type="number" id="filter-age-max" placeholder="99"
-                     style="width: 100%; padding: 10px 14px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px;">
-            </div>
-          </div>
-
-          <!-- Genres -->
-          <div>
-            <label style="display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px;">Genres</label>
-            <div id="genre-checkboxes" style="display: flex; flex-direction: column; gap: 8px;">
-              <span style="color: #9ca3af; font-size: 14px;">Laden...</span>
-            </div>
-          </div>
-        </div>
-      </aside>
-
-      <!-- RESULTS -->
-      <main style="flex: 1; min-width: 0;">
-        <h1 style="font-size: 24px; font-weight: 700; margin-bottom: 4px;">Artists</h1>
-        <p id="results-count" style="color: #6b7280; margin-bottom: 24px;">0 results found</p>
-        <div id="search-grid" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px;">
-          <!-- Cards here -->
-        </div>
-      </main>
-
-    </div>
-  `;
-  console.log('[RENDER] Desktop layout rendered');
-}
-
-function renderMobileLayout(container) {
-  container.innerHTML = `
-    <div id="search-module-root" style="padding: 16px;">
-
-      <!-- FILTER PILLS -->
-      <div id="mobile-pills" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px;">
-        <button data-filter="genre" class="filter-pill" style="flex-shrink: 0; padding: 8px 16px; background: white; border: 1px solid #e5e7eb; border-radius: 20px; font-size: 14px; cursor: pointer;">
-          Genre
-        </button>
-        <button data-filter="location" class="filter-pill" style="flex-shrink: 0; padding: 8px 16px; background: white; border: 1px solid #e5e7eb; border-radius: 20px; font-size: 14px; cursor: pointer;">
-          Locatie
-        </button>
-        <button data-filter="name" class="filter-pill" style="flex-shrink: 0; padding: 8px 16px; background: white; border: 1px solid #e5e7eb; border-radius: 20px; font-size: 14px; cursor: pointer;">
-          Naam
-        </button>
-        <button data-filter="other" class="filter-pill" style="flex-shrink: 0; padding: 8px 16px; background: white; border: 1px solid #e5e7eb; border-radius: 20px; font-size: 14px; cursor: pointer;">
-          Andere filters
-        </button>
-      </div>
-
-      <!-- EXPANDED PANELS -->
-      <div id="panel-genre" class="filter-panel" style="display: none; background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; border: 1px solid #e5e7eb; position: relative;">
-        <button data-apply="genre" style="position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; background: #f3f4f6; border: none; border-radius: 50%; cursor: pointer; font-size: 16px;">✓</button>
-        <div id="mobile-genre-options" style="display: flex; flex-wrap: wrap; gap: 8px; padding-right: 50px;">
-          <span style="color: #9ca3af;">Laden...</span>
-        </div>
-      </div>
-
-      <div id="panel-location" class="filter-panel" style="display: none; background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; border: 1px solid #e5e7eb; position: relative;">
-        <button data-apply="location" style="position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; background: #f3f4f6; border: none; border-radius: 50%; cursor: pointer; font-size: 16px;">✓</button>
-        <input type="text" id="mobile-location" placeholder="Type een stad..."
-               style="width: 100%; padding: 10px 14px; background: #f9fafb; border: none; border-radius: 12px; font-size: 14px; padding-right: 50px;">
-      </div>
-
-      <div id="panel-name" class="filter-panel" style="display: none; background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; border: 1px solid #e5e7eb; position: relative;">
-        <button data-apply="name" style="position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; background: #f3f4f6; border: none; border-radius: 50%; cursor: pointer; font-size: 16px;">✓</button>
-        <input type="text" id="mobile-name" placeholder="Naam artiest..."
-               style="width: 100%; padding: 10px 14px; background: #f9fafb; border: none; border-radius: 12px; font-size: 14px; padding-right: 50px;">
-      </div>
-
-      <div id="panel-other" class="filter-panel" style="display: none; background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; border: 1px solid #e5e7eb; position: relative;">
-        <button data-apply="other" style="position: absolute; top: 12px; right: 12px; width: 36px; height: 36px; background: #f3f4f6; border: none; border-radius: 50%; cursor: pointer; font-size: 16px;">✓</button>
-
-        <!-- Sub-filter buttons -->
-        <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; padding-right: 50px;">
-          <button data-subfilter="age" class="subfilter-btn" style="padding: 8px 14px; background: #f3f4f6; border: none; border-radius: 20px; font-size: 14px; cursor: pointer;">Leeftijd</button>
-          <button data-subfilter="energy" class="subfilter-btn" style="padding: 8px 14px; background: #f3f4f6; border: none; border-radius: 20px; font-size: 14px; cursor: pointer;">Energy level</button>
-          <button data-subfilter="keywords" class="subfilter-btn" style="padding: 8px 14px; background: #f3f4f6; border: none; border-radius: 20px; font-size: 14px; cursor: pointer;">Keywords</button>
-        </div>
-
-        <!-- Leeftijd sub-panel -->
-        <div id="subpanel-age" class="subpanel" style="display: none; padding: 12px; background: #f9fafb; border-radius: 12px; margin-top: 8px;">
-          <label style="font-size: 12px; color: #6b7280; margin-bottom: 8px; display: block;">Leeftijd</label>
-          <div style="display: flex; gap: 8px; align-items: center;">
-            <input type="number" id="mobile-age-min" placeholder="Van" style="flex: 1; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px;">
-            <span style="color: #9ca3af;">–</span>
-            <input type="number" id="mobile-age-max" placeholder="Tot" style="flex: 1; padding: 10px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px;">
-          </div>
-        </div>
-
-        <!-- Energy level sub-panel -->
-        <div id="subpanel-energy" class="subpanel" style="display: none; padding: 12px; background: #f9fafb; border-radius: 12px; margin-top: 8px;">
-          <label style="font-size: 12px; color: #6b7280; margin-bottom: 8px; display: block;">Energy level</label>
-          <div style="display: flex; flex-wrap: wrap; gap: 8px;">
-            <button data-energy="intiem" class="energy-option" style="padding: 8px 14px; background: #e5e7eb; border: none; border-radius: 20px; font-size: 14px; cursor: pointer;">Intiem</button>
-            <button data-energy="interactief" class="energy-option" style="padding: 8px 14px; background: #e5e7eb; border: none; border-radius: 20px; font-size: 14px; cursor: pointer;">Interactief</button>
-            <button data-energy="high energy" class="energy-option" style="padding: 8px 14px; background: #e5e7eb; border: none; border-radius: 20px; font-size: 14px; cursor: pointer;">High energy</button>
-          </div>
-        </div>
-
-        <!-- Keywords sub-panel -->
-        <div id="subpanel-keywords" class="subpanel" style="display: none; padding: 12px; background: #f9fafb; border-radius: 12px; margin-top: 8px;">
-          <label style="font-size: 12px; color: #6b7280; margin-bottom: 8px; display: block;">Keywords</label>
-          <div id="keywords-options" style="display: flex; flex-wrap: wrap; gap: 8px;">
-            <span style="color: #9ca3af; font-size: 14px;">Laden...</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- RESULTS -->
-      <div>
-        <p id="results-count" style="color: #6b7280; font-size: 14px; margin-bottom: 12px;">0 results found</p>
-        <div id="search-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-          <!-- Cards here -->
-        </div>
-      </div>
-
-    </div>
-  `;
-  console.log('[RENDER] Mobile layout rendered');
-}
-
+/**
+ * Populate genre checkboxes in both mobile and desktop
+ */
 async function populateGenres() {
   try {
-    const { collection, getDocs } = await import('firebase/firestore');
-    const { db } = await import('../../services/firebase.js');
-
     const snapshot = await getDocs(collection(db, 'artists'));
     const genres = new Set();
     snapshot.forEach(doc => {
@@ -201,149 +175,66 @@ async function populateGenres() {
     const sorted = Array.from(genres).sort();
 
     // Desktop checkboxes
-    const desktopContainer = document.getElementById('genre-checkboxes');
+    const desktopContainer = document.getElementById('desktop-genre-checkboxes');
     if (desktopContainer) {
       desktopContainer.innerHTML = sorted.map(g => `
-        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-          <input type="checkbox" name="genre" value="${g}" style="width: 16px; height: 16px;">
-          <span style="font-size: 14px;">${g}</span>
+        <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
+          <input type="checkbox" name="desktop-genre" value="${g}" class="w-4 h-4 rounded text-purple-600">
+          <span class="text-sm text-gray-700">${g}</span>
         </label>
       `).join('');
     }
 
-    // Mobile genre pills
-    const mobileContainer = document.getElementById('mobile-genre-options');
+    // Mobile checkboxes
+    const mobileContainer = document.getElementById('mobile-genre-checkboxes');
     if (mobileContainer) {
       mobileContainer.innerHTML = sorted.map(g => `
-        <button data-genre="${g}" class="genre-option" style="padding: 6px 12px; background: #f3f4f6; border: none; border-radius: 20px; font-size: 14px; cursor: pointer;">
-          ${g}
-        </button>
+        <label class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl cursor-pointer">
+          <input type="checkbox" name="mobile-genre" value="${g}" class="w-5 h-5 rounded text-purple-600">
+          <span class="text-gray-900">${g}</span>
+        </label>
       `).join('');
     }
-
-    console.log('[GENRES] Loaded:', sorted.length);
   } catch (err) {
     console.error('[GENRES] Error:', err);
   }
 }
 
-async function populateKeywords() {
-  try {
-    const { collection, getDocs } = await import('firebase/firestore');
-    const { db } = await import('../../services/firebase.js');
-
-    const snapshot = await getDocs(collection(db, 'artists'));
-    const keywords = new Set();
-    snapshot.forEach(doc => {
-      (doc.data().keywords || []).forEach(k => keywords.add(k));
-    });
-
-    const sorted = Array.from(keywords).sort();
-
-    const container = document.getElementById('keywords-options');
-    if (container && sorted.length > 0) {
-      container.innerHTML = sorted.map(k => `
-        <button data-keyword="${k}" class="keyword-option" style="padding: 8px 14px; background: #e5e7eb; border: none; border-radius: 20px; font-size: 14px; cursor: pointer;">
-          ${k}
-        </button>
-      `).join('');
-    } else if (container) {
-      container.innerHTML = '<span style="color: #9ca3af; font-size: 14px;">Geen keywords</span>';
-    }
-
-    console.log('[KEYWORDS] Loaded:', sorted.length);
-  } catch (err) {
-    console.error('[KEYWORDS] Error:', err);
-  }
-}
-
-function setupSearchInteractionsInternal() {
+/**
+ * Setup search interactions for responsive layout
+ */
+function setupSearchInteractions() {
   const root = document.getElementById('search-module-root');
   if (!root) return;
 
+  // Mobile: Toggle filter panels
   root.addEventListener('click', (e) => {
-    // Mobile filter pill
-    const pill = e.target.closest('[data-filter]');
-    if (pill) {
-      const filterType = pill.dataset.filter;
-      const panel = document.getElementById(`panel-${filterType}`);
+    // Toggle filter button
+    const toggleBtn = e.target.closest('[data-action="toggle-filter"]');
+    if (toggleBtn) {
+      const target = toggleBtn.dataset.target;
+      const panel = document.getElementById(`filter-${target}`);
 
       // Close all panels
-      document.querySelectorAll('.filter-panel').forEach(p => p.style.display = 'none');
-      document.querySelectorAll('.filter-pill').forEach(p => {
-        p.style.background = 'white';
-        p.style.borderColor = '#e5e7eb';
+      document.querySelectorAll('[id^="filter-"]').forEach(p => {
+        if (p.id.startsWith('filter-') && p.classList.contains('hidden')) return;
+        if (p.id !== `filter-${target}`) p.classList.add('hidden');
       });
 
-      // Open this panel
+      // Toggle this panel
       if (panel) {
-        panel.style.display = 'block';
-        pill.style.background = '#fbbf24';
-        pill.style.borderColor = '#fbbf24';
+        panel.classList.toggle('hidden');
       }
       return;
     }
 
-    // Apply button
-    const applyBtn = e.target.closest('[data-apply]');
+    // Apply filter button
+    const applyBtn = e.target.closest('[data-action="apply-filter"]');
     if (applyBtn) {
-      document.querySelectorAll('.filter-panel').forEach(p => p.style.display = 'none');
-      document.querySelectorAll('.filter-pill').forEach(p => {
-        p.style.background = 'white';
-        p.style.borderColor = '#e5e7eb';
-      });
-      loadArtistsInternal();
-      return;
-    }
-
-    // Sub-filter button toggle (Leeftijd, Energy, Keywords)
-    const subfilterBtn = e.target.closest('[data-subfilter]');
-    if (subfilterBtn) {
-      const subfilterType = subfilterBtn.dataset.subfilter;
-      const subpanel = document.getElementById(`subpanel-${subfilterType}`);
-
-      // Toggle active state on button
-      const isActive = subfilterBtn.style.background === 'rgb(251, 191, 36)';
-
-      // Reset all subfilter buttons
-      document.querySelectorAll('.subfilter-btn').forEach(btn => {
-        btn.style.background = '#f3f4f6';
-      });
-
-      // Hide all subpanels
-      document.querySelectorAll('.subpanel').forEach(p => {
-        p.style.display = 'none';
-      });
-
-      // Toggle clicked one
-      if (!isActive && subpanel) {
-        subpanel.style.display = 'block';
-        subfilterBtn.style.background = '#fbbf24';
-      }
-      return;
-    }
-
-    // Energy level selection
-    const energyOption = e.target.closest('.energy-option');
-    if (energyOption) {
-      const isActive = energyOption.style.background === 'rgb(251, 191, 36)';
-      energyOption.style.background = isActive ? '#e5e7eb' : '#fbbf24';
-      return;
-    }
-
-    // Keyword selection
-    const keywordOption = e.target.closest('.keyword-option');
-    if (keywordOption) {
-      const isActive = keywordOption.style.background === 'rgb(251, 191, 36)';
-      keywordOption.style.background = isActive ? '#e5e7eb' : '#fbbf24';
-      return;
-    }
-
-    // Mobile genre selection
-    const genreOption = e.target.closest('.genre-option');
-    if (genreOption) {
-      const isActive = genreOption.style.background === 'rgb(251, 191, 36)';
-      genreOption.style.background = isActive ? '#f3f4f6' : '#fbbf24';
+      const target = applyBtn.dataset.target;
+      const panel = document.getElementById(`filter-${target}`);
+      if (panel) panel.classList.add('hidden');
+      loadArtists();
       return;
     }
 
@@ -351,204 +242,134 @@ function setupSearchInteractionsInternal() {
     const card = e.target.closest('[data-artist-id]');
     if (card) {
       const artistId = card.dataset.artistId;
-      console.log('[CLICK] Artist:', artistId);
-      // Import and call showArtistDetail
-      import('./search-controller.js').then(mod => {
-        if (mod.showArtistDetail) mod.showArtistDetail(artistId);
-      });
+      showArtistDetail(artistId);
+      return;
     }
   });
 
-  // Desktop input changes
+  // Desktop: Apply filters button
+  const applyFiltersBtn = document.getElementById('apply-filters-btn');
+  if (applyFiltersBtn) {
+    applyFiltersBtn.addEventListener('click', () => {
+      loadArtists();
+    });
+  }
+
+  // Desktop: Input changes - debounced
   root.addEventListener('input', (e) => {
-    if (e.target.matches('#filter-name, #filter-age-min, #filter-age-max')) {
+    if (e.target.matches('#desktop-input-name, #desktop-input-location')) {
       clearTimeout(window.searchDebounce);
-      window.searchDebounce = setTimeout(() => loadArtistsInternal(), 500);
+      window.searchDebounce = setTimeout(() => loadArtists(), 500);
     }
   });
 
-  // Desktop checkbox changes
+  // Desktop: Checkbox changes - immediate
   root.addEventListener('change', (e) => {
-    if (e.target.matches('[name="genre"]')) {
-      loadArtistsInternal();
+    if (e.target.matches('[name="desktop-genre"], [name="mobile-genre"]')) {
+      loadArtists();
     }
   });
 
   console.log('[SETUP] Interactions ready');
 }
 
-async function loadArtistsInternal() {
-  const grid = document.getElementById('search-grid');
-  const countEl = document.getElementById('results-count');
-  if (!grid) return;
-
-  try {
-    const { loadArtistsData } = await import('./search-data.js');
-
-    // Collect filters
-    const nameFilter = (document.getElementById('filter-name')?.value || document.getElementById('mobile-name')?.value || '').toLowerCase().trim();
-    const locationFilter = (document.getElementById('mobile-location')?.value || '').toLowerCase().trim();
-
-    // Mobile age filters
-    const mobileAgeMin = document.getElementById('mobile-age-min')?.value ? parseInt(document.getElementById('mobile-age-min').value) : null;
-    const mobileAgeMax = document.getElementById('mobile-age-max')?.value ? parseInt(document.getElementById('mobile-age-max').value) : null;
-    const ageMin = document.getElementById('filter-age-min')?.value ? parseInt(document.getElementById('filter-age-min').value) : mobileAgeMin;
-    const ageMax = document.getElementById('filter-age-max')?.value ? parseInt(document.getElementById('filter-age-max').value) : mobileAgeMax;
-
-    // Desktop checkboxes
-    const desktopGenres = Array.from(document.querySelectorAll('[name="genre"]:checked')).map(cb => cb.value.toLowerCase());
-    // Mobile active genres
-    const mobileGenres = Array.from(document.querySelectorAll('.genre-option')).filter(btn => btn.style.background === 'rgb(251, 191, 36)').map(btn => btn.dataset.genre.toLowerCase());
-    const genreFilters = [...new Set([...desktopGenres, ...mobileGenres])];
-
-    // Energy level filters
-    const energyFilters = Array.from(document.querySelectorAll('.energy-option'))
-      .filter(btn => btn.style.background === 'rgb(251, 191, 36)')
-      .map(btn => btn.dataset.energy.toLowerCase());
-
-    // Keyword filters
-    const keywordFilters = Array.from(document.querySelectorAll('.keyword-option'))
-      .filter(btn => btn.style.background === 'rgb(251, 191, 36)')
-      .map(btn => btn.dataset.keyword.toLowerCase());
-
-    const artists = await loadArtistsData({
-      nameFilter,
-      locationFilter,
-      genreFilters,
-      ageMin,
-      ageMax,
-      energyFilters,
-      keywordFilters
-    });
-
-    if (countEl) countEl.textContent = `${artists.length} results found`;
-
-    const isDesktop = window.innerWidth >= 1024;
-
-    // Inline SVG placeholders (no external URL needed)
-    const placeholderSvg = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='400' viewBox='0 0 300 400'%3E%3Crect fill='%23e5e7eb' width='300' height='400'/%3E%3Ctext fill='%239ca3af' font-family='sans-serif' font-size='14' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3ENo Photo%3C/text%3E%3C/svg%3E`;
-    const placeholderSvgSquare = `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300' viewBox='0 0 300 300'%3E%3Crect fill='%23e5e7eb' width='300' height='300'/%3E%3Ctext fill='%239ca3af' font-family='sans-serif' font-size='14' x='50%25' y='50%25' text-anchor='middle' dy='.3em'%3ENo Photo%3C/text%3E%3C/svg%3E`;
-
-    grid.innerHTML = artists.map(artist => {
-      // Check if profilePicUrl exists AND is not empty
-      const hasPhoto = artist.profilePicUrl && artist.profilePicUrl.trim() !== '';
-      const name = artist.stageName || 'Unknown';
-      const age = artist.dob ? calculateAge(artist.dob) : null;
-      const genre = (artist.genres || [])[0] || '';
-
-      if (isDesktop) {
-        const pic = hasPhoto ? artist.profilePicUrl : placeholderSvg;
-        return `
-          <div data-artist-id="${artist.id}" style="background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.1); cursor: pointer;">
-            <img src="${pic}" alt="${name}" style="width: 100%; aspect-ratio: 3/4; object-fit: cover; background: #e5e7eb;">
-            <div style="padding: 16px;">
-              <h3 style="font-weight: 600; margin-bottom: 4px;">${name}</h3>
-              ${age ? `<p style="color: #6b7280; font-size: 14px;">${age} years old</p>` : ''}
-              ${genre ? `<span style="display: inline-block; margin-top: 8px; padding: 4px 10px; background: #f3f4f6; border-radius: 20px; font-size: 12px;">${genre}</span>` : ''}
-            </div>
-          </div>
-        `;
-      } else {
-        const pic = hasPhoto ? artist.profilePicUrl : placeholderSvgSquare;
-        return `
-          <div data-artist-id="${artist.id}" style="cursor: pointer;">
-            <img src="${pic}" alt="${name}" style="width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 12px; background: #e5e7eb;">
-            <h3 style="font-weight: 500; font-size: 14px; margin-top: 8px;">${name}${age ? ', ' + age : ''}</h3>
-            ${genre ? `<p style="color: #6b7280; font-size: 12px;">${genre}</p>` : ''}
-          </div>
-        `;
-      }
-    }).join('');
-
-    console.log('[LOAD] Rendered', artists.length, 'artists');
-  } catch (err) {
-    console.error('[LOAD] Error:', err);
-    grid.innerHTML = '<p style="grid-column: span 4; text-align: center; color: #ef4444;">Error loading artists</p>';
-  }
-}
-
-// Re-render on window resize
-let resizeTimeout;
-window.addEventListener('resize', () => {
-  clearTimeout(resizeTimeout);
-  resizeTimeout = setTimeout(() => {
-    const wasDesktop = document.querySelector('#search-module-root > aside') !== null;
-    const isDesktop = window.innerWidth >= 1024;
-    if (wasDesktop !== isDesktop) {
-      console.log('[RESIZE] Layout change detected, re-rendering');
-      renderArtistSearch();
-    }
-  }, 250);
-});
-
 /**
- * Render artists - Apple-style cards for desktop and mobile
- * Renders to both desktop and mobile grids
+ * Load artists with filters from both mobile and desktop
  */
-export function renderArtists(artists) {
+async function loadArtists() {
   const desktopGrid = document.getElementById('desktop-search-grid');
   const mobileGrid = document.getElementById('mobile-search-grid');
   const desktopCount = document.getElementById('desktop-results-count');
   const mobileCount = document.getElementById('mobile-results-count');
 
-  // Update counts
-  const countText = `${artists.length} results found`;
-  if (desktopCount) desktopCount.textContent = countText;
-  if (mobileCount) mobileCount.textContent = countText;
+  // Show loading
+  if (desktopGrid) desktopGrid.style.opacity = '0.5';
+  if (mobileGrid) mobileGrid.style.opacity = '0.5';
 
-  // Desktop cards
-  if (desktopGrid) {
-    desktopGrid.innerHTML = artists.map(artist => {
-      const pic = artist.profilePicUrl || 'https://via.placeholder.com/300x400?text=No+Photo';
-      const name = artist.stageName || 'Unknown';
-      const age = artist.dob ? calculateAge(artist.dob) : null;
-      const genre = (artist.genres || [])[0] || '';
+  try {
+    // Collect filters from both mobile and desktop
+    const nameFilter = (
+      document.getElementById('desktop-input-name')?.value ||
+      document.getElementById('mobile-input-name')?.value || ''
+    ).toLowerCase().trim();
 
+    const locationFilter = (
+      document.getElementById('desktop-input-location')?.value ||
+      document.getElementById('mobile-input-location')?.value || ''
+    ).toLowerCase().trim();
+
+    const genreCheckboxes = document.querySelectorAll(
+      'input[name="desktop-genre"]:checked, input[name="mobile-genre"]:checked'
+    );
+    const genreFilters = Array.from(genreCheckboxes).map(cb => cb.value.toLowerCase().trim());
+
+    // Load and filter
+    const artists = await loadArtistsData({ nameFilter, locationFilter, genreFilters });
+
+    // Update counts
+    const countText = `${artists.length} gevonden`;
+    if (desktopCount) desktopCount.textContent = countText;
+    if (mobileCount) mobileCount.textContent = countText;
+
+    // Render to both grids
+    renderArtists(artists);
+
+  } catch (error) {
+    console.error('Error loading artists:', error);
+  } finally {
+    if (desktopGrid) desktopGrid.style.opacity = '1';
+    if (mobileGrid) mobileGrid.style.opacity = '1';
+  }
+}
+
+/**
+ * Render artists to both mobile and desktop grids
+ */
+export function renderArtists(artists) {
+  const desktopGrid = document.getElementById('desktop-search-grid');
+  const mobileGrid = document.getElementById('mobile-search-grid');
+
+  const generateCard = (artist, isMobile) => {
+    const pic = artist.profilePicUrl || 'https://via.placeholder.com/300x400?text=No+Photo';
+    const name = artist.stageName || `${artist.firstName || ''} ${artist.lastName || ''}`.trim() || 'Unknown';
+    const age = artist.dob ? calculateAge(artist.dob) : null;
+    const location = artist.location || '';
+    const genre = (artist.genres || [])[0] || '';
+
+    if (isMobile) {
+      // Mobile card: compact
+      return `
+        <div class="cursor-pointer" data-artist-id="${artist.id}">
+          <img src="${pic}" alt="${name}" class="w-full aspect-square object-cover rounded-xl">
+          <h3 class="font-medium text-sm mt-2 truncate">${name}${age ? ', ' + age : ''}</h3>
+          ${genre ? `<p class="text-gray-500 text-xs truncate">${genre}</p>` : ''}
+        </div>
+      `;
+    } else {
+      // Desktop card: more detail
       return `
         <div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer" data-artist-id="${artist.id}">
           <img src="${pic}" alt="${name}" class="w-full aspect-[3/4] object-cover">
           <div class="p-4">
-            <h3 class="font-semibold text-gray-900">${name}</h3>
-            ${age ? `<p class="text-gray-500 text-sm">${age} years old</p>` : ''}
-            ${genre ? `<span class="inline-block mt-2 px-2.5 py-1 text-xs font-medium rounded-full ${getGenreColor(genre)}">${genre}</span>` : ''}
+            <h3 class="font-semibold text-gray-900 truncate">${name}</h3>
+            ${age ? `<p class="text-gray-500 text-sm">${age} jaar</p>` : ''}
+            ${location ? `<p class="text-gray-400 text-xs">${location}</p>` : ''}
+            ${genre ? `<span class="inline-block mt-2 px-2.5 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-700">${genre}</span>` : ''}
           </div>
         </div>
       `;
-    }).join('');
-  }
-
-  // Mobile cards
-  if (mobileGrid) {
-    mobileGrid.innerHTML = artists.map(artist => {
-      const pic = artist.profilePicUrl || 'https://via.placeholder.com/300x300?text=No+Photo';
-      const name = artist.stageName || 'Unknown';
-      const age = artist.dob ? calculateAge(artist.dob) : null;
-      const genre = (artist.genres || [])[0] || '';
-
-      return `
-        <div class="cursor-pointer" data-artist-id="${artist.id}">
-          <img src="${pic}" alt="${name}" class="w-full aspect-square object-cover rounded-xl">
-          <h3 class="font-medium text-sm mt-2">${name}${age ? ', ' + age : ''}</h3>
-          ${genre ? `<p class="text-gray-500 text-xs">${genre}</p>` : ''}
-        </div>
-      `;
-    }).join('');
-  }
-}
-
-function getGenreColor(genre) {
-  const g = genre.toLowerCase();
-  const colors = {
-    'pop': 'bg-orange-100 text-orange-700',
-    'r&b': 'bg-pink-100 text-pink-700',
-    'hip-hop': 'bg-purple-100 text-purple-700',
-    'rap': 'bg-red-100 text-red-700',
-    'slam poetry': 'bg-blue-100 text-blue-700',
-    'spoken word': 'bg-indigo-100 text-indigo-700',
-    'performance poetry': 'bg-green-100 text-green-700',
-    'storytelling': 'bg-teal-100 text-teal-700'
+    }
   };
-  return colors[g] || 'bg-gray-100 text-gray-700';
+
+  // Render desktop grid
+  if (desktopGrid) {
+    desktopGrid.innerHTML = artists.map(a => generateCard(a, false)).join('');
+  }
+
+  // Render mobile grid
+  if (mobileGrid) {
+    mobileGrid.innerHTML = artists.map(a => generateCard(a, true)).join('');
+  }
 }
 
 /**
@@ -562,95 +383,133 @@ export function populateArtistDetail(artist) {
   }
 
   // Basic Info
-  document.getElementById('detail-artist-name').textContent = `${artist.firstName || ''} ${artist.lastName || ''}`.trim();
-  document.getElementById('detail-stage-name').textContent = artist.stageName || 'N/A';
-  document.getElementById('detail-location').textContent = artist.location || 'Not specified';
+  const artistName = document.getElementById('detail-artist-name');
+  if (artistName) {
+    artistName.textContent = `${artist.firstName || ''} ${artist.lastName || ''}`.trim();
+  }
+
+  const stageName = document.getElementById('detail-stage-name');
+  if (stageName) {
+    stageName.textContent = artist.stageName || 'N/A';
+  }
+
+  const locationEl = document.getElementById('detail-location');
+  if (locationEl) {
+    locationEl.textContent = artist.location || 'Not specified';
+  }
 
   // Gender
   const genderMap = { 'f': 'Female', 'm': 'Male', 'x': 'Other' };
-  document.getElementById('detail-gender').textContent = genderMap[artist.gender] || 'Not specified';
+  const genderEl = document.getElementById('detail-gender');
+  if (genderEl) {
+    genderEl.textContent = genderMap[artist.gender] || 'Not specified';
+  }
 
   // Age
-  if (artist.dob) {
-    document.getElementById('detail-age').textContent = `${calculateAge(artist.dob)} years old`;
-  } else {
-    document.getElementById('detail-age').textContent = 'Age not specified';
+  const ageEl = document.getElementById('detail-age');
+  if (ageEl) {
+    if (artist.dob) {
+      ageEl.textContent = `${calculateAge(artist.dob)} years old`;
+    } else {
+      ageEl.textContent = 'Age not specified';
+    }
   }
 
   // Genres
   const detailGenres = document.getElementById('detail-genres');
-  detailGenres.innerHTML = '';
-  if (artist.genres && artist.genres.length > 0) {
-    artist.genres.forEach(genre => {
-      const badge = document.createElement('span');
-      badge.className = 'inline-block bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium';
-      badge.textContent = genre;
-      detailGenres.appendChild(badge);
-    });
-  } else {
-    detailGenres.textContent = 'No genres specified';
+  if (detailGenres) {
+    detailGenres.innerHTML = '';
+    if (artist.genres && artist.genres.length > 0) {
+      artist.genres.forEach(genre => {
+        const badge = document.createElement('span');
+        badge.className = 'inline-block bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium';
+        badge.textContent = genre;
+        detailGenres.appendChild(badge);
+      });
+    } else {
+      detailGenres.textContent = 'No genres specified';
+    }
   }
 
   // Languages
   const detailLanguages = document.getElementById('detail-languages');
-  detailLanguages.innerHTML = '';
-  if (artist.languages && artist.languages.length > 0) {
-    artist.languages.forEach(lang => {
-      const badge = document.createElement('span');
-      badge.className = 'inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium';
-      badge.textContent = lang.toUpperCase();
-      detailLanguages.appendChild(badge);
-    });
-  } else {
-    detailLanguages.textContent = 'No languages specified';
+  if (detailLanguages) {
+    detailLanguages.innerHTML = '';
+    if (artist.languages && artist.languages.length > 0) {
+      artist.languages.forEach(lang => {
+        const badge = document.createElement('span');
+        badge.className = 'inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium';
+        badge.textContent = lang.toUpperCase();
+        detailLanguages.appendChild(badge);
+      });
+    } else {
+      detailLanguages.textContent = 'No languages specified';
+    }
   }
 
   // Bio & Pitch
-  document.getElementById('detail-bio').textContent = artist.bio || 'No bio available.';
-  document.getElementById('detail-pitch').textContent = artist.pitch || 'No pitch available.';
+  const bioEl = document.getElementById('detail-bio');
+  if (bioEl) {
+    bioEl.textContent = artist.bio || 'No bio available.';
+  }
+
+  const pitchEl = document.getElementById('detail-pitch');
+  if (pitchEl) {
+    pitchEl.textContent = artist.pitch || 'No pitch available.';
+  }
 
   // Video Material
+  const videoSection = document.getElementById('detail-video-section');
+  const videoContainer = document.getElementById('detail-video-container');
   if (artist.videoUrl && artist.videoUrl.trim()) {
-    document.getElementById('detail-video-section').style.display = 'block';
+    if (videoSection) videoSection.style.display = 'block';
     const embedUrl = getEmbedUrl(artist.videoUrl, 'video');
-    if (embedUrl) {
-      document.getElementById('detail-video-container').innerHTML = `
-        <iframe class="w-full h-full" src="${embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-      `;
-    } else {
-      document.getElementById('detail-video-container').innerHTML = `
-        <div class="flex items-center justify-center h-full">
-          <a href="${artist.videoUrl}" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-medium">View Video (External Link)</a>
-        </div>
-      `;
+    if (videoContainer) {
+      if (embedUrl) {
+        videoContainer.innerHTML = `
+          <iframe class="w-full h-full" src="${embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        `;
+      } else {
+        videoContainer.innerHTML = `
+          <div class="flex items-center justify-center h-full">
+            <a href="${artist.videoUrl}" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-medium">View Video (External Link)</a>
+          </div>
+        `;
+      }
     }
   } else {
-    document.getElementById('detail-video-section').style.display = 'none';
+    if (videoSection) videoSection.style.display = 'none';
   }
 
   // Audio Material
+  const audioSection = document.getElementById('detail-audio-section');
+  const audioContainer = document.getElementById('detail-audio-container');
   if (artist.audioUrl && artist.audioUrl.trim()) {
-    document.getElementById('detail-audio-section').style.display = 'block';
+    if (audioSection) audioSection.style.display = 'block';
     const embedUrl = getEmbedUrl(artist.audioUrl, 'audio');
-    if (embedUrl) {
-      document.getElementById('detail-audio-container').innerHTML = `
-        <iframe class="w-full" height="166" scrolling="no" frameborder="no" allow="autoplay" src="${embedUrl}"></iframe>
-      `;
-    } else {
-      document.getElementById('detail-audio-container').innerHTML = `
-        <a href="${artist.audioUrl}" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-medium">Listen to Audio (External Link)</a>
-      `;
+    if (audioContainer) {
+      if (embedUrl) {
+        audioContainer.innerHTML = `
+          <iframe class="w-full" height="166" scrolling="no" frameborder="no" allow="autoplay" src="${embedUrl}"></iframe>
+        `;
+      } else {
+        audioContainer.innerHTML = `
+          <a href="${artist.audioUrl}" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-medium">Listen to Audio (External Link)</a>
+        `;
+      }
     }
   } else {
-    document.getElementById('detail-audio-section').style.display = 'none';
+    if (audioSection) audioSection.style.display = 'none';
   }
 
   // Text Material
+  const textSection = document.getElementById('detail-text-section');
+  const textContent = document.getElementById('detail-text-content');
   if (artist.textContent && artist.textContent.trim()) {
-    document.getElementById('detail-text-section').style.display = 'block';
-    document.getElementById('detail-text-content').textContent = artist.textContent;
+    if (textSection) textSection.style.display = 'block';
+    if (textContent) textContent.textContent = artist.textContent;
   } else {
-    document.getElementById('detail-text-section').style.display = 'none';
+    if (textSection) textSection.style.display = 'none';
   }
 
   // Document Material
@@ -658,27 +517,38 @@ export function populateArtistDetail(artist) {
   const documentLink = document.getElementById('detail-document-link');
 
   if (artist.documentUrl && artist.documentUrl.trim()) {
-    documentSection.style.display = 'block';
-    documentLink.href = artist.documentUrl;
-    documentLink.textContent = artist.documentName || 'Download/View Document';
+    if (documentSection) documentSection.style.display = 'block';
+    if (documentLink) {
+      documentLink.href = artist.documentUrl;
+      documentLink.textContent = artist.documentName || 'Download/View Document';
+    }
   } else {
-    documentSection.style.display = 'none';
+    if (documentSection) documentSection.style.display = 'none';
   }
 
   // Contact Information - Access Control
   const currentUserData = getStore('currentUserData');
   const isPro = currentUserData && currentUserData.status === 'pro';
 
+  const trialMessage = document.getElementById('detail-trial-message');
+  const contactInfo = document.getElementById('detail-contact-info');
+
   if (isPro) {
     // Show contact info for Pro users
-    document.getElementById('detail-trial-message').style.display = 'none';
-    document.getElementById('detail-contact-info').style.display = 'block';
+    if (trialMessage) trialMessage.style.display = 'none';
+    if (contactInfo) contactInfo.style.display = 'block';
 
-    document.getElementById('detail-email').textContent = artist.email || 'Not available';
-    document.getElementById('detail-email').href = `mailto:${artist.email || ''}`;
+    const emailEl = document.getElementById('detail-email');
+    if (emailEl) {
+      emailEl.textContent = artist.email || 'Not available';
+      emailEl.href = `mailto:${artist.email || ''}`;
+    }
 
-    document.getElementById('detail-phone').textContent = artist.phone || 'Not available';
-    document.getElementById('detail-phone').href = `tel:${artist.phone || ''}`;
+    const phoneEl = document.getElementById('detail-phone');
+    if (phoneEl) {
+      phoneEl.textContent = artist.phone || 'Not available';
+      phoneEl.href = `tel:${artist.phone || ''}`;
+    }
 
     // Setup Send Message button
     const sendMessageBtn = document.getElementById('send-message-btn');
@@ -694,8 +564,8 @@ export function populateArtistDetail(artist) {
     }
   } else {
     // Show upgrade message for Trial users
-    document.getElementById('detail-trial-message').style.display = 'block';
-    document.getElementById('detail-contact-info').style.display = 'none';
+    if (trialMessage) trialMessage.style.display = 'block';
+    if (contactInfo) contactInfo.style.display = 'none';
   }
 }
 

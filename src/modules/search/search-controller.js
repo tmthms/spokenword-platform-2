@@ -416,15 +416,32 @@ function setupBrowserHistory() {
       return;
     }
 
-    if (event.state) {
-      if (event.state.view === 'search') {
-        showSearchView();
-      } else if (event.state.view === 'artist-detail' && event.state.artistId) {
-        showArtistDetail(event.state.artistId, false); // false = don't push to history again
-      }
-    } else {
-      // No state, probably initial page load or back to main
-      showSearchView();
+    // Handle hash-based navigation
+    const hash = window.location.hash.replace('#', '');
+
+    switch(hash) {
+      case 'search':
+        // Import and call showSearch
+        import('../../ui/ui.js').then(module => module.showSearch());
+        break;
+      case 'profile':
+        import('../../ui/ui.js').then(module => module.showProfile());
+        break;
+      case 'messages':
+        import('../../ui/ui.js').then(module => module.showMessages());
+        break;
+      default:
+        // Handle state-based navigation (for backward compatibility)
+        if (event.state) {
+          if (event.state.view === 'search') {
+            showSearchView();
+          } else if (event.state.view === 'artist-detail' && event.state.artistId) {
+            showArtistDetail(event.state.artistId, false); // false = don't push to history again
+          }
+        } else {
+          // No state, probably initial page load or back to main
+          showSearchView();
+        }
     }
   });
 

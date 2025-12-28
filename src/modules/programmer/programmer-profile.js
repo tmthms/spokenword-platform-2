@@ -8,7 +8,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from '../../services/firebase.js';
 import { setLanguage } from '../../utils/translations.js';
-import { displayProgrammerProfileOverview, renderPublicPreview } from './programmer-dashboard.js';
+import { displayProgrammerProfileOverview } from './programmer-dashboard.js';
 
 /**
  * Renders the programmer profile editor HTML
@@ -354,9 +354,6 @@ async function handleProgrammerProfileSubmit(e) {
 
     // Refresh the profile overview display
     displayProgrammerProfileOverview();
-
-    // Refresh the public preview
-    renderPublicPreview();
 
     // Show success message
     successMsg.textContent = '✓ Profile updated successfully!';

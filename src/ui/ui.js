@@ -549,6 +549,22 @@ export function showMessages() {
 }
 
 /**
+ * Show artist search view
+ */
+export function showArtistSearch() {
+  console.log("Showing artist search view");
+
+  // Show the dashboard view (artists see search by default)
+  showPage('dashboard-view');
+
+  // Render the search UI
+  renderArtistSearch();
+
+  // Load artists
+  loadArtists();
+}
+
+/**
  * Voegt alle event listeners toe voor de navigatieknoppen.
  * Wordt één keer uitgevoerd bij het laden van de app.
  * ✅ Uses event delegation for all dynamically rendered elements
@@ -641,8 +657,11 @@ function setupBottomNavigation() {
 
     // Handle navigation (showPage/showDashboard/etc. handle hash updates now)
     switch(navAction) {
+      case 'search':
+        showSearch();
+        break;
       case 'profile':
-        showDashboard(); // Show profile/dashboard (updates hash internally)
+        showProfile();
         break;
       case 'messages':
         showMessages(); // Updates hash internally
@@ -674,9 +693,15 @@ function updateBottomNavActive(activeNav) {
 function setupDesktopNavigation() {
   // ✅ Use event delegation on document body to catch clicks from dynamically rendered nav
   document.body.addEventListener('click', (e) => {
+    // Desktop Search
+    if (e.target.closest('#desktop-nav-search')) {
+      showSearch();
+      return;
+    }
+
     // Desktop Profile
     if (e.target.closest('#desktop-nav-profile')) {
-      showDashboard(); // Updates hash internally
+      showProfile();
       return;
     }
 
@@ -837,5 +862,93 @@ function setupAccountSettingsHandlers() {
 export function showAccountSettings() {
   console.log('[UI] Showing account settings view');
   showPage('account-settings-view');
+}
+
+/**
+ * Toon Search view
+ */
+export function showSearch() {
+  console.log('[UI] Showing search view');
+
+  const currentUserData = getStore('currentUserData');
+  if (!currentUserData) {
+    console.warn("No user data found");
+    showPage('home-view');
+    return;
+  }
+
+  // Render dashboard zonder hash update
+  showPage('dashboard-view', false);
+
+  // Zet correcte hash
+  window.history.pushState({ view: 'search' }, '', '#search');
+
+  // Setup dashboard
+  if (currentUserData.role === 'programmer') {
+    const programmerDashboard = document.getElementById('programmer-dashboard');
+    if (programmerDashboard) {
+      programmerDashboard.style.display = 'block';
+      programmerDashboard.classList.remove('hidden');
+    }
+
+    // Import en setup
+    import('../modules/programmer/programmer-dashboard.js').then(module => {
+      module.renderProgrammerDashboard();
+      module.setupProgrammerDashboard();
+      module.showSearchOnlyView();
+    });
+
+    import('../modules/search/search-controller.js').then(module => {
+      module.setupArtistSearch();
+      module.loadArtists();
+    });
+  }
+
+  updateMobileNavActive('search');
+
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 100);
+  }
+}
+
+/**
+ * Toon Profile view
+ */
+export function showProfile() {
+  console.log('[UI] Showing profile view');
+
+  const currentUserData = getStore('currentUserData');
+  if (!currentUserData) {
+    console.warn("No user data found");
+    showPage('home-view');
+    return;
+  }
+
+  // Render dashboard zonder hash update
+  showPage('dashboard-view', false);
+
+  // Zet correcte hash
+  window.history.pushState({ view: 'profile' }, '', '#profile');
+
+  // Setup dashboard
+  if (currentUserData.role === 'programmer') {
+    const programmerDashboard = document.getElementById('programmer-dashboard');
+    if (programmerDashboard) {
+      programmerDashboard.style.display = 'block';
+      programmerDashboard.classList.remove('hidden');
+    }
+
+    import('../modules/programmer/programmer-dashboard.js').then(module => {
+      module.renderProgrammerDashboard();
+      module.setupProgrammerDashboard();
+      module.showProfileOnlyView();
+    });
+  }
+
+  updateMobileNavActive('profile');
+
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 100);
+  }
 }
 
