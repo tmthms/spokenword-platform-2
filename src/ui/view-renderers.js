@@ -609,8 +609,98 @@ export function renderDashboard() {
               Terug naar zoeken
             </button>
 
-            <!-- 3-COLUMN LAYOUT -->
-            <div style="display: grid; grid-template-columns: 280px 1fr 320px; gap: 24px; align-items: start;">
+            <!-- MOBILE ARTIST PROFILE LAYOUT -->
+            <div id="mobile-artist-detail" class="lg:hidden" style="padding: 0 16px 100px;">
+
+              <!-- Profile Photo -->
+              <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                <div style="width: 140px; height: 140px; border-radius: 50%; overflow: hidden; border: 3px solid #1a1a2e;">
+                  <img id="mobile-detail-photo" src="" alt="Artist" style="width: 100%; height: 100%; object-fit: cover; background: #f3f4f6;">
+                </div>
+              </div>
+
+              <!-- Name -->
+              <h1 id="mobile-detail-name" style="font-size: 28px; font-weight: 700; color: #1a1a2e; text-align: center; margin-bottom: 16px;">Artist Name</h1>
+
+              <!-- Meta Info -->
+              <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 10px; color: #4a4a68; font-size: 15px;">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  <span id="mobile-detail-age">-- years old</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; color: #4a4a68; font-size: 15px;">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                  <span id="mobile-detail-gender">Gender</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px; color: #4a4a68; font-size: 15px;">
+                  <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                  <span id="mobile-detail-location">Location</span>
+                </div>
+              </div>
+
+              <!-- Genres -->
+              <div style="margin-bottom: 20px;">
+                <p style="font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 10px;">Genres</p>
+                <div id="mobile-detail-genres" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                  <!-- Genre badges -->
+                </div>
+              </div>
+
+              <!-- Languages -->
+              <div style="margin-bottom: 24px;">
+                <p style="font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 10px;">Languages</p>
+                <div id="mobile-detail-languages" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                  <!-- Language badges -->
+                </div>
+              </div>
+
+              <!-- Biography -->
+              <div style="margin-bottom: 20px;">
+                <h2 style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 10px;">Biography</h2>
+                <p id="mobile-detail-bio" style="font-size: 15px; color: #4a4a68; line-height: 1.6;">No biography available.</p>
+              </div>
+
+              <!-- Pitch -->
+              <div style="margin-bottom: 24px;">
+                <h2 style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 10px;">Pitch</h2>
+                <p id="mobile-detail-pitch" style="font-size: 15px; color: #4a4a68; line-height: 1.6;">No pitch available.</p>
+              </div>
+
+              <!-- Contact Information -->
+              <div style="margin-bottom: 24px;">
+                <h2 style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px;">Contact Information</h2>
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <div id="mobile-detail-email-container" style="display: flex; align-items: center; gap: 10px;">
+                    <svg width="18" height="18" fill="none" stroke="#4a4a68" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                    <a id="mobile-detail-email" href="#" style="font-size: 15px; color: #4a4a68; text-decoration: none;">email@example.com</a>
+                  </div>
+                  <div id="mobile-detail-phone-container" style="display: flex; align-items: center; gap: 10px;">
+                    <svg width="18" height="18" fill="none" stroke="#4a4a68" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                    <span id="mobile-detail-phone" style="font-size: 15px; color: #4a4a68;">+31 6 12345678</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recommendations -->
+              <div>
+                <h2 style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Recommendations</h2>
+
+                <!-- Write Recommendation Button -->
+                <button id="mobile-write-recommendation-btn"
+                        style="width: 100%; padding: 14px; background: white; color: #1a1a2e; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 16px;">
+                  Write Recommendation
+                </button>
+
+                <!-- Recommendation Cards -->
+                <div id="mobile-detail-recommendations" style="display: flex; flex-direction: column; gap: 12px;">
+                  <!-- Recommendation cards will be injected here -->
+                </div>
+              </div>
+
+            </div>
+
+            <!-- DESKTOP 3-COLUMN LAYOUT -->
+            <div class="hidden lg:grid" style="grid-template-columns: 280px 1fr 320px; gap: 24px; align-items: start;">
 
               <!-- LEFT COLUMN: Media Gallery -->
               <aside style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 4px 20px rgba(128,90,213,0.08); border: 1px solid rgba(128,90,213,0.1);">

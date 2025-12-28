@@ -579,25 +579,28 @@ export function showArtistInDetailPanel(artist) {
 export function populateArtistDetail(artist) {
   if (!artist) return;
 
+  const artistName = artist.stageName || `${artist.firstName || ''} ${artist.lastName || ''}`.trim() || 'Unknown Artist';
+  const profilePicUrl = artist.profilePicUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(artistName)}&background=f3f4f6&color=1a1a2e&size=140`;
+  const age = artist.dob ? calculateAge(artist.dob) : null;
+
+  // === DESKTOP ELEMENTS ===
+
   // Profile picture
   const profilePic = document.getElementById('detail-profile-pic');
   if (profilePic) {
-    profilePic.src = artist.profilePicUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(artist.stageName || 'A')}&background=e0e7ff&color=6366f1&size=140`;
+    profilePic.src = profilePicUrl;
   }
 
   // Name
   const nameEl = document.getElementById('detail-artist-name');
   if (nameEl) {
-    nameEl.textContent = artist.stageName || `${artist.firstName || ''} ${artist.lastName || ''}`.trim() || 'Unknown Artist';
+    nameEl.textContent = artistName;
   }
 
   // Age
   const ageEl = document.getElementById('detail-age');
-  if (ageEl && artist.dob) {
-    const age = calculateAge(artist.dob);
-    ageEl.textContent = `${age} years old`;
-  } else if (ageEl) {
-    ageEl.textContent = 'Age unknown';
+  if (ageEl) {
+    ageEl.textContent = age ? `${age} years old` : 'Age unknown';
   }
 
   // Gender
@@ -666,14 +669,111 @@ export function populateArtistDetail(artist) {
   // Chat header
   const chatHeader = document.getElementById('chat-header-name');
   if (chatHeader) {
-    const artistName = artist.stageName || `${artist.firstName || ''} ${artist.lastName || ''}`.trim() || 'Artist';
     chatHeader.textContent = `Chat met ${artistName}`;
   }
 
   // Media Gallery
   populateMediaGallery(artist);
 
-  console.log('[DETAIL] Artist profile populated:', artist.stageName);
+  // === MOBILE ELEMENTS ===
+
+  // Photo
+  const mobilePhoto = document.getElementById('mobile-detail-photo');
+  if (mobilePhoto) mobilePhoto.src = profilePicUrl;
+
+  // Name
+  const mobileName = document.getElementById('mobile-detail-name');
+  if (mobileName) mobileName.textContent = artistName;
+
+  // Age
+  const mobileAge = document.getElementById('mobile-detail-age');
+  if (mobileAge) {
+    mobileAge.textContent = age ? `${age} years old` : 'Age unknown';
+  }
+
+  // Gender
+  const mobileGender = document.getElementById('mobile-detail-gender');
+  if (mobileGender) {
+    mobileGender.textContent = artist.gender || 'Not specified';
+  }
+
+  // Location
+  const mobileLocation = document.getElementById('mobile-detail-location');
+  if (mobileLocation) {
+    mobileLocation.textContent = artist.location || 'Location unknown';
+  }
+
+  // Genres
+  const mobileGenres = document.getElementById('mobile-detail-genres');
+  if (mobileGenres) {
+    const genres = artist.genres || [];
+    mobileGenres.innerHTML = genres.length > 0
+      ? genres.map(g => `<span style="padding: 8px 16px; background: white; border: 1px solid #1a1a2e; border-radius: 20px; font-size: 14px; color: #1a1a2e;">${g}</span>`).join('')
+      : '<span style="color: #9ca3af; font-size: 14px;">No genres specified</span>';
+  }
+
+  // Languages
+  const mobileLanguages = document.getElementById('mobile-detail-languages');
+  if (mobileLanguages) {
+    const languages = artist.languages || [];
+    mobileLanguages.innerHTML = languages.length > 0
+      ? languages.map(l => `<span style="padding: 6px 12px; background: white; border: 1px solid #1a1a2e; border-radius: 20px; font-size: 13px; font-weight: 600; color: #1a1a2e;">${l.substring(0,2).toUpperCase()}</span>`).join('')
+      : '<span style="color: #9ca3af; font-size: 14px;">No languages specified</span>';
+  }
+
+  // Biography
+  const mobileBio = document.getElementById('mobile-detail-bio');
+  if (mobileBio) {
+    mobileBio.textContent = artist.bio || 'No biography available.';
+  }
+
+  // Pitch
+  const mobilePitch = document.getElementById('mobile-detail-pitch');
+  if (mobilePitch) {
+    mobilePitch.textContent = artist.pitch || 'No pitch available.';
+  }
+
+  // Email
+  const mobileEmailContainer = document.getElementById('mobile-detail-email-container');
+  const mobileEmail = document.getElementById('mobile-detail-email');
+  if (mobileEmail && artist.email) {
+    mobileEmail.textContent = artist.email;
+    mobileEmail.href = `mailto:${artist.email}`;
+    if (mobileEmailContainer) mobileEmailContainer.style.display = 'flex';
+  } else if (mobileEmailContainer) {
+    mobileEmailContainer.style.display = 'none';
+  }
+
+  // Phone
+  const mobilePhoneContainer = document.getElementById('mobile-detail-phone-container');
+  const mobilePhone = document.getElementById('mobile-detail-phone');
+  if (mobilePhone && artist.phone) {
+    mobilePhone.textContent = artist.phone;
+    if (mobilePhoneContainer) mobilePhoneContainer.style.display = 'flex';
+  } else if (mobilePhoneContainer) {
+    mobilePhoneContainer.style.display = 'none';
+  }
+
+  // Recommendations
+  populateMobileRecommendations(artist);
+
+  // Setup mobile write recommendation button
+  const mobileWriteRecBtn = document.getElementById('mobile-write-recommendation-btn');
+  if (mobileWriteRecBtn) {
+    mobileWriteRecBtn.onclick = () => {
+      import('../recommendations/recommendations.js').then(module => {
+        if (module.openRecommendationModal) {
+          module.openRecommendationModal(artist.id, artist);
+        } else {
+          alert('Schrijf recommendation functie komt binnenkort beschikbaar.');
+        }
+      }).catch(() => {
+        alert('Schrijf recommendation functie komt binnenkort beschikbaar.');
+      });
+    };
+  }
+
+  console.log('[DETAIL] Artist profile populated for mobile and desktop');
 }
 
 function populateMediaGallery(artist) {
@@ -753,6 +853,80 @@ function extractYouTubeId(url) {
   if (!url) return null;
   const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
   return match ? match[1] : null;
+}
+
+/**
+ * Populate mobile recommendations
+ */
+async function populateMobileRecommendations(artist) {
+  const container = document.getElementById('mobile-detail-recommendations');
+  if (!container || !artist) return;
+
+  try {
+    const { collection, query, where, orderBy, getDocs } = await import('firebase/firestore');
+    const { db } = await import('../../services/firebase.js');
+
+    const recsRef = collection(db, 'recommendations');
+    const q = query(
+      recsRef,
+      where('artistId', '==', artist.id),
+      orderBy('createdAt', 'desc')
+    );
+
+    const snapshot = await getDocs(q);
+
+    if (snapshot.empty) {
+      container.innerHTML = '<p style="color: #9ca3af; font-size: 14px; text-align: center; padding: 20px;">Nog geen recommendations.</p>';
+      return;
+    }
+
+    const currentUser = getStore('currentUser');
+
+    container.innerHTML = '';
+    snapshot.forEach(doc => {
+      const rec = doc.data();
+      const date = rec.createdAt?.toDate?.() || new Date();
+      const formattedDate = date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+      const isOwn = currentUser && rec.authorId === currentUser.uid;
+
+      const card = document.createElement('div');
+      card.style.cssText = 'background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; position: relative;';
+      card.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+          <div>
+            <p style="font-size: 15px; font-weight: 600; color: #1a1a2e;">${rec.authorName || 'Anonymous'}</p>
+            <p style="font-size: 13px; color: #9ca3af;">${formattedDate}</p>
+          </div>
+          ${isOwn ? `
+            <button onclick="window.deleteRecommendation && window.deleteRecommendation('${doc.id}')"
+                    style="background: none; border: none; cursor: pointer; padding: 4px;">
+              <svg width="20" height="20" fill="none" stroke="#9ca3af" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          ` : ''}
+        </div>
+        <p style="font-size: 14px; color: #4a4a68; line-height: 1.6;">"${rec.text || rec.content || ''}"</p>
+      `;
+      container.appendChild(card);
+    });
+
+    // Expose delete function
+    window.deleteRecommendation = async (recId) => {
+      if (!confirm('Weet je zeker dat je deze recommendation wilt verwijderen?')) return;
+      try {
+        const { doc, deleteDoc } = await import('firebase/firestore');
+        const { db } = await import('../../services/firebase.js');
+        await deleteDoc(doc(db, 'recommendations', recId));
+        populateMobileRecommendations(artist);
+      } catch (err) {
+        console.error('Error deleting recommendation:', err);
+        alert('Fout bij verwijderen.');
+      }
+    };
+
+  } catch (error) {
+    console.error('[RECOMMENDATIONS] Error loading:', error);
+    container.innerHTML = '<p style="color: #9ca3af; font-size: 14px;">Kon recommendations niet laden.</p>';
+  }
 }
 
 /**
