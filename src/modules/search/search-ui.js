@@ -23,127 +23,161 @@ export function renderArtistSearch() {
     return;
   }
 
+  // Add pattern class to parent
+  searchSection.className = 'search-pattern min-h-screen';
+  searchSection.style.cssText = 'display: block; opacity: 1; visibility: visible;';
+
   searchSection.innerHTML = `
-    <div id="search-module-root" class="w-full max-w-7xl mx-auto py-4">
+    <div id="search-module-root" class="max-w-7xl mx-auto px-4 py-6">
 
       <!-- ============ MOBILE LAYOUT ============ -->
-      <div class="lg:hidden px-4">
+      <div class="lg:hidden">
+        <h1 style="font-size: 24px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Zoeken</h1>
 
         <!-- Mobile Filter Pills -->
-        <div class="flex gap-2 overflow-x-auto pb-3 no-scrollbar mb-2">
+        <div class="flex gap-2 overflow-x-auto pb-3 no-scrollbar mb-4">
           <button data-action="toggle-filter" data-target="name" id="btn-filter-name"
-                  class="flex-shrink-0 px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 shadow-sm whitespace-nowrap">
+                  style="flex-shrink: 0; padding: 8px 16px; background: white; border: 1px solid #e5e7eb; border-radius: 20px; font-size: 14px; font-weight: 500; color: #4a4a68;">
             Naam
           </button>
           <button data-action="toggle-filter" data-target="location" id="btn-filter-location"
-                  class="flex-shrink-0 px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 shadow-sm whitespace-nowrap">
+                  style="flex-shrink: 0; padding: 8px 16px; background: white; border: 1px solid #e5e7eb; border-radius: 20px; font-size: 14px; font-weight: 500; color: #4a4a68;">
             Locatie
           </button>
           <button data-action="toggle-filter" data-target="genre" id="btn-filter-genre"
-                  class="flex-shrink-0 px-4 py-2 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 shadow-sm whitespace-nowrap">
+                  style="flex-shrink: 0; padding: 8px 16px; background: white; border: 1px solid #e5e7eb; border-radius: 20px; font-size: 14px; font-weight: 500; color: #4a4a68;">
             Genre
           </button>
         </div>
 
-        <!-- Mobile Filter Panels (hidden by default) -->
-        <div id="filter-name" class="hidden bg-white rounded-2xl p-4 mb-4 border border-gray-100 shadow-sm">
-          <div class="flex gap-2">
+        <!-- Mobile Filter Panels -->
+        <div id="filter-name" class="hidden" style="background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; border: 1px solid rgba(128,90,213,0.1);">
+          <div style="display: flex; gap: 8px;">
             <input type="text" id="mobile-input-name" placeholder="Naam artiest..."
-                   class="flex-1 px-4 py-3 bg-gray-50 rounded-xl text-sm outline-none">
+                   style="flex: 1; padding: 12px 16px; background: #f9fafb; border-radius: 12px; border: none; font-size: 14px; outline: none;">
             <button data-action="apply-filter" data-target="name"
-                    class="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-            </button>
+                    style="width: 44px; height: 44px; background: #805ad5; color: white; border: none; border-radius: 50%; cursor: pointer;">✓</button>
           </div>
         </div>
 
-        <div id="filter-location" class="hidden bg-white rounded-2xl p-4 mb-4 border border-gray-100 shadow-sm">
-          <div class="flex gap-2">
+        <div id="filter-location" class="hidden" style="background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; border: 1px solid rgba(128,90,213,0.1);">
+          <div style="display: flex; gap: 8px;">
             <input type="text" id="mobile-input-location" placeholder="Stad of regio..."
-                   class="flex-1 px-4 py-3 bg-gray-50 rounded-xl text-sm outline-none">
+                   style="flex: 1; padding: 12px 16px; background: #f9fafb; border-radius: 12px; border: none; font-size: 14px; outline: none;">
             <button data-action="apply-filter" data-target="location"
-                    class="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-            </button>
+                    style="width: 44px; height: 44px; background: #805ad5; color: white; border: none; border-radius: 50%; cursor: pointer;">✓</button>
           </div>
         </div>
 
-        <div id="filter-genre" class="hidden bg-white rounded-2xl p-4 mb-4 border border-gray-100 shadow-sm">
-          <div id="mobile-genre-checkboxes" class="space-y-2 mb-3 max-h-48 overflow-y-auto">
-            <p class="text-gray-400 text-sm">Laden...</p>
+        <div id="filter-genre" class="hidden" style="background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; border: 1px solid rgba(128,90,213,0.1);">
+          <div id="mobile-genre-checkboxes" style="max-height: 200px; overflow-y: auto; margin-bottom: 12px;">
+            <p style="color: #9ca3af; font-size: 14px;">Laden...</p>
           </div>
-          <div class="flex justify-end">
+          <div style="display: flex; justify-content: flex-end;">
             <button data-action="apply-filter" data-target="genre"
-                    class="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-              </svg>
-            </button>
+                    style="width: 44px; height: 44px; background: #805ad5; color: white; border: none; border-radius: 50%; cursor: pointer;">✓</button>
           </div>
         </div>
 
-        <!-- Mobile Results Count -->
-        <p id="mobile-results-count" class="text-gray-500 text-sm mb-3">0 gevonden</p>
-
-        <!-- Mobile Results Grid (2 columns) -->
-        <div id="mobile-search-grid" class="grid grid-cols-2 gap-3">
-          <!-- Cards worden hier gerenderd -->
+        <!-- Mobile Results -->
+        <p id="mobile-results-count" style="color: #9ca3af; font-size: 14px; margin-bottom: 12px;">0 gevonden</p>
+        <div id="mobile-search-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+          <!-- Mobile cards -->
         </div>
       </div>
 
-      <!-- ============ DESKTOP LAYOUT ============ -->
-      <div class="hidden lg:flex gap-8">
+      <!-- ============ DESKTOP 3-COLUMN LAYOUT ============ -->
+      <div class="hidden lg:flex gap-6" style="align-items: flex-start;">
 
-        <!-- Desktop Sidebar -->
-        <aside class="w-72 flex-shrink-0">
-          <div class="bg-white/70 backdrop-blur-xl border border-white/40 p-6 rounded-3xl shadow-sm sticky top-24">
-            <h2 class="text-xl font-semibold text-gray-900 mb-6">Filters</h2>
+        <!-- LEFT: Filter Sidebar -->
+        <aside style="width: 200px; flex-shrink: 0;">
+          <h1 style="font-size: 28px; font-weight: 700; color: #1a1a2e; margin-bottom: 20px;">Zoeken</h1>
 
-            <!-- Name Input -->
-            <div class="mb-5">
-              <label class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">Naam</label>
-              <input id="desktop-input-name" type="text" placeholder="Typ een naam..."
-                     class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-purple-500/20">
-            </div>
-
-            <!-- Location Input -->
-            <div class="mb-5">
-              <label class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">Locatie</label>
-              <input id="desktop-input-location" type="text" placeholder="Stad of regio..."
-                     class="w-full px-4 py-3 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:ring-2 focus:ring-purple-500/20">
-            </div>
+          <div style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 4px 20px rgba(128, 90, 213, 0.08); border: 1px solid rgba(128, 90, 213, 0.1);">
+            <h3 style="font-size: 16px; font-weight: 600; color: #1a1a2e; margin-bottom: 16px;">Filter</h3>
 
             <!-- Genre Checkboxes -->
-            <div class="mb-5">
-              <label class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2 block">Genre</label>
-              <div id="desktop-genre-checkboxes" class="space-y-2">
-                <p class="text-gray-400 text-sm">Laden...</p>
-              </div>
+            <div id="desktop-genre-checkboxes" style="display: flex; flex-direction: column; gap: 10px;">
+              <p style="color: #9ca3af; font-size: 14px;">Laden...</p>
             </div>
 
-            <!-- Apply Button -->
-            <button id="apply-filters-btn" class="w-full py-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-xl shadow-md transition-transform active:scale-95">
-              Filters Toepassen
-            </button>
-          </div>
+            <hr style="border: none; border-top: 1px solid #e9e3f5; margin: 16px 0;">
 
-          <!-- Results Count -->
-          <div class="bg-white/70 backdrop-blur-xl border border-white/40 p-6 rounded-3xl shadow-sm mt-6">
-            <h2 class="text-lg font-semibold text-gray-900 mb-1">Resultaten</h2>
-            <p id="desktop-results-count" class="text-sm text-gray-500">0 gevonden</p>
+            <!-- Name Search -->
+            <div style="margin-bottom: 12px;">
+              <input id="desktop-input-name" type="text" placeholder="Zoek op naam..."
+                     style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid #e9e3f5; font-size: 14px; outline: none;"
+                     onfocus="this.style.borderColor='#805ad5'" onblur="this.style.borderColor='#e9e3f5'">
+            </div>
+
+            <!-- Location Search -->
+            <div>
+              <input id="desktop-input-location" type="text" placeholder="Locatie..."
+                     style="width: 100%; padding: 10px 14px; border-radius: 10px; border: 1px solid #e9e3f5; font-size: 14px; outline: none;"
+                     onfocus="this.style.borderColor='#805ad5'" onblur="this.style.borderColor='#e9e3f5'">
+            </div>
           </div>
         </aside>
 
-        <!-- Desktop Results Grid (4 columns) -->
-        <main class="flex-1">
-          <div id="desktop-search-grid" class="grid grid-cols-4 gap-5">
-            <!-- Cards worden hier gerenderd -->
+        <!-- MIDDLE: Results Grid (3 columns) -->
+        <main style="flex: 1; min-width: 0;">
+          <p id="desktop-results-count" style="color: #9ca3af; font-size: 14px; margin-bottom: 16px;">0 gevonden</p>
+          <div id="desktop-search-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+            <!-- Desktop cards -->
           </div>
         </main>
+
+        <!-- RIGHT: Artist Detail Panel -->
+        <aside id="desktop-artist-detail" style="width: 280px; flex-shrink: 0;">
+          <div style="background: white; border-radius: 16px; padding: 24px; box-shadow: 0 4px 20px rgba(128, 90, 213, 0.08); border: 1px solid rgba(128, 90, 213, 0.1); position: sticky; top: 24px;">
+
+            <!-- Empty State -->
+            <div id="detail-empty-state" style="text-align: center; padding: 40px 0;">
+              <div style="width: 80px; height: 80px; background: #f3e8ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;">
+                <svg width="32" height="32" fill="none" stroke="#805ad5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+              </div>
+              <p style="color: #9ca3af; font-size: 14px;">Selecteer een artiest</p>
+            </div>
+
+            <!-- Artist Detail (hidden by default) -->
+            <div id="detail-content" style="display: none;">
+              <h2 style="font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 20px;">Profiel</h2>
+
+              <!-- Profile Photo -->
+              <div style="display: flex; justify-content: center; margin-bottom: 16px;">
+                <img id="detail-photo" src="" alt="Artist" style="width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #805ad5;">
+              </div>
+
+              <!-- Name -->
+              <h3 id="detail-name" style="font-size: 18px; font-weight: 600; color: #1a1a2e; text-align: center; margin-bottom: 16px;">Artist Name</h3>
+
+              <!-- Action Button -->
+              <button id="detail-message-btn" style="width: 100%; padding: 12px; background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%); color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; margin-bottom: 20px;">
+                Stuur Bericht
+              </button>
+
+              <!-- Bio Section -->
+              <div style="margin-bottom: 16px;">
+                <h4 style="font-size: 14px; font-weight: 600; color: #1a1a2e; margin-bottom: 8px;">Over Mij</h4>
+                <p id="detail-bio" style="font-size: 13px; color: #4a4a68; line-height: 1.6;">Bio komt hier...</p>
+              </div>
+
+              <!-- Genres -->
+              <div>
+                <h4 style="font-size: 14px; font-weight: 600; color: #1a1a2e; margin-bottom: 8px;">Genres</h4>
+                <div id="detail-genres" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  <!-- Genre badges -->
+                </div>
+              </div>
+
+              <!-- View Full Profile Link -->
+              <a id="detail-full-profile-link" href="#" style="display: block; text-align: center; margin-top: 20px; color: #805ad5; font-size: 14px; font-weight: 500; text-decoration: none;">
+                Bekijk volledig profiel →
+              </a>
+            </div>
+          </div>
+        </aside>
+
       </div>
 
     </div>
@@ -158,7 +192,7 @@ export function renderArtistSearch() {
   // Load artists
   loadArtists();
 
-  console.log('[RENDER] Search module rendered');
+  console.log('[RENDER] Artist search rendered with 3-column desktop layout');
 }
 
 /**
@@ -178,9 +212,10 @@ async function populateGenres() {
     const desktopContainer = document.getElementById('desktop-genre-checkboxes');
     if (desktopContainer) {
       desktopContainer.innerHTML = sorted.map(g => `
-        <label class="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-lg cursor-pointer">
-          <input type="checkbox" name="desktop-genre" value="${g}" class="w-4 h-4 rounded text-purple-600">
-          <span class="text-sm text-gray-700">${g}</span>
+        <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+          <input type="checkbox" name="desktop-genre" value="${g}"
+                 style="width: 16px; height: 16px; accent-color: #805ad5; cursor: pointer;">
+          <span style="font-size: 13px; color: #4a4a68;">${g}</span>
         </label>
       `).join('');
     }
@@ -242,7 +277,28 @@ function setupSearchInteractions() {
     const card = e.target.closest('[data-artist-id]');
     if (card) {
       const artistId = card.dataset.artistId;
-      showArtistDetail(artistId);
+
+      // Check if on desktop (detail panel visible)
+      const detailPanel = document.getElementById('desktop-artist-detail');
+      if (detailPanel && window.innerWidth >= 1024) {
+        // Desktop: Show in side panel
+        import('./search-data.js').then(dataModule => {
+          dataModule.fetchArtistById(artistId).then(artist => {
+            if (artist) {
+              showArtistInDetailPanel(artist);
+            }
+          });
+        });
+
+        // Highlight selected card
+        document.querySelectorAll('.artist-card').forEach(c => {
+          c.style.borderColor = 'transparent';
+        });
+        card.style.borderColor = '#805ad5';
+      } else {
+        // Mobile: navigate to full detail page
+        showArtistDetail(artistId);
+      }
       return;
     }
   });
@@ -328,51 +384,105 @@ async function loadArtists() {
 export function renderArtists(artists) {
   const desktopGrid = document.getElementById('desktop-search-grid');
   const mobileGrid = document.getElementById('mobile-search-grid');
+  const desktopCount = document.getElementById('desktop-results-count');
+  const mobileCount = document.getElementById('mobile-results-count');
 
-  const generateCard = (artist, isMobile) => {
-    const pic = artist.profilePicUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(artist.stageName || 'A')}&background=e0e7ff&color=6366f1&size=300`;
-    const name = artist.stageName || `${artist.firstName || ''} ${artist.lastName || ''}`.trim() || 'Unknown';
-    const age = artist.dob ? calculateAge(artist.dob) : null;
-    const location = artist.location || '';
-    const genre = (artist.genres || [])[0] || '';
+  const countText = `${artists.length} gevonden`;
+  if (desktopCount) desktopCount.textContent = countText;
+  if (mobileCount) mobileCount.textContent = countText;
 
-    if (isMobile) {
-      // Mobile card: compact
-      return `
-        <div class="cursor-pointer" data-artist-id="${artist.id}">
-          <img src="${pic}" alt="${name}" class="w-full aspect-square object-cover rounded-xl bg-gray-100" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e0e7ff&color=6366f1&size=300'">
-          <h3 class="font-medium text-sm mt-2 truncate">${name}${age ? ', ' + age : ''}</h3>
-          ${genre ? `<p class="text-gray-500 text-xs truncate">${genre}</p>` : ''}
-        </div>
-      `;
-    } else {
-      // Desktop card: more detail
-      return `
-        <div class="bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow cursor-pointer" data-artist-id="${artist.id}">
-          <img src="${pic}" alt="${name}" class="w-full aspect-[3/4] object-cover bg-gray-100" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e0e7ff&color=6366f1&size=300'">
-          <div class="p-4">
-            <h3 class="font-semibold text-gray-900 truncate">${name}</h3>
-            ${age ? `<p class="text-gray-500 text-sm">${age} jaar</p>` : ''}
-            ${location ? `<p class="text-gray-400 text-xs">${location}</p>` : ''}
-            ${genre ? `<span class="inline-block mt-2 px-2.5 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-700">${genre}</span>` : ''}
-          </div>
-        </div>
-      `;
-    }
-  };
-
-  // Render desktop grid
+  // Desktop cards met ronde foto's
   if (desktopGrid) {
     desktopGrid.innerHTML = artists.length > 0
-      ? artists.map(a => generateCard(a, false)).join('')
-      : '<p class="col-span-4 text-center text-gray-500 py-10">Geen artiesten gevonden</p>';
+      ? artists.map(artist => {
+          const pic = artist.profilePicUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(artist.stageName || 'A')}&background=e0e7ff&color=6366f1&size=150`;
+          const name = artist.stageName || `${artist.firstName || ''} ${artist.lastName || ''}`.trim() || 'Unknown';
+          const genre = (artist.genres || [])[0] || '';
+
+          return `
+            <div class="artist-card" data-artist-id="${artist.id}"
+                 style="background: white; border-radius: 16px; padding: 20px; text-align: center; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; box-shadow: 0 2px 10px rgba(128,90,213,0.06);"
+                 onmouseover="this.style.borderColor='#805ad5'; this.style.boxShadow='0 4px 20px rgba(128,90,213,0.15)'"
+                 onmouseout="this.style.borderColor='transparent'; this.style.boxShadow='0 2px 10px rgba(128,90,213,0.06)'">
+              <img src="${pic}" alt="${name}"
+                   style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; margin: 0 auto 12px; border: 2px solid #e9e3f5;"
+                   onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e0e7ff&color=6366f1&size=150'">
+              <h3 style="font-size: 14px; font-weight: 600; color: #1a1a2e; margin-bottom: 4px;">${name}</h3>
+              ${genre ? `<p style="font-size: 12px; color: #9ca3af;">${genre}</p>` : ''}
+            </div>
+          `;
+        }).join('')
+      : '<p style="grid-column: span 3; text-align: center; color: #9ca3af; padding: 40px;">Geen artiesten gevonden</p>';
   }
 
-  // Render mobile grid
+  // Mobile cards
   if (mobileGrid) {
     mobileGrid.innerHTML = artists.length > 0
-      ? artists.map(a => generateCard(a, true)).join('')
-      : '<p class="col-span-2 text-center text-gray-500 py-10">Geen artiesten gevonden</p>';
+      ? artists.map(artist => {
+          const pic = artist.profilePicUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(artist.stageName || 'A')}&background=e0e7ff&color=6366f1&size=150`;
+          const name = artist.stageName || `${artist.firstName || ''} ${artist.lastName || ''}`.trim() || 'Unknown';
+          const genre = (artist.genres || [])[0] || '';
+
+          return `
+            <div data-artist-id="${artist.id}" style="text-align: center; cursor: pointer;">
+              <img src="${pic}" alt="${name}"
+                   style="width: 100%; aspect-ratio: 1; border-radius: 50%; object-fit: cover; border: 2px solid #e9e3f5;"
+                   onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e0e7ff&color=6366f1&size=150'">
+              <h3 style="font-size: 13px; font-weight: 600; color: #1a1a2e; margin-top: 8px;">${name}</h3>
+              ${genre ? `<p style="font-size: 11px; color: #9ca3af;">${genre}</p>` : ''}
+            </div>
+          `;
+        }).join('')
+      : '<p style="grid-column: span 2; text-align: center; color: #9ca3af; padding: 40px;">Geen artiesten gevonden</p>';
+  }
+}
+
+/**
+ * Show artist in detail panel (desktop 3-column layout)
+ */
+export function showArtistInDetailPanel(artist) {
+  const emptyState = document.getElementById('detail-empty-state');
+  const detailContent = document.getElementById('detail-content');
+
+  if (!emptyState || !detailContent) return;
+
+  // Hide empty state, show content
+  emptyState.style.display = 'none';
+  detailContent.style.display = 'block';
+
+  // Fill in data
+  const photo = document.getElementById('detail-photo');
+  const name = document.getElementById('detail-name');
+  const bio = document.getElementById('detail-bio');
+  const genres = document.getElementById('detail-genres');
+  const messageBtn = document.getElementById('detail-message-btn');
+  const fullProfileLink = document.getElementById('detail-full-profile-link');
+
+  if (photo) {
+    photo.src = artist.profilePicUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(artist.stageName || 'A')}&background=e0e7ff&color=6366f1&size=150`;
+  }
+  if (name) {
+    name.textContent = artist.stageName || `${artist.firstName || ''} ${artist.lastName || ''}`.trim() || 'Unknown';
+  }
+  if (bio) {
+    bio.textContent = artist.bio || artist.pitch || 'Geen bio beschikbaar.';
+  }
+  if (genres) {
+    genres.innerHTML = (artist.genres || []).map(g =>
+      `<span style="padding: 4px 10px; background: #f3e8ff; color: #805ad5; border-radius: 12px; font-size: 11px; font-weight: 500;">${g}</span>`
+    ).join('');
+  }
+  if (messageBtn) {
+    messageBtn.onclick = () => {
+      openMessageModal(artist);
+    };
+  }
+  if (fullProfileLink) {
+    fullProfileLink.href = `#artist/${artist.id}`;
+    fullProfileLink.onclick = (e) => {
+      e.preventDefault();
+      showArtistDetail(artist.id);
+    };
   }
 }
 
