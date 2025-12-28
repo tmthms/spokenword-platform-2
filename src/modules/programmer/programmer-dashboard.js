@@ -41,7 +41,58 @@ export function renderProgrammerDashboard() {
 
     <!-- VIEW 1: Profile Overview (main view) -->
     <div id="programmer-profile-view" class="programmer-profile-pattern">
-      <div style="max-width: 800px; margin: 0 auto; padding: 40px 20px;">
+
+      <!-- MOBILE PROFILE LAYOUT -->
+      <div id="mobile-profile-layout" class="lg:hidden" style="padding: 16px;">
+
+        <!-- Profile Photo with Badge -->
+        <div style="position: relative; margin-bottom: 20px;">
+          <img id="mobile-profile-photo" src="" alt="Profile"
+               style="width: 100%; max-width: 280px; aspect-ratio: 1; object-fit: cover; border-radius: 12px; display: block; margin: 0 auto;">
+          <div style="position: absolute; top: 12px; right: calc(50% - 140px + 12px); background: white; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 600; color: #805ad5; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            ✓ Verified Programmer
+          </div>
+        </div>
+
+        <!-- Name & Organization -->
+        <div style="text-align: center; margin-bottom: 20px;">
+          <h1 id="mobile-profile-name" style="font-size: 24px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px;">Naam</h1>
+          <p id="mobile-profile-org" style="font-size: 16px; color: #6b7280; margin-bottom: 12px;">Organisatie</p>
+
+          <!-- Contact Icons -->
+          <div style="display: flex; justify-content: center; gap: 16px;">
+            <a id="mobile-profile-email-link" href="#" style="width: 40px; height: 40px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+              <svg width="20" height="20" fill="none" stroke="#6b7280" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+            </a>
+            <a id="mobile-profile-website-link" href="#" target="_blank" style="width: 40px; height: 40px; background: #f3f4f6; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+              <svg width="20" height="20" fill="none" stroke="#6b7280" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"/></svg>
+            </a>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 24px;">
+          <button id="mobile-edit-profile-btn"
+                  style="width: 100%; padding: 14px; background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;">
+            Edit Profile
+          </button>
+          <button id="mobile-view-public-btn"
+                  style="width: 100%; padding: 14px; background: white; color: #1a1a2e; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;">
+            View Public Profile
+          </button>
+        </div>
+
+        <!-- About Organization -->
+        <div style="background: white; border-radius: 16px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.04);">
+          <h2 style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px;">About Organization</h2>
+          <p id="mobile-profile-about" style="font-size: 14px; color: #4a4a68; line-height: 1.7;">
+            Geen beschrijving beschikbaar.
+          </p>
+        </div>
+      </div>
+
+      <!-- DESKTOP PROFILE LAYOUT -->
+      <div id="desktop-profile-layout" class="hidden lg:block" style="max-width: 800px; margin: 0 auto; padding: 40px 20px;">
 
         <!-- Main Profile Card -->
         <div style="background: white; border-radius: 20px; padding: 32px; box-shadow: 0 4px 20px rgba(128, 90, 213, 0.08); border: 1px solid rgba(128, 90, 213, 0.1); margin-bottom: 20px;">
@@ -104,11 +155,102 @@ export function renderProgrammerDashboard() {
         </div>
 
       </div>
+      <!-- End Desktop Profile Layout -->
+
     </div>
+    <!-- End Profile View -->
 
     <!-- VIEW 2: Edit Profile (hidden by default) -->
     <div id="programmer-edit-view" class="programmer-profile-pattern" style="display: none;">
-      <div style="max-width: 800px; margin: 0 auto; padding: 40px 20px;">
+
+      <!-- MOBILE EDIT LAYOUT -->
+      <div id="mobile-edit-layout" class="lg:hidden" style="padding: 16px; padding-bottom: 100px;">
+
+        <h1 style="font-size: 24px; font-weight: 700; color: #1a1a2e; margin-bottom: 24px;">Edit Profile</h1>
+
+        <!-- Personal Details -->
+        <div style="background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.04);">
+          <h2 style="font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Personal Details</h2>
+
+          <!-- Photo -->
+          <div style="display: flex; align-items: center; gap: 16px; margin-bottom: 16px;">
+            <div style="width: 60px; height: 60px; background: #f3f4f6; border-radius: 8px; overflow: hidden;">
+              <img id="mobile-edit-photo-preview" src="" alt="Photo" style="width: 100%; height: 100%; object-fit: cover;">
+            </div>
+            <div>
+              <p style="font-size: 14px; color: #6b7280; margin-bottom: 6px;">Photo</p>
+              <label style="padding: 8px 16px; background: white; border: 1px solid #805ad5; color: #805ad5; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer;">
+                Change Photo
+                <input type="file" id="mobile-edit-photo-input" accept="image/*" style="display: none;">
+              </label>
+            </div>
+          </div>
+
+          <!-- Phone -->
+          <div>
+            <label style="font-size: 14px; color: #6b7280; display: block; margin-bottom: 6px;">Phone</label>
+            <input type="tel" id="mobile-edit-phone" placeholder="Telefoonnummer"
+                   style="width: 100%; padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 14px; outline: none; box-sizing: border-box;">
+          </div>
+        </div>
+
+        <!-- Organization Details -->
+        <div style="background: white; border-radius: 16px; padding: 20px; margin-bottom: 16px; box-shadow: 0 2px 12px rgba(0,0,0,0.04);">
+          <h2 style="font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Organization Details</h2>
+
+          <!-- Name -->
+          <div style="margin-bottom: 16px;">
+            <label style="font-size: 14px; color: #6b7280; display: block; margin-bottom: 6px;">Name</label>
+            <input type="text" id="mobile-edit-org-name" placeholder="Organisatie naam"
+                   style="width: 100%; padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 14px; outline: none; box-sizing: border-box;">
+          </div>
+
+          <!-- Website -->
+          <div style="margin-bottom: 16px;">
+            <label style="font-size: 14px; color: #6b7280; display: block; margin-bottom: 6px;">Website</label>
+            <input type="url" id="mobile-edit-website" placeholder="https://..."
+                   style="width: 100%; padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 14px; outline: none; box-sizing: border-box;">
+          </div>
+
+          <!-- About -->
+          <div>
+            <label style="font-size: 14px; color: #6b7280; display: block; margin-bottom: 6px;">About</label>
+            <textarea id="mobile-edit-about" placeholder="Beschrijf je organisatie..." rows="4"
+                      style="width: 100%; padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 14px; outline: none; box-sizing: border-box; resize: vertical;"></textarea>
+          </div>
+        </div>
+
+        <!-- Preferences -->
+        <div style="background: white; border-radius: 16px; padding: 20px; margin-bottom: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.04);">
+          <h2 style="font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Preferences</h2>
+
+          <!-- Language -->
+          <div>
+            <label style="font-size: 14px; color: #6b7280; display: block; margin-bottom: 6px;">Language</label>
+            <select id="mobile-edit-language"
+                    style="width: 100%; padding: 12px 16px; border: 1px solid #e5e7eb; border-radius: 10px; font-size: 14px; outline: none; box-sizing: border-box; background: white;">
+              <option value="nl">Nederlands</option>
+              <option value="en">English</option>
+              <option value="fr">Français</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; gap: 12px;">
+          <button id="mobile-save-profile-btn"
+                  style="flex: 1; padding: 14px; background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;">
+            Save All Changes
+          </button>
+          <button id="mobile-cancel-edit-btn"
+                  style="padding: 14px 24px; background: white; color: #6b7280; border: none; border-radius: 10px; font-size: 15px; font-weight: 500; cursor: pointer;">
+            Cancel
+          </button>
+        </div>
+      </div>
+
+      <!-- DESKTOP EDIT LAYOUT -->
+      <div id="desktop-edit-layout" class="hidden lg:block" style="max-width: 800px; margin: 0 auto; padding: 40px 20px;">
 
         <!-- Back Button -->
         <button id="back-from-edit-btn" style="display: flex; align-items: center; gap: 8px; background: none; border: none; color: #805ad5; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 24px; padding: 8px 0;">
@@ -188,7 +330,10 @@ export function renderProgrammerDashboard() {
         </div>
 
       </div>
+      <!-- End Desktop Edit Layout -->
+
     </div>
+    <!-- End Edit View -->
 
     <!-- VIEW 3: Public Profile Preview (hidden by default) -->
     <div id="programmer-public-view" class="programmer-profile-pattern" style="display: none;">
@@ -566,9 +711,48 @@ function setupProgrammerNavigation() {
     }
   });
 
+  // Mobile Edit Profile button
+  const mobileEditBtn = document.getElementById('mobile-edit-profile-btn');
+  if (mobileEditBtn) {
+    mobileEditBtn.addEventListener('click', () => {
+      showProgrammerEditView();
+      populateMobileEditForm(getStore('currentUserData'));
+    });
+  }
+
+  // Mobile View Public Profile button
+  const mobilePublicBtn = document.getElementById('mobile-view-public-btn');
+  if (mobilePublicBtn) {
+    mobilePublicBtn.addEventListener('click', () => {
+      showProgrammerPublicView();
+    });
+  }
+
+  // Mobile Save button
+  const mobileSaveBtn = document.getElementById('mobile-save-profile-btn');
+  if (mobileSaveBtn) {
+    mobileSaveBtn.addEventListener('click', async () => {
+      await saveMobileProfileChanges();
+    });
+  }
+
+  // Mobile Cancel button
+  const mobileCancelBtn = document.getElementById('mobile-cancel-edit-btn');
+  if (mobileCancelBtn) {
+    mobileCancelBtn.addEventListener('click', () => {
+      showProgrammerProfileView();
+    });
+  }
+
+  // Mobile photo upload
+  const mobilePhotoInput = document.getElementById('mobile-edit-photo-input');
+  if (mobilePhotoInput) {
+    mobilePhotoInput.addEventListener('change', handleMobilePhotoUpload);
+  }
+
   dashboard.dataset.navListenersAttached = 'true';
 
-  console.log("[NAVIGATION] Event listeners attached via event delegation");
+  console.log("[NAVIGATION] Event listeners attached via event delegation (including mobile)");
 }
 
 /**
@@ -686,6 +870,180 @@ async function handleProgrammerProfileSubmit(e) {
 }
 
 /**
+ * Populates mobile profile view with user data
+ */
+export function populateMobileProfile(userData) {
+  if (!userData) return;
+
+  const photoEl = document.getElementById('mobile-profile-photo');
+  const nameEl = document.getElementById('mobile-profile-name');
+  const orgEl = document.getElementById('mobile-profile-org');
+  const aboutEl = document.getElementById('mobile-profile-about');
+  const emailLink = document.getElementById('mobile-profile-email-link');
+  const websiteLink = document.getElementById('mobile-profile-website-link');
+
+  const fullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'Naam';
+
+  if (photoEl) {
+    photoEl.src = userData.profilePicUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=e0e7ff&color=6366f1&size=280`;
+  }
+  if (nameEl) nameEl.textContent = fullName;
+  if (orgEl) orgEl.textContent = userData.organizationName || userData.companyName || 'Organisatie';
+  if (aboutEl) aboutEl.textContent = userData.organizationAbout || userData.bio || userData.about || 'Geen beschrijving beschikbaar.';
+
+  const currentUser = getStore('currentUser');
+  if (emailLink && currentUser?.email) {
+    emailLink.href = `mailto:${currentUser.email}`;
+    emailLink.style.display = 'flex';
+  }
+  if (websiteLink && userData.website) {
+    websiteLink.href = userData.website;
+    websiteLink.style.display = 'flex';
+  } else if (websiteLink) {
+    websiteLink.style.display = 'none';
+  }
+
+  console.log('[MOBILE PROFILE] Mobile profile populated');
+}
+
+/**
+ * Populates mobile edit form with user data
+ */
+export function populateMobileEditForm(userData) {
+  if (!userData) return;
+
+  const photoPreview = document.getElementById('mobile-edit-photo-preview');
+  const phoneInput = document.getElementById('mobile-edit-phone');
+  const orgNameInput = document.getElementById('mobile-edit-org-name');
+  const websiteInput = document.getElementById('mobile-edit-website');
+  const aboutInput = document.getElementById('mobile-edit-about');
+  const languageSelect = document.getElementById('mobile-edit-language');
+
+  const fullName = `${userData.firstName || ''} ${userData.lastName || ''}`.trim() || 'User';
+
+  if (photoPreview) {
+    photoPreview.src = userData.profilePicUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=e0e7ff&color=6366f1&size=60`;
+  }
+  if (phoneInput) phoneInput.value = userData.phone || '';
+  if (orgNameInput) orgNameInput.value = userData.organizationName || userData.companyName || '';
+  if (websiteInput) websiteInput.value = userData.website || '';
+  if (aboutInput) aboutInput.value = userData.organizationAbout || userData.bio || userData.about || '';
+  if (languageSelect) languageSelect.value = userData.language || 'nl';
+
+  console.log('[MOBILE EDIT] Mobile edit form populated');
+}
+
+/**
+ * Saves mobile profile changes to Firestore
+ */
+async function saveMobileProfileChanges() {
+  // Collect values from mobile form
+  const phone = document.getElementById('mobile-edit-phone')?.value || '';
+  const orgName = document.getElementById('mobile-edit-org-name')?.value || '';
+  const website = document.getElementById('mobile-edit-website')?.value || '';
+  const about = document.getElementById('mobile-edit-about')?.value || '';
+  const language = document.getElementById('mobile-edit-language')?.value || 'nl';
+
+  try {
+    const currentUser = getStore('currentUser');
+    if (!currentUser) {
+      throw new Error('No user logged in');
+    }
+
+    const docRef = doc(db, 'programmers', currentUser.uid);
+
+    await updateDoc(docRef, {
+      phone,
+      organizationName: orgName,
+      website,
+      organizationAbout: about,
+      language,
+      updatedAt: new Date()
+    });
+
+    // Update local store
+    const userData = getStore('currentUserData');
+    setStore('currentUserData', {
+      ...userData,
+      phone,
+      organizationName: orgName,
+      website,
+      organizationAbout: about,
+      language
+    });
+
+    // Show success and go back
+    alert('Profiel opgeslagen!');
+    showProgrammerProfileView();
+    populateMobileProfile(getStore('currentUserData'));
+
+    console.log('[MOBILE SAVE] Profile saved successfully');
+  } catch (error) {
+    console.error('[MOBILE SAVE] Error saving profile:', error);
+    alert('Fout bij opslaan. Probeer opnieuw.');
+  }
+}
+
+/**
+ * Handles mobile photo upload
+ */
+async function handleMobilePhotoUpload(e) {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  // Update preview immediately
+  const preview = document.getElementById('mobile-edit-photo-preview');
+  if (preview) {
+    preview.src = URL.createObjectURL(file);
+  }
+
+  try {
+    const currentUser = getStore('currentUser');
+    if (!currentUser) {
+      throw new Error('No user logged in');
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      throw new Error('File size must be less than 5MB');
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      throw new Error('Please select an image file');
+    }
+
+    const storage = getStorage();
+    const storageRef = ref(storage, `programmers/${currentUser.uid}/profile.jpg`);
+
+    // Upload file
+    const snapshot = await uploadBytes(storageRef, file);
+
+    // Get download URL
+    const downloadURL = await getDownloadURL(snapshot.ref);
+
+    // Update Firestore
+    const docRef = doc(db, 'programmers', currentUser.uid);
+    await updateDoc(docRef, {
+      profilePicUrl: downloadURL,
+      updatedAt: new Date()
+    });
+
+    // Update local store
+    const userData = getStore('currentUserData');
+    setStore('currentUserData', {
+      ...userData,
+      profilePicUrl: downloadURL
+    });
+
+    console.log('[MOBILE PHOTO] Profile photo uploaded:', downloadURL);
+  } catch (error) {
+    console.error('[MOBILE PHOTO] Error uploading photo:', error);
+    alert('Fout bij uploaden foto. Probeer opnieuw.');
+  }
+}
+
+/**
  * Displays the programmer profile overview (read-only)
  * Called on initial load and after profile updates
  */
@@ -776,5 +1134,8 @@ export function displayProgrammerProfileOverview() {
     verifiedBadge.style.display = currentUserData.verified ? 'inline-flex' : 'none';
   }
 
-  console.log("[PROFILE] Profile overview displayed successfully");
+  // Also populate mobile profile
+  populateMobileProfile(currentUserData);
+
+  console.log("[PROFILE] Profile overview displayed successfully (desktop & mobile)");
 }

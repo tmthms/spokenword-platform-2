@@ -102,6 +102,14 @@ export function renderMobileNav() {
         <i data-lucide="search" class="bottom-nav-icon"></i>
         <span class="bottom-nav-label">Zoeken</span>
       </button>
+      <button class="bottom-nav-item" data-nav="messages">
+        <i data-lucide="message-circle" class="bottom-nav-icon"></i>
+        <span class="bottom-nav-label">Berichten</span>
+      </button>
+      <button class="bottom-nav-item" data-nav="profile">
+        <i data-lucide="user" class="bottom-nav-icon"></i>
+        <span class="bottom-nav-label">Profiel</span>
+      </button>
       <button class="bottom-nav-item" data-nav="settings">
         <i data-lucide="settings" class="bottom-nav-icon"></i>
         <span class="bottom-nav-label">Instellingen</span>
