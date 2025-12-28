@@ -654,6 +654,13 @@ export function renderDashboard() {
                 </div>
               </div>
 
+              <!-- Send Message Button -->
+              <button id="mobile-send-message-btn"
+                      style="width: 100%; padding: 14px; background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 24px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                Send Message
+              </button>
+
               <!-- Biography -->
               <div style="margin-bottom: 20px;">
                 <h2 style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 10px;">Biography</h2>

@@ -773,6 +773,23 @@ export function populateArtistDetail(artist) {
     };
   }
 
+  // Mobile Send Message button
+  const mobileSendMessageBtn = document.getElementById('mobile-send-message-btn');
+  if (mobileSendMessageBtn) {
+    mobileSendMessageBtn.onclick = () => {
+      import('../messaging/messaging-controller.js').then(module => {
+        if (module.openMessageModal) {
+          module.openMessageModal(artist);
+        } else {
+          alert('Berichten functie komt binnenkort beschikbaar.');
+        }
+      }).catch(err => {
+        console.error('[MESSAGE] Error opening modal:', err);
+        alert('Berichten functie komt binnenkort beschikbaar.');
+      });
+    };
+  }
+
   console.log('[DETAIL] Artist profile populated for mobile and desktop');
 }
 
