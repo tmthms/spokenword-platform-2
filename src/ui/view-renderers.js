@@ -438,16 +438,32 @@ export function renderProgrammerSignup() {
 export function renderMessages() {
   const appContent = document.getElementById('app-content');
   appContent.innerHTML = `
-    <div id="messages-view">
-      <div class="h-screen flex flex-col">
-        <div class="px-6 py-4 bg-white border-b border-gray-200">
-          <h2 class="text-2xl font-bold text-gray-900">Berichten</h2>
-        </div>
+    <div id="messages-view" class="h-screen flex flex-col bg-gray-50">
 
-        <div class="flex flex-1 min-h-0">
-          <!-- Conversation List -->
-          <div class="w-full md:w-1/3 border-r border-gray-200 overflow-y-auto bg-white">
-            <div id="conversations-loading" class="p-4 text-gray-500 text-center">
+      <!-- Desktop Layout -->
+      <div class="hidden md:flex flex-1 max-w-7xl mx-auto w-full gap-4 p-6">
+
+        <!-- Left Column: Conversation List (1/3) -->
+        <div class="w-1/3 flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <!-- Header -->
+          <div class="p-6 border-b border-gray-100">
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Berichten</h2>
+
+            <!-- Search Bar -->
+            <div class="relative">
+              <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+              </svg>
+              <input type="text"
+                     id="desktop-search-conversations"
+                     placeholder="Zoek in berichten..."
+                     class="w-full bg-gray-50 border-0 rounded-xl pl-12 pr-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none">
+            </div>
+          </div>
+
+          <!-- Conversations List -->
+          <div class="flex-1 overflow-y-auto">
+            <div id="conversations-loading" class="p-4">
               <!-- Loading skeleton inserted by JS -->
             </div>
             <div id="conversations-empty" class="p-8 text-center hidden">
@@ -459,42 +475,130 @@ export function renderMessages() {
                 <p class="text-sm text-gray-500 max-w-xs">Je hebt nog geen gesprekken. Stuur een bericht naar een artiest om te beginnen!</p>
               </div>
             </div>
-            <div id="conversations-list" class="divide-y divide-gray-200 hidden">
+            <div id="conversations-list" class="p-4 space-y-4 hidden">
               <!-- Conversations will be loaded here -->
             </div>
           </div>
+        </div>
 
-          <!-- Chat Area (hidden on mobile, shown when conversation selected) -->
-          <div class="hidden md:flex w-2/3 flex-col min-h-0">
-            <div id="chat-placeholder" class="flex-1 flex items-center justify-center text-gray-500 bg-gray-50">
-              <p>Selecteer een gesprek</p>
+        <!-- Right Column: Chat (2/3) -->
+        <div class="w-2/3 flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+          <!-- Placeholder State -->
+          <div id="chat-placeholder" class="flex-1 flex items-center justify-center text-gray-500 bg-gray-50">
+            <div class="text-center">
+              <svg class="h-16 w-16 text-gray-300 mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+              </svg>
+              <p class="text-gray-500 font-medium">Selecteer een gesprek</p>
+            </div>
+          </div>
+
+          <!-- Chat Container -->
+          <div id="chat-container" class="hidden flex-1 flex flex-col min-h-0">
+            <!-- Chat Header -->
+            <div id="chat-header" class="bg-white border-b border-gray-100 p-4">
+              <h3 class="text-lg font-semibold text-gray-900">Gesprek</h3>
             </div>
 
-            <div id="chat-container" class="hidden flex-1 flex flex-col min-h-0">
-              <!-- Chat Header -->
-              <div id="chat-header" class="p-4 border-b border-gray-200 bg-white">
-                <h3 class="text-lg font-semibold text-gray-900">Gesprek</h3>
-              </div>
+            <!-- Messages Container -->
+            <div id="messages-container" class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
+              <!-- Messages will be inserted here -->
+            </div>
 
-              <!-- Messages -->
-              <div id="messages-container" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-                <!-- Messages will be inserted here -->
-              </div>
-
-              <!-- Message Input -->
-              <div class="p-4 border-t border-gray-200 bg-white">
-                <form id="message-form" class="flex space-x-2">
-                  <input id="message-input" type="text" placeholder="Type je bericht..."
-                    class="flex-1 px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                  <button type="submit" class="btn-press bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-indigo-700">
-                    Verstuur
-                  </button>
-                </form>
-              </div>
+            <!-- Message Input -->
+            <div class="bg-white border-t border-gray-100 p-4">
+              <form id="message-form" class="flex gap-3">
+                <input id="message-input"
+                       type="text"
+                       placeholder="Type je bericht..."
+                       class="flex-1 bg-gray-50 border-0 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none"
+                       required>
+                <button type="submit" class="btn-press bg-indigo-600 text-white rounded-xl px-6 py-3 font-semibold hover:bg-indigo-700 transition-colors">
+                  Verstuur
+                </button>
+              </form>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- Mobile Layout -->
+      <div class="md:hidden flex flex-col flex-1">
+        <!-- Mobile Header -->
+        <div class="bg-white border-b border-gray-100 p-4">
+          <h2 class="text-2xl font-bold text-gray-900 mb-3">Berichten</h2>
+
+          <!-- Search Bar -->
+          <div class="relative">
+            <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text"
+                   id="mobile-search-conversations"
+                   placeholder="Zoek in berichten..."
+                   class="w-full bg-gray-50 border-0 rounded-xl pl-12 pr-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none">
+          </div>
+        </div>
+
+        <!-- Mobile Conversations List -->
+        <div class="flex-1 overflow-y-auto bg-gray-50 p-4">
+          <div id="mobile-conversations-loading" class="text-center py-8">
+            <!-- Loading skeleton inserted by JS -->
+          </div>
+          <div id="mobile-conversations-empty" class="text-center py-12 hidden">
+            <svg class="h-16 w-16 text-gray-300 mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
+            </svg>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">Geen berichten</h3>
+            <p class="text-sm text-gray-500 max-w-xs mx-auto">Je hebt nog geen gesprekken.</p>
+          </div>
+          <div id="mobile-conversations-list" class="space-y-3 hidden">
+            <!-- Mobile conversations will be loaded here -->
+          </div>
+        </div>
+
+        <!-- FAB (Floating Action Button) -->
+        <button id="mobile-fab-new-message" class="fixed bottom-24 right-6 bg-indigo-600 text-white rounded-full w-14 h-14 shadow-lg flex items-center justify-center hover:bg-indigo-700 transition-all z-40">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Mobile Chat View (fullscreen, initially hidden) -->
+      <div id="mobile-chat-view" class="hidden md:hidden fixed inset-0 bg-white z-50 flex flex-col">
+        <!-- Mobile Chat Header -->
+        <div id="mobile-chat-header" class="bg-white border-b border-gray-100 p-4 flex items-center gap-3">
+          <button id="mobile-chat-back-btn" class="text-gray-600 hover:text-gray-900">
+            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <h3 class="text-lg font-semibold text-gray-900">Gesprek</h3>
+        </div>
+
+        <!-- Mobile Messages Container -->
+        <div id="mobile-messages-container" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
+          <!-- Messages will be inserted here -->
+        </div>
+
+        <!-- Mobile Message Input -->
+        <div class="bg-white border-t border-gray-100 p-4">
+          <form id="mobile-message-form" class="flex gap-3">
+            <input id="mobile-message-input"
+                   type="text"
+                   placeholder="Type je bericht..."
+                   class="flex-1 bg-gray-50 border-0 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none"
+                   required>
+            <button type="submit" class="btn-press bg-indigo-600 text-white rounded-xl px-6 py-3 font-semibold hover:bg-indigo-700 transition-colors">
+              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+              </svg>
+            </button>
+          </form>
+        </div>
+      </div>
+
     </div>
   `;
 }
@@ -598,19 +702,19 @@ export function renderDashboard() {
         <!-- Content rendered by renderProgrammerDashboard() in programmer-dashboard.js -->
       </div>
 
-      <!-- Artist Detail View -->
-      <div id="artist-detail-view" class="hidden">
+      <!-- ARTIST DETAIL VIEW -->
+      <section id="artist-detail-view" class="hidden">
         <div class="artist-detail-pattern" style="min-height: 100vh; padding: 24px;">
           <div style="max-width: 1400px; margin: 0 auto;">
 
-            <!-- Back Button -->
+            <!-- Back Button (beide layouts) -->
             <button id="back-to-search-btn" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; background: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 500; color: #4a4a68; cursor: pointer; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
               <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
               Terug naar zoeken
             </button>
 
-            <!-- MOBILE ARTIST PROFILE LAYOUT -->
-            <div id="mobile-artist-detail" class="lg:hidden" style="padding: 0 16px 100px;">
+            <!-- ==================== MOBILE LAYOUT ==================== -->
+            <div id="mobile-artist-detail" class="lg:hidden" style="padding: 0 0 100px;">
 
               <!-- Profile Photo -->
               <div style="display: flex; justify-content: center; margin-bottom: 20px;">
@@ -641,17 +745,13 @@ export function renderDashboard() {
               <!-- Genres -->
               <div style="margin-bottom: 20px;">
                 <p style="font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 10px;">Genres</p>
-                <div id="mobile-detail-genres" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                  <!-- Genre badges -->
-                </div>
+                <div id="mobile-detail-genres" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
               </div>
 
               <!-- Languages -->
               <div style="margin-bottom: 24px;">
                 <p style="font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 10px;">Languages</p>
-                <div id="mobile-detail-languages" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                  <!-- Language badges -->
-                </div>
+                <div id="mobile-detail-languages" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
               </div>
 
               <!-- Send Message Button -->
@@ -691,30 +791,22 @@ export function renderDashboard() {
               <!-- Recommendations -->
               <div>
                 <h2 style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Recommendations</h2>
-
-                <!-- Write Recommendation Button -->
                 <button id="mobile-write-recommendation-btn"
                         style="width: 100%; padding: 14px; background: white; color: #1a1a2e; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 16px;">
                   Write Recommendation
                 </button>
-
-                <!-- Recommendation Cards -->
-                <div id="mobile-detail-recommendations" style="display: flex; flex-direction: column; gap: 12px;">
-                  <!-- Recommendation cards will be injected here -->
-                </div>
+                <div id="mobile-detail-recommendations" style="display: flex; flex-direction: column; gap: 12px;"></div>
               </div>
 
             </div>
 
-            <!-- DESKTOP 3-COLUMN LAYOUT -->
-            <div class="hidden lg:grid" style="grid-template-columns: 280px 1fr 320px; gap: 24px; align-items: start;">
+            <!-- ==================== DESKTOP 3-COLUMN LAYOUT ==================== -->
+            <div id="desktop-artist-detail" class="hidden lg:grid" style="grid-template-columns: 280px 1fr 320px; gap: 24px; align-items: start;">
 
               <!-- LEFT COLUMN: Media Gallery -->
               <aside style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 4px 20px rgba(128,90,213,0.08); border: 1px solid rgba(128,90,213,0.1);">
                 <h2 style="font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 20px;">Media Gallery</h2>
-
                 <div id="detail-media-gallery" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-                  <!-- Media items will be injected here -->
                   <div style="aspect-ratio: 1; background: #f3f4f6; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
                     <span style="color: #9ca3af; font-size: 13px;">Geen media</span>
                   </div>
@@ -726,19 +818,13 @@ export function renderDashboard() {
 
                 <!-- Profile Header -->
                 <div style="display: flex; gap: 24px; margin-bottom: 24px;">
-
-                  <!-- Profile Photo -->
                   <div style="flex-shrink: 0;">
                     <div style="width: 140px; height: 140px; border-radius: 50%; overflow: hidden; border: 4px solid #805ad5;">
                       <img id="detail-profile-pic" src="" alt="Artist" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
                   </div>
-
-                  <!-- Profile Info -->
                   <div style="flex: 1;">
                     <h1 id="detail-artist-name" style="font-size: 32px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px;">Artist Name</h1>
-
-                    <!-- Meta Info -->
                     <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;">
                       <div style="display: flex; align-items: center; gap: 8px; color: #4a4a68; font-size: 14px;">
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
@@ -753,21 +839,13 @@ export function renderDashboard() {
                         <span id="detail-location">Location</span>
                       </div>
                     </div>
-
-                    <!-- Genres -->
                     <div style="margin-bottom: 12px;">
                       <p style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 8px;">Genres</p>
-                      <div id="detail-genres" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                        <!-- Genre badges -->
-                      </div>
+                      <div id="detail-genres" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
                     </div>
-
-                    <!-- Languages -->
                     <div>
                       <p style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 8px;">Languages</p>
-                      <div id="detail-languages" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                        <!-- Language badges -->
-                      </div>
+                      <div id="detail-languages" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
                     </div>
                   </div>
                 </div>
@@ -776,7 +854,6 @@ export function renderDashboard() {
                 <div style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid #e9e3f5;">
                   <h3 style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px;">Biography</h3>
                   <p id="detail-bio" style="font-size: 14px; color: #4a4a68; line-height: 1.7;">No biography available.</p>
-
                   <h3 style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin: 20px 0 12px;">Pitch</h3>
                   <p id="detail-pitch" style="font-size: 14px; color: #4a4a68; line-height: 1.7;">No pitch available.</p>
                 </div>
@@ -807,31 +884,22 @@ export function renderDashboard() {
                       View All Recommendations
                     </button>
                   </div>
-                  <div id="detail-recommendations" style="display: flex; flex-direction: column; gap: 12px;">
-                    <!-- Recommendation cards will be injected here -->
-                  </div>
+                  <div id="detail-recommendations" style="display: flex; flex-direction: column; gap: 12px;"></div>
                 </div>
 
               </main>
 
               <!-- RIGHT COLUMN: Chat Panel -->
               <aside style="background: white; border-radius: 20px; box-shadow: 0 4px 20px rgba(128,90,213,0.08); border: 1px solid rgba(128,90,213,0.1); display: flex; flex-direction: column; height: calc(100vh - 150px); position: sticky; top: 100px;">
-
-                <!-- Chat Header -->
                 <div style="padding: 20px 24px; border-bottom: 1px solid #e9e3f5;">
                   <h2 id="chat-header-name" style="font-size: 18px; font-weight: 700; color: #1a1a2e;">Chat met Artist</h2>
                 </div>
-
-                <!-- Chat Messages -->
                 <div id="profile-chat-messages" style="flex: 1; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px;">
-                  <!-- Messages will be injected here -->
                   <div id="chat-empty-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #9ca3af;">
                     <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-bottom: 12px; opacity: 0.5;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
                     <p style="font-size: 14px;">Start een gesprek</p>
                   </div>
                 </div>
-
-                <!-- Chat Input -->
                 <div style="padding: 16px 24px; border-top: 1px solid #e9e3f5;">
                   <form id="profile-chat-form" style="display: flex; gap: 12px;">
                     <input type="text" id="profile-chat-input" placeholder="Type je bericht..."
@@ -841,13 +909,12 @@ export function renderDashboard() {
                     </button>
                   </form>
                 </div>
-
               </aside>
 
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </div>
   `;
 }
