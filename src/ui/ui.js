@@ -891,23 +891,35 @@ export function showSearch() {
       programmerDashboard.classList.remove('hidden');
     }
 
-    // Import en setup
+    // Render programmer dashboard
     import('../modules/programmer/programmer-dashboard.js').then(module => {
       module.renderProgrammerDashboard();
       module.setupProgrammerDashboard();
       module.showSearchOnlyView();
     });
 
-    import('../modules/search/search-controller.js').then(module => {
-      module.setupArtistSearch();
-      module.loadArtists();
+    // BELANGRIJK: Reset setup flag en render search UI
+    const searchSection = document.getElementById('artist-search-section');
+    if (searchSection) {
+      searchSection.dataset.setupComplete = 'false';  // Reset flag
+    }
+
+    // Render search UI EERST, dan setup
+    import('../modules/search/search-ui.js').then(uiModule => {
+      uiModule.renderArtistSearch();
+
+      // Dan setup interactions en load data
+      import('../modules/search/search-controller.js').then(ctrlModule => {
+        ctrlModule.setupArtistSearch();
+        setTimeout(() => ctrlModule.loadArtists(), 100);
+      });
     });
   }
 
   updateMobileNavActive('search');
 
   if (window.lucide) {
-    setTimeout(() => lucide.createIcons(), 100);
+    setTimeout(() => lucide.createIcons(), 150);
   }
 }
 
