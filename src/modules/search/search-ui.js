@@ -577,105 +577,96 @@ export function showArtistInDetailPanel(artist) {
  * Populate artist detail view with artist data
  */
 export function populateArtistDetail(artist) {
-  if (!artist) return;
+  if (!artist) {
+    console.error('[DETAIL] No artist data provided');
+    return;
+  }
+
+  console.log('[DETAIL] Populating artist:', artist.stageName || artist.id);
 
   const artistName = artist.stageName || `${artist.firstName || ''} ${artist.lastName || ''}`.trim() || 'Unknown Artist';
   const profilePicUrl = artist.profilePicUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(artistName)}&background=f3f4f6&color=1a1a2e&size=140`;
   const age = artist.dob ? calculateAge(artist.dob) : null;
+  const genderMap = { 'f': 'Female', 'm': 'Male', 'x': 'Other' };
+  const genderText = genderMap[artist.gender] || artist.gender || 'Not specified';
 
-  // === DESKTOP ELEMENTS ===
+  // ========== DESKTOP ELEMENTS ==========
 
-  // Profile picture
-  const profilePic = document.getElementById('detail-profile-pic');
-  if (profilePic) {
-    profilePic.src = profilePicUrl;
-  }
+  // Profile pic
+  const detailProfilePic = document.getElementById('detail-profile-pic');
+  if (detailProfilePic) detailProfilePic.src = profilePicUrl;
 
   // Name
-  const nameEl = document.getElementById('detail-artist-name');
-  if (nameEl) {
-    nameEl.textContent = artistName;
-  }
+  const detailArtistName = document.getElementById('detail-artist-name');
+  if (detailArtistName) detailArtistName.textContent = artistName;
 
   // Age
-  const ageEl = document.getElementById('detail-age');
-  if (ageEl) {
-    ageEl.textContent = age ? `${age} years old` : 'Age unknown';
-  }
+  const detailAge = document.getElementById('detail-age');
+  if (detailAge) detailAge.textContent = age ? `${age} years old` : 'Age unknown';
 
   // Gender
-  const genderEl = document.getElementById('detail-gender');
-  if (genderEl) {
-    genderEl.textContent = artist.gender || 'Not specified';
-  }
+  const detailGender = document.getElementById('detail-gender');
+  if (detailGender) detailGender.textContent = genderText;
 
   // Location
-  const locationEl = document.getElementById('detail-location');
-  if (locationEl) {
-    locationEl.textContent = artist.location || 'Location unknown';
-  }
+  const detailLocation = document.getElementById('detail-location');
+  if (detailLocation) detailLocation.textContent = artist.location || 'Location unknown';
 
   // Genres
-  const genresEl = document.getElementById('detail-genres');
-  if (genresEl) {
+  const detailGenres = document.getElementById('detail-genres');
+  if (detailGenres) {
     const genres = artist.genres || [];
-    genresEl.innerHTML = genres.length > 0
+    detailGenres.innerHTML = genres.length > 0
       ? genres.map(g => `<span style="padding: 6px 14px; background: #f3e8ff; color: #805ad5; border-radius: 20px; font-size: 13px; font-weight: 500;">${g}</span>`).join('')
       : '<span style="color: #9ca3af; font-size: 13px;">No genres specified</span>';
   }
 
   // Languages
-  const languagesEl = document.getElementById('detail-languages');
-  if (languagesEl) {
+  const detailLanguages = document.getElementById('detail-languages');
+  if (detailLanguages) {
     const languages = artist.languages || [];
-    languagesEl.innerHTML = languages.length > 0
-      ? languages.map(l => `<span style="padding: 6px 12px; background: #805ad5; color: white; border-radius: 6px; font-size: 12px; font-weight: 600;">${l.substring(0,2).toUpperCase()}</span>`).join('')
+    detailLanguages.innerHTML = languages.length > 0
+      ? languages.map(l => `<span style="padding: 6px 12px; background: #805ad5; color: white; border-radius: 6px; font-size: 12px; font-weight: 600;">${(l || '').substring(0,2).toUpperCase()}</span>`).join('')
       : '<span style="color: #9ca3af; font-size: 13px;">No languages specified</span>';
   }
 
-  // Biography
-  const bioEl = document.getElementById('detail-bio');
-  if (bioEl) {
-    bioEl.textContent = artist.bio || 'No biography available.';
-  }
+  // Bio
+  const detailBio = document.getElementById('detail-bio');
+  if (detailBio) detailBio.textContent = artist.bio || 'No biography available.';
 
   // Pitch
-  const pitchEl = document.getElementById('detail-pitch');
-  if (pitchEl) {
-    pitchEl.textContent = artist.pitch || 'No pitch available.';
-  }
+  const detailPitch = document.getElementById('detail-pitch');
+  if (detailPitch) detailPitch.textContent = artist.pitch || 'No pitch available.';
 
   // Email
-  const emailContainer = document.getElementById('detail-email-container');
-  const emailEl = document.getElementById('detail-email');
-  if (emailEl && artist.email) {
-    emailEl.textContent = artist.email;
-    emailEl.href = `mailto:${artist.email}`;
-    if (emailContainer) emailContainer.style.display = 'flex';
-  } else if (emailContainer) {
-    emailContainer.style.display = 'none';
+  const detailEmailContainer = document.getElementById('detail-email-container');
+  const detailEmail = document.getElementById('detail-email');
+  if (detailEmail && artist.email) {
+    detailEmail.textContent = artist.email;
+    detailEmail.href = `mailto:${artist.email}`;
+    if (detailEmailContainer) detailEmailContainer.style.display = 'flex';
+  } else if (detailEmailContainer) {
+    detailEmailContainer.style.display = 'none';
   }
 
   // Phone
-  const phoneContainer = document.getElementById('detail-phone-container');
-  const phoneEl = document.getElementById('detail-phone');
-  if (phoneEl && artist.phone) {
-    phoneEl.textContent = artist.phone;
-    if (phoneContainer) phoneContainer.style.display = 'flex';
-  } else if (phoneContainer) {
-    phoneContainer.style.display = 'none';
+  const detailPhoneContainer = document.getElementById('detail-phone-container');
+  const detailPhone = document.getElementById('detail-phone');
+  if (detailPhone && artist.phone) {
+    detailPhone.textContent = artist.phone;
+    if (detailPhoneContainer) detailPhoneContainer.style.display = 'flex';
+  } else if (detailPhoneContainer) {
+    detailPhoneContainer.style.display = 'none';
   }
 
   // Chat header
   const chatHeader = document.getElementById('chat-header-name');
-  if (chatHeader) {
-    chatHeader.textContent = `Chat met ${artistName}`;
-  }
+  if (chatHeader) chatHeader.textContent = `Chat met ${artistName}`;
 
   // Media Gallery
   populateMediaGallery(artist);
 
-  // === MOBILE ELEMENTS ===
+  // ========== MOBILE ELEMENTS ==========
 
   // Photo
   const mobilePhoto = document.getElementById('mobile-detail-photo');
@@ -687,21 +678,15 @@ export function populateArtistDetail(artist) {
 
   // Age
   const mobileAge = document.getElementById('mobile-detail-age');
-  if (mobileAge) {
-    mobileAge.textContent = age ? `${age} years old` : 'Age unknown';
-  }
+  if (mobileAge) mobileAge.textContent = age ? `${age} years old` : 'Age unknown';
 
   // Gender
   const mobileGender = document.getElementById('mobile-detail-gender');
-  if (mobileGender) {
-    mobileGender.textContent = artist.gender || 'Not specified';
-  }
+  if (mobileGender) mobileGender.textContent = genderText;
 
   // Location
   const mobileLocation = document.getElementById('mobile-detail-location');
-  if (mobileLocation) {
-    mobileLocation.textContent = artist.location || 'Location unknown';
-  }
+  if (mobileLocation) mobileLocation.textContent = artist.location || 'Location unknown';
 
   // Genres
   const mobileGenres = document.getElementById('mobile-detail-genres');
@@ -717,21 +702,17 @@ export function populateArtistDetail(artist) {
   if (mobileLanguages) {
     const languages = artist.languages || [];
     mobileLanguages.innerHTML = languages.length > 0
-      ? languages.map(l => `<span style="padding: 6px 12px; background: white; border: 1px solid #1a1a2e; border-radius: 20px; font-size: 13px; font-weight: 600; color: #1a1a2e;">${l.substring(0,2).toUpperCase()}</span>`).join('')
+      ? languages.map(l => `<span style="padding: 6px 12px; background: white; border: 1px solid #1a1a2e; border-radius: 20px; font-size: 13px; font-weight: 600; color: #1a1a2e;">${(l || '').substring(0,2).toUpperCase()}</span>`).join('')
       : '<span style="color: #9ca3af; font-size: 14px;">No languages specified</span>';
   }
 
-  // Biography
+  // Bio
   const mobileBio = document.getElementById('mobile-detail-bio');
-  if (mobileBio) {
-    mobileBio.textContent = artist.bio || 'No biography available.';
-  }
+  if (mobileBio) mobileBio.textContent = artist.bio || 'No biography available.';
 
   // Pitch
   const mobilePitch = document.getElementById('mobile-detail-pitch');
-  if (mobilePitch) {
-    mobilePitch.textContent = artist.pitch || 'No pitch available.';
-  }
+  if (mobilePitch) mobilePitch.textContent = artist.pitch || 'No pitch available.';
 
   // Email
   const mobileEmailContainer = document.getElementById('mobile-detail-email-container');
@@ -754,25 +735,6 @@ export function populateArtistDetail(artist) {
     mobilePhoneContainer.style.display = 'none';
   }
 
-  // Recommendations
-  populateMobileRecommendations(artist);
-
-  // Setup mobile write recommendation button
-  const mobileWriteRecBtn = document.getElementById('mobile-write-recommendation-btn');
-  if (mobileWriteRecBtn) {
-    mobileWriteRecBtn.onclick = () => {
-      import('../recommendations/recommendations.js').then(module => {
-        if (module.openRecommendationModal) {
-          module.openRecommendationModal(artist.id, artist);
-        } else {
-          alert('Schrijf recommendation functie komt binnenkort beschikbaar.');
-        }
-      }).catch(() => {
-        alert('Schrijf recommendation functie komt binnenkort beschikbaar.');
-      });
-    };
-  }
-
   // Mobile Send Message button
   const mobileSendMessageBtn = document.getElementById('mobile-send-message-btn');
   if (mobileSendMessageBtn) {
@@ -780,39 +742,55 @@ export function populateArtistDetail(artist) {
       import('../messaging/messaging-controller.js').then(module => {
         if (module.openMessageModal) {
           module.openMessageModal(artist);
-        } else {
-          alert('Berichten functie komt binnenkort beschikbaar.');
         }
-      }).catch(err => {
-        console.error('[MESSAGE] Error opening modal:', err);
-        alert('Berichten functie komt binnenkort beschikbaar.');
-      });
+      }).catch(err => console.error('[MESSAGE] Error:', err));
     };
   }
 
-  // === RESPONSIVE LAYOUT SWITCHING ===
-  const isDesktop = window.innerWidth >= 1024;
-  const mobileLayout = document.getElementById('mobile-artist-detail');
-  const desktopLayout = document.getElementById('desktop-artist-detail');
-
-  if (mobileLayout) {
-    mobileLayout.style.display = isDesktop ? 'none' : 'block';
-  }
-  if (desktopLayout) {
-    desktopLayout.style.display = isDesktop ? 'grid' : 'none';
+  // Mobile Write Recommendation button
+  const mobileWriteRecBtn = document.getElementById('mobile-write-recommendation-btn');
+  if (mobileWriteRecBtn) {
+    mobileWriteRecBtn.onclick = () => {
+      alert('Schrijf recommendation functie komt binnenkort beschikbaar.');
+    };
   }
 
-  // Add resize listener
-  const handleResize = () => {
-    const isDesktopNow = window.innerWidth >= 1024;
-    if (mobileLayout) mobileLayout.style.display = isDesktopNow ? 'none' : 'block';
-    if (desktopLayout) desktopLayout.style.display = isDesktopNow ? 'grid' : 'none';
+  // Desktop Write Recommendation button
+  const writeRecBtn = document.getElementById('write-recommendation-btn');
+  if (writeRecBtn) {
+    writeRecBtn.onclick = () => {
+      alert('Schrijf recommendation functie komt binnenkort beschikbaar.');
+    };
+  }
+
+  // Desktop View Recommendations button
+  const viewRecsBtn = document.getElementById('view-recommendations-btn');
+  if (viewRecsBtn) {
+    viewRecsBtn.onclick = () => {
+      alert('View recommendations functie komt binnenkort beschikbaar.');
+    };
+  }
+
+  // ========== RESPONSIVE LAYOUT SWITCHING ==========
+  const updateLayout = () => {
+    const isDesktop = window.innerWidth >= 1024;
+    const mobileLayout = document.getElementById('mobile-artist-detail');
+    const desktopLayout = document.getElementById('desktop-artist-detail');
+
+    if (mobileLayout) mobileLayout.style.display = isDesktop ? 'none' : 'block';
+    if (desktopLayout) desktopLayout.style.display = isDesktop ? 'grid' : 'none';
+
+    console.log('[DETAIL] Layout updated, isDesktop:', isDesktop);
   };
 
-  window.removeEventListener('resize', handleResize);
-  window.addEventListener('resize', handleResize);
+  // Initial layout set
+  updateLayout();
 
-  console.log('[DETAIL] Artist profile populated, isDesktop:', isDesktop);
+  // Listen for resize
+  window.removeEventListener('resize', updateLayout);
+  window.addEventListener('resize', updateLayout);
+
+  console.log('[DETAIL] Artist detail populated successfully');
 }
 
 function populateMediaGallery(artist) {
@@ -825,8 +803,7 @@ function populateMediaGallery(artist) {
   if (artist.galleryPhotos && artist.galleryPhotos.length > 0) {
     artist.galleryPhotos.forEach((photo, index) => {
       mediaItems.push(`
-        <div style="aspect-ratio: 1; border-radius: 12px; overflow: hidden; cursor: pointer; position: relative;"
-             onclick="window.openMediaViewer && window.openMediaViewer(${index}, 'photo')">
+        <div style="aspect-ratio: 1; border-radius: 12px; overflow: hidden; cursor: pointer;">
           <img src="${photo}" alt="Gallery photo" style="width: 100%; height: 100%; object-fit: cover;">
         </div>
       `);
@@ -842,28 +819,13 @@ function populateMediaGallery(artist) {
     `);
   }
 
-  // Add video thumbnails
-  if (artist.videoUrl) {
-    mediaItems.push(`
-      <div style="aspect-ratio: 1; border-radius: 12px; overflow: hidden; cursor: pointer; position: relative; background: #1a1a2e;"
-           onclick="window.openMediaViewer && window.openMediaViewer(0, 'video')">
-        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
-          <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.9); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-            <svg width="24" height="24" fill="#805ad5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
-          </div>
-        </div>
-      </div>
-    `);
-  }
-
   // Add YouTube videos
   if (artist.youtubeVideos && artist.youtubeVideos.length > 0) {
-    artist.youtubeVideos.forEach((video, index) => {
-      const videoId = extractYouTubeId(video.url || video);
+    artist.youtubeVideos.forEach((video) => {
+      const videoId = video.videoId || extractYouTubeId(video.url || video);
       if (videoId) {
         mediaItems.push(`
-          <div style="aspect-ratio: 1; border-radius: 12px; overflow: hidden; cursor: pointer; position: relative;"
-               onclick="window.openMediaViewer && window.openMediaViewer(${index}, 'youtube')">
+          <div style="aspect-ratio: 1; border-radius: 12px; overflow: hidden; cursor: pointer; position: relative;">
             <img src="https://img.youtube.com/vi/${videoId}/mqdefault.jpg" alt="Video thumbnail" style="width: 100%; height: 100%; object-fit: cover;">
             <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.3);">
               <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.9); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
@@ -892,6 +854,18 @@ function extractYouTubeId(url) {
   if (!url) return null;
   const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
   return match ? match[1] : null;
+}
+
+function calculateAge(dob) {
+  if (!dob) return null;
+  const birthDate = dob.toDate ? dob.toDate() : new Date(dob);
+  const today = new Date();
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
 }
 
 /**
