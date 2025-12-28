@@ -431,12 +431,17 @@ async function loadArtists() {
     const genreCheckboxes = document.querySelectorAll(
       'input[name="desktop-genre"]:checked, input[name="mobile-genre"]:checked'
     );
-    const genreFilters = Array.from(genreCheckboxes).map(cb => cb.value.toLowerCase().trim());
+    // Normalize genres same way as search-data.js: trim, lowercase, replace spaces with dashes
+    const genreFilters = Array.from(genreCheckboxes).map(cb =>
+      cb.value.trim().toLowerCase().replace(/\s+/g, '-')
+    );
 
     const keywordsFilter = (
       document.getElementById('desktop-input-keywords')?.value ||
       document.getElementById('mobile-input-keywords')?.value || ''
     ).toLowerCase().trim();
+
+    console.log('[SEARCH UI] Filters collected:', { nameFilter, locationFilter, genreFilters, keywordsFilter });
 
     // Load and filter
     const artists = await loadArtistsData({ nameFilter, locationFilter, genreFilters, keywordsFilter });
