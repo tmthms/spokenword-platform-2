@@ -682,7 +682,7 @@ export async function showArtistDetail(artistId, pushHistory = true) {
     populateArtistDetail(artist);
 
     // Initialize chat
-    import('../chat/profile-chat.js').then(chatModule => {
+    import('./profile-chat.js').then(chatModule => {
       chatModule.initProfileChat(artist);
     }).catch(err => {
       console.warn('[CHAT] Profile chat module not loaded:', err);
@@ -709,6 +709,18 @@ export async function showArtistDetail(artistId, pushHistory = true) {
       } else {
         writeRecommendationBtn.classList.add('hidden');
       }
+    }
+
+    // Setup "View Recommendations" button
+    const viewRecommendationsBtn = document.getElementById('view-recommendations-btn');
+    if (viewRecommendationsBtn) {
+      viewRecommendationsBtn.onclick = () => {
+        // Scroll to recommendations section smoothly
+        const recommendationsSection = document.getElementById('detail-recommendations');
+        if (recommendationsSection) {
+          recommendationsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      };
     }
 
     // Push to browser history

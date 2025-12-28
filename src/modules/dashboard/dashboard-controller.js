@@ -142,6 +142,15 @@ function showProfileEditor() {
   setupProfilePicPreview();
   setupDocumentInput();
 
+  // Setup media gallery
+  import('../artist/artist-media.js').then(module => {
+    if (module.initArtistMediaGallery) {
+      module.initArtistMediaGallery();
+    }
+  }).catch(err => {
+    console.warn('[DASHBOARD] Media gallery module not loaded:', err);
+  });
+
   // Re-initialize Lucide icons
   if (window.lucide) {
     window.lucide.createIcons();

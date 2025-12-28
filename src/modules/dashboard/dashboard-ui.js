@@ -308,6 +308,54 @@ export function renderProfileEditor() {
           </div>
         </div>
 
+        <!-- Gallery & Videos -->
+        <div class="border-b border-gray-100 pb-6">
+          <h5 class="text-lg font-bold text-gray-900 mb-4">Gallery & Videos</h5>
+
+          <!-- Photo Upload -->
+          <div class="mb-6">
+            <div class="flex items-center justify-between mb-3">
+              <label class="block text-sm font-semibold text-gray-700">Gallery Photos</label>
+              <button type="button" id="add-gallery-photo-btn"
+                      class="bg-indigo-600 text-white py-2 px-4 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors">
+                + Add Photo
+              </button>
+              <input type="file" id="gallery-photo-input" accept="image/*" multiple class="sr-only">
+            </div>
+
+            <!-- Upload Progress -->
+            <div id="upload-progress" class="hidden items-center gap-2 mb-3">
+              <div class="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+              <span class="text-sm text-gray-600">Uploading...</span>
+            </div>
+
+            <!-- Photos Grid -->
+            <div id="gallery-photos-grid" class="grid grid-cols-3 gap-3">
+              <p class="text-sm text-gray-500 col-span-3">No photos added yet.</p>
+            </div>
+          </div>
+
+          <!-- YouTube Videos -->
+          <div>
+            <label class="block text-sm font-semibold text-gray-700 mb-3">YouTube Videos</label>
+
+            <!-- Add Video Input -->
+            <div class="flex gap-2 mb-4">
+              <input type="text" id="youtube-url-input" placeholder="https://www.youtube.com/watch?v=..."
+                     class="flex-1 px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
+              <button type="button" id="add-youtube-btn"
+                      class="bg-indigo-600 text-white py-3 px-5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors">
+                Add Video
+              </button>
+            </div>
+
+            <!-- Videos Grid -->
+            <div id="youtube-videos-grid" class="space-y-4">
+              <p class="text-sm text-gray-500">No videos added yet.</p>
+            </div>
+          </div>
+        </div>
+
         <!-- Notification Settings -->
         <div class="border-b border-gray-100 pb-6">
           <h5 class="text-lg font-bold text-gray-900 mb-4">Notification Settings</h5>
