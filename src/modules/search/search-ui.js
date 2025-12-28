@@ -790,7 +790,29 @@ export function populateArtistDetail(artist) {
     };
   }
 
-  console.log('[DETAIL] Artist profile populated for mobile and desktop');
+  // === RESPONSIVE LAYOUT SWITCHING ===
+  const isDesktop = window.innerWidth >= 1024;
+  const mobileLayout = document.getElementById('mobile-artist-detail');
+  const desktopLayout = document.getElementById('desktop-artist-detail');
+
+  if (mobileLayout) {
+    mobileLayout.style.display = isDesktop ? 'none' : 'block';
+  }
+  if (desktopLayout) {
+    desktopLayout.style.display = isDesktop ? 'grid' : 'none';
+  }
+
+  // Add resize listener
+  const handleResize = () => {
+    const isDesktopNow = window.innerWidth >= 1024;
+    if (mobileLayout) mobileLayout.style.display = isDesktopNow ? 'none' : 'block';
+    if (desktopLayout) desktopLayout.style.display = isDesktopNow ? 'grid' : 'none';
+  };
+
+  window.removeEventListener('resize', handleResize);
+  window.addEventListener('resize', handleResize);
+
+  console.log('[DETAIL] Artist profile populated, isDesktop:', isDesktop);
 }
 
 function populateMediaGallery(artist) {
