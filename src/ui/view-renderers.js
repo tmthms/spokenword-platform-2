@@ -600,153 +600,160 @@ export function renderDashboard() {
 
       <!-- Artist Detail View -->
       <div id="artist-detail-view" class="hidden">
-        <!-- ✅ FIX: Complete Artist Detail View HTML Structure -->
-        <div class="bg-white min-h-screen">
-          <!-- Back Button -->
-          <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 z-10">
-            <button id="back-to-search-btn" class="flex items-center text-indigo-600 hover:text-indigo-800 font-medium">
-              <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-              </svg>
-              Back to Search
-            </button>
-          </div>
+        <div class="artist-detail-pattern" style="min-height: 100vh; padding: 24px;">
+          <div style="max-width: 1400px; margin: 0 auto;">
 
-          <!-- Artist Profile Content -->
-          <div class="px-6 py-8 max-w-4xl mx-auto">
-            <!-- Profile Header -->
-            <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
-              <div class="flex flex-col md:flex-row items-start md:items-center gap-6 mb-6">
-                <img id="detail-profile-pic" src="" alt="Artist" class="h-32 w-32 md:h-48 md:w-48 rounded-full object-cover border-4 border-indigo-100">
-                <div class="flex-1">
-                  <h1 id="detail-artist-name" class="text-3xl md:text-4xl font-bold text-gray-900 mb-2">Artist Name</h1>
-                  <h2 id="detail-stage-name" class="text-xl md:text-2xl text-indigo-600 font-semibold mb-4">Stage Name</h2>
-                  <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-gray-700">
-                    <div class="flex items-center">
-                      <i data-lucide="map-pin" class="h-5 w-5 mr-2 text-indigo-600"></i>
-                      <span id="detail-location">Location</span>
+            <!-- Back Button -->
+            <button id="back-to-search-btn" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; background: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 500; color: #4a4a68; cursor: pointer; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+              <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+              Terug naar zoeken
+            </button>
+
+            <!-- 3-COLUMN LAYOUT -->
+            <div style="display: grid; grid-template-columns: 280px 1fr 320px; gap: 24px; align-items: start;">
+
+              <!-- LEFT COLUMN: Media Gallery -->
+              <aside style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 4px 20px rgba(128,90,213,0.08); border: 1px solid rgba(128,90,213,0.1);">
+                <h2 style="font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 20px;">Media Gallery</h2>
+
+                <div id="detail-media-gallery" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                  <!-- Media items will be injected here -->
+                  <div style="aspect-ratio: 1; background: #f3f4f6; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                    <span style="color: #9ca3af; font-size: 13px;">Geen media</span>
+                  </div>
+                </div>
+              </aside>
+
+              <!-- MIDDLE COLUMN: Artist Profile -->
+              <main style="background: white; border-radius: 20px; padding: 32px; box-shadow: 0 4px 20px rgba(128,90,213,0.08); border: 1px solid rgba(128,90,213,0.1);">
+
+                <!-- Profile Header -->
+                <div style="display: flex; gap: 24px; margin-bottom: 24px;">
+
+                  <!-- Profile Photo -->
+                  <div style="flex-shrink: 0;">
+                    <div style="width: 140px; height: 140px; border-radius: 50%; overflow: hidden; border: 4px solid #805ad5;">
+                      <img id="detail-profile-pic" src="" alt="Artist" style="width: 100%; height: 100%; object-fit: cover;">
                     </div>
-                    <div class="flex items-center">
-                      <i data-lucide="calendar" class="h-5 w-5 mr-2 text-indigo-600"></i>
-                      <span id="detail-age">Age</span>
+                  </div>
+
+                  <!-- Profile Info -->
+                  <div style="flex: 1;">
+                    <h1 id="detail-artist-name" style="font-size: 32px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px;">Artist Name</h1>
+
+                    <!-- Meta Info -->
+                    <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px;">
+                      <div style="display: flex; align-items: center; gap: 8px; color: #4a4a68; font-size: 14px;">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        <span id="detail-age">-- years old</span>
+                      </div>
+                      <div style="display: flex; align-items: center; gap: 8px; color: #4a4a68; font-size: 14px;">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                        <span id="detail-gender">Gender</span>
+                      </div>
+                      <div style="display: flex; align-items: center; gap: 8px; color: #4a4a68; font-size: 14px;">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        <span id="detail-location">Location</span>
+                      </div>
                     </div>
-                    <div class="flex items-center">
-                      <i data-lucide="user" class="h-5 w-5 mr-2 text-indigo-600"></i>
-                      <span id="detail-gender">Gender</span>
+
+                    <!-- Genres -->
+                    <div style="margin-bottom: 12px;">
+                      <p style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 8px;">Genres</p>
+                      <div id="detail-genres" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <!-- Genre badges -->
+                      </div>
+                    </div>
+
+                    <!-- Languages -->
+                    <div>
+                      <p style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 8px;">Languages</p>
+                      <div id="detail-languages" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <!-- Language badges -->
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              <!-- Genres & Languages -->
-              <div class="space-y-4">
-                <div>
-                  <h3 class="text-sm font-semibold text-gray-700 mb-2">Genres</h3>
-                  <div id="detail-genres" class="flex flex-wrap gap-2"></div>
-                </div>
-                <div>
-                  <h3 class="text-sm font-semibold text-gray-700 mb-2">Languages</h3>
-                  <div id="detail-languages" class="flex flex-wrap gap-2"></div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Bio & Pitch -->
-            <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
-              <h3 class="text-xl font-bold text-gray-900 mb-4">Biography</h3>
-              <p id="detail-bio" class="text-gray-700 whitespace-pre-wrap mb-6">Bio content</p>
-
-              <h3 class="text-xl font-bold text-gray-900 mb-4">Pitch</h3>
-              <p id="detail-pitch" class="text-gray-700 whitespace-pre-wrap">Pitch content</p>
-            </div>
-
-            <!-- Media Section -->
-            <!-- Video -->
-            <div id="detail-video-section" class="bg-white rounded-xl shadow-lg p-8 mb-6" style="display: none;">
-              <h3 class="text-xl font-bold text-gray-900 mb-4">Video</h3>
-              <div id="detail-video-container" class="aspect-video bg-gray-100 rounded-lg overflow-hidden"></div>
-            </div>
-
-            <!-- Audio -->
-            <div id="detail-audio-section" class="bg-white rounded-xl shadow-lg p-8 mb-6" style="display: none;">
-              <h3 class="text-xl font-bold text-gray-900 mb-4">Audio</h3>
-              <div id="detail-audio-container" class="bg-gray-100 rounded-lg p-4"></div>
-            </div>
-
-            <!-- Text Material -->
-            <div id="detail-text-section" class="bg-white rounded-xl shadow-lg p-8 mb-6" style="display: none;">
-              <h3 class="text-xl font-bold text-gray-900 mb-4">Text Material</h3>
-              <div id="detail-text-content" class="prose max-w-none text-gray-700 whitespace-pre-wrap"></div>
-            </div>
-
-            <!-- Document -->
-            <div id="detail-document-section" class="bg-white rounded-xl shadow-lg p-8 mb-6" style="display: none;">
-              <h3 class="text-xl font-bold text-gray-900 mb-4">Document</h3>
-              <a id="detail-document-link" href="#" target="_blank" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 font-medium">
-                <i data-lucide="file-text" class="h-5 w-5 mr-2"></i>
-                <span>View Document</span>
-              </a>
-            </div>
-
-            <!-- Contact Section (Pro Only) -->
-            <div id="detail-trial-message" class="bg-yellow-50 border border-yellow-200 rounded-xl p-6 mb-6" style="display: none;">
-              <div class="flex items-start">
-                <i data-lucide="lock" class="h-6 w-6 text-yellow-600 mr-3 flex-shrink-0 mt-1"></i>
-                <div>
-                  <h3 class="text-lg font-bold text-yellow-900 mb-2">Upgrade to Pro to Contact Artists</h3>
-                  <p class="text-yellow-800">Contact information and messaging are available for Pro members only. Upgrade your account to unlock direct contact with artists.</p>
-                </div>
-              </div>
-            </div>
-
-            <div id="detail-contact-info" class="bg-white rounded-xl shadow-lg p-8 mb-6" style="display: none;">
-              <h3 class="text-xl font-bold text-gray-900 mb-4">Contact Information</h3>
-              <div class="space-y-3">
-                <div class="flex items-center">
-                  <i data-lucide="mail" class="h-5 w-5 mr-3 text-indigo-600"></i>
-                  <a id="detail-email" href="mailto:" class="text-indigo-600 hover:text-indigo-800">Email</a>
-                </div>
-                <div class="flex items-center">
-                  <i data-lucide="phone" class="h-5 w-5 mr-3 text-indigo-600"></i>
-                  <a id="detail-phone" href="tel:" class="text-indigo-600 hover:text-indigo-800">Phone</a>
-                </div>
-              </div>
-              <button id="send-message-btn" class="mt-6 w-full bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-indigo-700 transition-colors">
-                <i data-lucide="send" class="h-5 w-5 inline mr-2"></i>
-                Send Message
-              </button>
-            </div>
-
-            <!-- Recommendations Section -->
-            <div class="bg-white rounded-xl shadow-lg p-8 mb-6">
-              <div class="flex items-center justify-between mb-6">
-                <h3 class="text-xl font-bold text-gray-900">Recommendations</h3>
-                <button id="write-recommendation-btn" class="hidden bg-indigo-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-indigo-700">
-                  <i data-lucide="star" class="h-4 w-4 inline mr-2"></i>
-                  Write Recommendation
+                <!-- Send Message Button -->
+                <button id="detail-message-btn" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 32px;">
+                  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                  Send Message
                 </button>
-              </div>
 
-              <!-- Loading State -->
-              <div id="recommendations-loading" class="text-center py-8" style="display: none;">
-                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                <p class="text-gray-600 mt-4">Loading recommendations...</p>
-              </div>
+                <!-- Biography Section -->
+                <div style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid #e9e3f5;">
+                  <h3 style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px;">Biography</h3>
+                  <p id="detail-bio" style="font-size: 14px; color: #4a4a68; line-height: 1.7;">No biography available.</p>
 
-              <!-- Error State -->
-              <div id="recommendations-error" class="text-center py-8 text-red-600" style="display: none;">
-                Error loading recommendations
-              </div>
+                  <h3 style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin: 20px 0 12px;">Pitch</h3>
+                  <p id="detail-pitch" style="font-size: 14px; color: #4a4a68; line-height: 1.7;">No pitch available.</p>
+                </div>
 
-              <!-- Empty State -->
-              <div id="recommendations-empty" class="text-center py-8 bg-gray-50 rounded-lg" style="display: none;">
-                <p class="text-gray-600">No recommendations yet.</p>
-              </div>
+                <!-- Contact Information -->
+                <div style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid #e9e3f5;">
+                  <h3 style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Contact Information</h3>
+                  <div style="display: flex; flex-wrap: wrap; gap: 24px;">
+                    <div id="detail-email-container" style="display: flex; align-items: center; gap: 10px;">
+                      <svg width="18" height="18" fill="none" stroke="#805ad5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                      <a id="detail-email" href="#" style="font-size: 14px; color: #4a4a68; text-decoration: none;">email@example.com</a>
+                    </div>
+                    <div id="detail-phone-container" style="display: flex; align-items: center; gap: 10px;">
+                      <svg width="18" height="18" fill="none" stroke="#805ad5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                      <span id="detail-phone" style="font-size: 14px; color: #4a4a68;">+31 6 12345678</span>
+                    </div>
+                  </div>
+                </div>
 
-              <!-- Recommendations List -->
-              <div id="recommendations-list" class="space-y-4" style="display: none;"></div>
+                <!-- Recommendations Section -->
+                <div>
+                  <h3 style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Recommendations</h3>
+                  <div style="display: flex; gap: 12px; margin-bottom: 16px;">
+                    <button id="write-recommendation-btn" style="padding: 10px 20px; background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">
+                      Write Recommendation
+                    </button>
+                    <button id="view-recommendations-btn" style="padding: 10px 20px; background: white; color: #1a1a2e; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">
+                      View All Recommendations
+                    </button>
+                  </div>
+                  <div id="detail-recommendations" style="display: flex; flex-direction: column; gap: 12px;">
+                    <!-- Recommendation cards will be injected here -->
+                  </div>
+                </div>
+
+              </main>
+
+              <!-- RIGHT COLUMN: Chat Panel -->
+              <aside style="background: white; border-radius: 20px; box-shadow: 0 4px 20px rgba(128,90,213,0.08); border: 1px solid rgba(128,90,213,0.1); display: flex; flex-direction: column; height: calc(100vh - 150px); position: sticky; top: 100px;">
+
+                <!-- Chat Header -->
+                <div style="padding: 20px 24px; border-bottom: 1px solid #e9e3f5;">
+                  <h2 id="chat-header-name" style="font-size: 18px; font-weight: 700; color: #1a1a2e;">Chat met Artist</h2>
+                </div>
+
+                <!-- Chat Messages -->
+                <div id="profile-chat-messages" style="flex: 1; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px;">
+                  <!-- Messages will be injected here -->
+                  <div id="chat-empty-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #9ca3af;">
+                    <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-bottom: 12px; opacity: 0.5;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                    <p style="font-size: 14px;">Start een gesprek</p>
+                  </div>
+                </div>
+
+                <!-- Chat Input -->
+                <div style="padding: 16px 24px; border-top: 1px solid #e9e3f5;">
+                  <form id="profile-chat-form" style="display: flex; gap: 12px;">
+                    <input type="text" id="profile-chat-input" placeholder="Type je bericht..."
+                           style="flex: 1; padding: 12px 16px; border: 1px solid #e9e3f5; border-radius: 24px; font-size: 14px; outline: none;">
+                    <button type="submit" style="width: 44px; height: 44px; background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%); border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                      <svg width="20" height="20" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                    </button>
+                  </form>
+                </div>
+
+              </aside>
+
             </div>
-
           </div>
         </div>
       </div>

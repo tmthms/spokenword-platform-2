@@ -577,202 +577,192 @@ export function showArtistInDetailPanel(artist) {
  * Populate artist detail view with artist data
  */
 export function populateArtistDetail(artist) {
-  // Profile Picture
-  const detailProfilePic = document.getElementById('detail-profile-pic');
-  if (detailProfilePic) {
-    const name = artist.stageName || `${artist.firstName || ''} ${artist.lastName || ''}`.trim() || 'A';
-    detailProfilePic.src = artist.profilePicUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e0e7ff&color=6366f1&size=400`;
-    detailProfilePic.onerror = function() {
-      this.onerror = null;
-      this.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&background=e0e7ff&color=6366f1&size=400`;
-    };
+  if (!artist) return;
+
+  // Profile picture
+  const profilePic = document.getElementById('detail-profile-pic');
+  if (profilePic) {
+    profilePic.src = artist.profilePicUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(artist.stageName || 'A')}&background=e0e7ff&color=6366f1&size=140`;
   }
 
-  // Basic Info
-  const artistName = document.getElementById('detail-artist-name');
-  if (artistName) {
-    artistName.textContent = `${artist.firstName || ''} ${artist.lastName || ''}`.trim();
-  }
-
-  const stageName = document.getElementById('detail-stage-name');
-  if (stageName) {
-    stageName.textContent = artist.stageName || 'N/A';
-  }
-
-  const locationEl = document.getElementById('detail-location');
-  if (locationEl) {
-    locationEl.textContent = artist.location || 'Not specified';
-  }
-
-  // Gender
-  const genderMap = { 'f': 'Female', 'm': 'Male', 'x': 'Other' };
-  const genderEl = document.getElementById('detail-gender');
-  if (genderEl) {
-    genderEl.textContent = genderMap[artist.gender] || 'Not specified';
+  // Name
+  const nameEl = document.getElementById('detail-artist-name');
+  if (nameEl) {
+    nameEl.textContent = artist.stageName || `${artist.firstName || ''} ${artist.lastName || ''}`.trim() || 'Unknown Artist';
   }
 
   // Age
   const ageEl = document.getElementById('detail-age');
-  if (ageEl) {
-    if (artist.dob) {
-      ageEl.textContent = `${calculateAge(artist.dob)} years old`;
-    } else {
-      ageEl.textContent = 'Age not specified';
-    }
+  if (ageEl && artist.dob) {
+    const age = calculateAge(artist.dob);
+    ageEl.textContent = `${age} years old`;
+  } else if (ageEl) {
+    ageEl.textContent = 'Age unknown';
+  }
+
+  // Gender
+  const genderEl = document.getElementById('detail-gender');
+  if (genderEl) {
+    genderEl.textContent = artist.gender || 'Not specified';
+  }
+
+  // Location
+  const locationEl = document.getElementById('detail-location');
+  if (locationEl) {
+    locationEl.textContent = artist.location || 'Location unknown';
   }
 
   // Genres
-  const detailGenres = document.getElementById('detail-genres');
-  if (detailGenres) {
-    detailGenres.innerHTML = '';
-    if (artist.genres && artist.genres.length > 0) {
-      artist.genres.forEach(genre => {
-        const badge = document.createElement('span');
-        badge.className = 'inline-block bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm font-medium';
-        badge.textContent = genre;
-        detailGenres.appendChild(badge);
-      });
-    } else {
-      detailGenres.textContent = 'No genres specified';
-    }
+  const genresEl = document.getElementById('detail-genres');
+  if (genresEl) {
+    const genres = artist.genres || [];
+    genresEl.innerHTML = genres.length > 0
+      ? genres.map(g => `<span style="padding: 6px 14px; background: #f3e8ff; color: #805ad5; border-radius: 20px; font-size: 13px; font-weight: 500;">${g}</span>`).join('')
+      : '<span style="color: #9ca3af; font-size: 13px;">No genres specified</span>';
   }
 
   // Languages
-  const detailLanguages = document.getElementById('detail-languages');
-  if (detailLanguages) {
-    detailLanguages.innerHTML = '';
-    if (artist.languages && artist.languages.length > 0) {
-      artist.languages.forEach(lang => {
-        const badge = document.createElement('span');
-        badge.className = 'inline-block bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium';
-        badge.textContent = lang.toUpperCase();
-        detailLanguages.appendChild(badge);
-      });
-    } else {
-      detailLanguages.textContent = 'No languages specified';
-    }
+  const languagesEl = document.getElementById('detail-languages');
+  if (languagesEl) {
+    const languages = artist.languages || [];
+    languagesEl.innerHTML = languages.length > 0
+      ? languages.map(l => `<span style="padding: 6px 12px; background: #805ad5; color: white; border-radius: 6px; font-size: 12px; font-weight: 600;">${l.substring(0,2).toUpperCase()}</span>`).join('')
+      : '<span style="color: #9ca3af; font-size: 13px;">No languages specified</span>';
   }
 
-  // Bio & Pitch
+  // Biography
   const bioEl = document.getElementById('detail-bio');
   if (bioEl) {
-    bioEl.textContent = artist.bio || 'No bio available.';
+    bioEl.textContent = artist.bio || 'No biography available.';
   }
 
+  // Pitch
   const pitchEl = document.getElementById('detail-pitch');
   if (pitchEl) {
     pitchEl.textContent = artist.pitch || 'No pitch available.';
   }
 
-  // Video Material
-  const videoSection = document.getElementById('detail-video-section');
-  const videoContainer = document.getElementById('detail-video-container');
-  if (artist.videoUrl && artist.videoUrl.trim()) {
-    if (videoSection) videoSection.style.display = 'block';
-    const embedUrl = getEmbedUrl(artist.videoUrl, 'video');
-    if (videoContainer) {
-      if (embedUrl) {
-        videoContainer.innerHTML = `
-          <iframe class="w-full h-full" src="${embedUrl}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-        `;
-      } else {
-        videoContainer.innerHTML = `
-          <div class="flex items-center justify-center h-full">
-            <a href="${artist.videoUrl}" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-medium">View Video (External Link)</a>
+  // Email
+  const emailContainer = document.getElementById('detail-email-container');
+  const emailEl = document.getElementById('detail-email');
+  if (emailEl && artist.email) {
+    emailEl.textContent = artist.email;
+    emailEl.href = `mailto:${artist.email}`;
+    if (emailContainer) emailContainer.style.display = 'flex';
+  } else if (emailContainer) {
+    emailContainer.style.display = 'none';
+  }
+
+  // Phone
+  const phoneContainer = document.getElementById('detail-phone-container');
+  const phoneEl = document.getElementById('detail-phone');
+  if (phoneEl && artist.phone) {
+    phoneEl.textContent = artist.phone;
+    if (phoneContainer) phoneContainer.style.display = 'flex';
+  } else if (phoneContainer) {
+    phoneContainer.style.display = 'none';
+  }
+
+  // Chat header
+  const chatHeader = document.getElementById('chat-header-name');
+  if (chatHeader) {
+    const artistName = artist.stageName || `${artist.firstName || ''} ${artist.lastName || ''}`.trim() || 'Artist';
+    chatHeader.textContent = `Chat met ${artistName}`;
+  }
+
+  // Media Gallery
+  populateMediaGallery(artist);
+
+  // Message button
+  const messageBtn = document.getElementById('detail-message-btn');
+  if (messageBtn) {
+    messageBtn.onclick = () => {
+      // Focus chat input
+      const chatInput = document.getElementById('profile-chat-input');
+      if (chatInput) chatInput.focus();
+    };
+  }
+
+  console.log('[DETAIL] Artist profile populated:', artist.stageName);
+}
+
+function populateMediaGallery(artist) {
+  const galleryEl = document.getElementById('detail-media-gallery');
+  if (!galleryEl) return;
+
+  const mediaItems = [];
+
+  // Add photos from gallery
+  if (artist.galleryPhotos && artist.galleryPhotos.length > 0) {
+    artist.galleryPhotos.forEach((photo, index) => {
+      mediaItems.push(`
+        <div style="aspect-ratio: 1; border-radius: 12px; overflow: hidden; cursor: pointer; position: relative;"
+             onclick="window.openMediaViewer && window.openMediaViewer(${index}, 'photo')">
+          <img src="${photo}" alt="Gallery photo" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+      `);
+    });
+  }
+
+  // Add profile pic if no gallery photos
+  if (mediaItems.length === 0 && artist.profilePicUrl) {
+    mediaItems.push(`
+      <div style="aspect-ratio: 1; border-radius: 12px; overflow: hidden;">
+        <img src="${artist.profilePicUrl}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+    `);
+  }
+
+  // Add video thumbnails
+  if (artist.videoUrl) {
+    mediaItems.push(`
+      <div style="aspect-ratio: 1; border-radius: 12px; overflow: hidden; cursor: pointer; position: relative; background: #1a1a2e;"
+           onclick="window.openMediaViewer && window.openMediaViewer(0, 'video')">
+        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
+          <div style="width: 48px; height: 48px; background: rgba(255,255,255,0.9); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+            <svg width="24" height="24" fill="#805ad5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
           </div>
-        `;
+        </div>
+      </div>
+    `);
+  }
+
+  // Add YouTube videos
+  if (artist.youtubeVideos && artist.youtubeVideos.length > 0) {
+    artist.youtubeVideos.forEach((video, index) => {
+      const videoId = extractYouTubeId(video.url || video);
+      if (videoId) {
+        mediaItems.push(`
+          <div style="aspect-ratio: 1; border-radius: 12px; overflow: hidden; cursor: pointer; position: relative;"
+               onclick="window.openMediaViewer && window.openMediaViewer(${index}, 'youtube')">
+            <img src="https://img.youtube.com/vi/${videoId}/mqdefault.jpg" alt="Video thumbnail" style="width: 100%; height: 100%; object-fit: cover;">
+            <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.3);">
+              <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.9); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                <svg width="20" height="20" fill="#805ad5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+              </div>
+            </div>
+          </div>
+        `);
       }
-    }
-  } else {
-    if (videoSection) videoSection.style.display = 'none';
+    });
   }
 
-  // Audio Material
-  const audioSection = document.getElementById('detail-audio-section');
-  const audioContainer = document.getElementById('detail-audio-container');
-  if (artist.audioUrl && artist.audioUrl.trim()) {
-    if (audioSection) audioSection.style.display = 'block';
-    const embedUrl = getEmbedUrl(artist.audioUrl, 'audio');
-    if (audioContainer) {
-      if (embedUrl) {
-        audioContainer.innerHTML = `
-          <iframe class="w-full" height="166" scrolling="no" frameborder="no" allow="autoplay" src="${embedUrl}"></iframe>
-        `;
-      } else {
-        audioContainer.innerHTML = `
-          <a href="${artist.audioUrl}" target="_blank" class="text-indigo-600 hover:text-indigo-800 font-medium">Listen to Audio (External Link)</a>
-        `;
-      }
-    }
+  // Render gallery
+  if (mediaItems.length > 0) {
+    galleryEl.innerHTML = mediaItems.join('');
   } else {
-    if (audioSection) audioSection.style.display = 'none';
+    galleryEl.innerHTML = `
+      <div style="grid-column: span 2; aspect-ratio: 16/9; background: #f3f4f6; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+        <span style="color: #9ca3af; font-size: 14px;">Geen media beschikbaar</span>
+      </div>
+    `;
   }
+}
 
-  // Text Material
-  const textSection = document.getElementById('detail-text-section');
-  const textContent = document.getElementById('detail-text-content');
-  if (artist.textContent && artist.textContent.trim()) {
-    if (textSection) textSection.style.display = 'block';
-    if (textContent) textContent.textContent = artist.textContent;
-  } else {
-    if (textSection) textSection.style.display = 'none';
-  }
-
-  // Document Material
-  const documentSection = document.getElementById('detail-document-section');
-  const documentLink = document.getElementById('detail-document-link');
-
-  if (artist.documentUrl && artist.documentUrl.trim()) {
-    if (documentSection) documentSection.style.display = 'block';
-    if (documentLink) {
-      documentLink.href = artist.documentUrl;
-      documentLink.textContent = artist.documentName || 'Download/View Document';
-    }
-  } else {
-    if (documentSection) documentSection.style.display = 'none';
-  }
-
-  // Contact Information - Access Control
-  const currentUserData = getStore('currentUserData');
-  const isPro = currentUserData && currentUserData.status === 'pro';
-
-  const trialMessage = document.getElementById('detail-trial-message');
-  const contactInfo = document.getElementById('detail-contact-info');
-
-  if (isPro) {
-    // Show contact info for Pro users
-    if (trialMessage) trialMessage.style.display = 'none';
-    if (contactInfo) contactInfo.style.display = 'block';
-
-    const emailEl = document.getElementById('detail-email');
-    if (emailEl) {
-      emailEl.textContent = artist.email || 'Not available';
-      emailEl.href = `mailto:${artist.email || ''}`;
-    }
-
-    const phoneEl = document.getElementById('detail-phone');
-    if (phoneEl) {
-      phoneEl.textContent = artist.phone || 'Not available';
-      phoneEl.href = `tel:${artist.phone || ''}`;
-    }
-
-    // Setup Send Message button
-    const sendMessageBtn = document.getElementById('send-message-btn');
-    if (sendMessageBtn) {
-      // Remove any existing listeners
-      const newBtn = sendMessageBtn.cloneNode(true);
-      sendMessageBtn.parentNode.replaceChild(newBtn, sendMessageBtn);
-
-      // Add new listener
-      newBtn.addEventListener('click', () => {
-        openMessageModal(artist);
-      });
-    }
-  } else {
-    // Show upgrade message for Trial users
-    if (trialMessage) trialMessage.style.display = 'block';
-    if (contactInfo) contactInfo.style.display = 'none';
-  }
+function extractYouTubeId(url) {
+  if (!url) return null;
+  const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+  return match ? match[1] : null;
 }
 
 /**

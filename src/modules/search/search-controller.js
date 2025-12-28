@@ -681,6 +681,13 @@ export async function showArtistDetail(artistId, pushHistory = true) {
     // Vul de detail view met de data (UI layer)
     populateArtistDetail(artist);
 
+    // Initialize chat
+    import('../chat/profile-chat.js').then(chatModule => {
+      chatModule.initProfileChat(artist);
+    }).catch(err => {
+      console.warn('[CHAT] Profile chat module not loaded:', err);
+    });
+
     // Toon de detail view en verberg de search results
     document.getElementById('programmer-dashboard').style.display = 'none';
     const detailView = document.getElementById('artist-detail-view');
