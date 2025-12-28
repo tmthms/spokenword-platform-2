@@ -54,6 +54,8 @@ select[multiple] {
 
 /* Search Pattern Background */
 .search-pattern {
+  min-height: 100vh;
+  padding: 24px;
   position: relative;
   background: linear-gradient(180deg, #F8F9FA 0%, #F3EFFF 100%);
 }
@@ -75,5 +77,14 @@ select[multiple] {
 .search-pattern > * {
   position: relative;
   z-index: 1;
+}
+
+/* Hide scrollbar for filter pills */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
