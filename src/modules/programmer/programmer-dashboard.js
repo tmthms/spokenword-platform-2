@@ -314,17 +314,17 @@ export function showSearchOnlyView() {
     publicView.classList.add('hidden');
   }
 
-  // Show artist search section
-  const artistSearchSection = document.getElementById('artist-search-section');
-  if (artistSearchSection) {
-    artistSearchSection.style.display = 'block';
-    artistSearchSection.style.opacity = '1';
-    artistSearchSection.style.visibility = 'visible';
-    artistSearchSection.classList.remove('hidden');
-    console.log('[PROGRAMMER DASHBOARD] Artist search section shown');
+  // SHOW search section
+  const searchSection = document.getElementById('artist-search-section');
+  if (searchSection) {
+    searchSection.style.display = 'block';
+    searchSection.style.opacity = '1';
+    searchSection.style.visibility = 'visible';
+    searchSection.classList.remove('hidden');
+    console.log('[PROGRAMMER DASHBOARD] artist-search-section now visible');
+  } else {
+    console.error('[PROGRAMMER DASHBOARD] artist-search-section NOT FOUND');
   }
-
-  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 /**
@@ -333,14 +333,7 @@ export function showSearchOnlyView() {
 export function showProfileOnlyView() {
   console.log('[PROGRAMMER DASHBOARD] Showing profile-only view');
 
-  // Hide artist search section
-  const artistSearchSection = document.getElementById('artist-search-section');
-  if (artistSearchSection) {
-    artistSearchSection.style.display = 'none';
-    artistSearchSection.classList.add('hidden');
-  }
-
-  // Show profile view (default view)
+  // Show profile view
   const profileView = document.getElementById('programmer-profile-view');
   const editView = document.getElementById('programmer-edit-view');
   const publicView = document.getElementById('programmer-public-view');
@@ -356,6 +349,13 @@ export function showProfileOnlyView() {
   if (publicView) {
     publicView.style.display = 'none';
     publicView.classList.add('hidden');
+  }
+
+  // HIDE search section
+  const searchSection = document.getElementById('artist-search-section');
+  if (searchSection) {
+    searchSection.style.display = 'none';
+    searchSection.classList.add('hidden');
   }
 
   // Refresh profile data
