@@ -675,12 +675,6 @@ export function renderDashboard() {
                   </div>
                 </div>
 
-                <!-- Send Message Button -->
-                <button id="detail-message-btn" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 32px;">
-                  <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
-                  Send Message
-                </button>
-
                 <!-- Biography Section -->
                 <div style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid #e9e3f5;">
                   <h3 style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px;">Biography</h3>

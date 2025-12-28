@@ -673,16 +673,6 @@ export function populateArtistDetail(artist) {
   // Media Gallery
   populateMediaGallery(artist);
 
-  // Message button
-  const messageBtn = document.getElementById('detail-message-btn');
-  if (messageBtn) {
-    messageBtn.onclick = () => {
-      // Focus chat input
-      const chatInput = document.getElementById('profile-chat-input');
-      if (chatInput) chatInput.focus();
-    };
-  }
-
   console.log('[DETAIL] Artist profile populated:', artist.stageName);
 }
 
