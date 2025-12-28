@@ -52,6 +52,10 @@ export function renderArtistSearch() {
                   style="flex-shrink: 0; padding: 10px 18px; background: white; border: 1px solid #e5e7eb; border-radius: 24px; font-size: 14px; font-weight: 500; color: #4a4a68; cursor: pointer;">
             Genre
           </button>
+          <button data-action="toggle-filter" data-target="keywords" id="btn-filter-keywords"
+                  style="flex-shrink: 0; padding: 10px 18px; background: white; border: 1px solid #e5e7eb; border-radius: 24px; font-size: 14px; font-weight: 500; color: #4a4a68; cursor: pointer;">
+            Keywords
+          </button>
         </div>
 
         <!-- Filter Panels -->
@@ -83,6 +87,15 @@ export function renderArtistSearch() {
           </div>
         </div>
 
+        <div id="filter-keywords" style="display: none; background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(128,90,213,0.1);">
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="mobile-input-keywords" placeholder="bijv. slam, poetry, rap..."
+                   style="flex: 1; padding: 12px 16px; background: #f9fafb; border-radius: 12px; border: none; font-size: 14px; outline: none;">
+            <button data-action="apply-filter" data-target="keywords"
+                    style="width: 44px; height: 44px; background: #805ad5; color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 18px;">✓</button>
+          </div>
+        </div>
+
         <!-- Results -->
         <p id="mobile-results-count" style="color: #9ca3af; font-size: 14px; margin-bottom: 12px;">0 gevonden</p>
         <div id="mobile-search-grid" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;">
@@ -99,7 +112,7 @@ export function renderArtistSearch() {
 
           <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 4px 20px rgba(128, 90, 213, 0.08); border: 1px solid rgba(128, 90, 213, 0.1);">
 
-            <h3 style="font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Filter</h3>
+            <h3 style="font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Genre</h3>
 
             <!-- Genre Checkboxes -->
             <div id="desktop-genre-checkboxes" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
@@ -108,11 +121,11 @@ export function renderArtistSearch() {
 
             <hr style="border: none; border-top: 1px solid #e9e3f5; margin: 20px 0;">
 
-            <!-- Shaner Section (extra filters) -->
-            <h3 style="font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Shaner</h3>
-
-            <div id="desktop-shaner-checkboxes" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
-              <!-- Will be populated -->
+            <!-- Keywords -->
+            <div style="margin-bottom: 16px;">
+              <label style="font-size: 14px; font-weight: 600; color: #1a1a2e; display: block; margin-bottom: 8px;">Keywords</label>
+              <input id="desktop-input-keywords" type="text" placeholder="bijv. slam, poetry, rap..."
+                     style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #e9e3f5; font-size: 14px; outline: none; box-sizing: border-box;">
             </div>
 
             <hr style="border: none; border-top: 1px solid #e9e3f5; margin: 20px 0;">
@@ -238,18 +251,6 @@ async function populateGenreFilters() {
           <input type="checkbox" name="desktop-genre" value="${g}"
                  style="width: 18px; height: 18px; accent-color: #805ad5; cursor: pointer;">
           <span style="font-size: 14px; color: #4a4a68;">${g}</span>
-        </label>
-      `).join('');
-    }
-
-    // Desktop shaner checkboxes (placeholder options)
-    const desktopShaner = document.getElementById('desktop-shaner-checkboxes');
-    if (desktopShaner) {
-      desktopShaner.innerHTML = ['Soft shadow'].map(s => `
-        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-          <input type="checkbox" name="desktop-shaner" value="${s}"
-                 style="width: 18px; height: 18px; accent-color: #805ad5; cursor: pointer;">
-          <span style="font-size: 14px; color: #4a4a68;">${s}</span>
         </label>
       `).join('');
     }
@@ -386,7 +387,7 @@ function setupSearchInteractions() {
 
   // Desktop: Input changes - debounced
   root.addEventListener('input', (e) => {
-    if (e.target.matches('#desktop-input-name, #desktop-input-location')) {
+    if (e.target.matches('#desktop-input-name, #desktop-input-location, #desktop-input-keywords')) {
       clearTimeout(window.searchDebounce);
       window.searchDebounce = setTimeout(() => loadArtists(), 500);
     }
@@ -432,8 +433,13 @@ async function loadArtists() {
     );
     const genreFilters = Array.from(genreCheckboxes).map(cb => cb.value.toLowerCase().trim());
 
+    const keywordsFilter = (
+      document.getElementById('desktop-input-keywords')?.value ||
+      document.getElementById('mobile-input-keywords')?.value || ''
+    ).toLowerCase().trim();
+
     // Load and filter
-    const artists = await loadArtistsData({ nameFilter, locationFilter, genreFilters });
+    const artists = await loadArtistsData({ nameFilter, locationFilter, genreFilters, keywordsFilter });
 
     // Update counts
     const countText = `${artists.length} gevonden`;

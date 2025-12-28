@@ -168,7 +168,7 @@ export async function loadArtistsData(filters = {}) {
       ageMin = null,
       ageMax = null,
       energyFilters = [],
-      keywordFilters = []
+      keywordsFilter = ''
     } = filters;
 
     console.log("🔍 Filter values:", {
@@ -180,7 +180,7 @@ export async function loadArtistsData(filters = {}) {
       languageFilters,
       ageRange: ageMin !== null || ageMax !== null ? `${ageMin || 'any'}-${ageMax || 'any'}` : 'not set',
       energyFilters,
-      keywordFilters
+      keywordsFilter
     });
 
     // Build Firestore query
@@ -337,13 +337,24 @@ export async function loadArtistsData(filters = {}) {
       console.log(`⚡ After energy filter: ${artists.length} artists`);
     }
 
-    // Filter by keywords
-    if (keywordFilters.length > 0) {
+    // Filter by keywords (search in bio, pitch, genres, stageName)
+    if (keywordsFilter) {
+      const keywords = keywordsFilter.split(/[,\s]+/).filter(k => k.length > 0);
+
       artists = artists.filter(artist => {
-        const artistKeywords = (artist.keywords || []).map(k => k.toLowerCase());
-        return keywordFilters.some(k => artistKeywords.includes(k));
+        const searchText = [
+          artist.stageName || '',
+          artist.bio || '',
+          artist.pitch || '',
+          ...(artist.genres || []),
+          ...(artist.keywords || [])
+        ].join(' ').toLowerCase();
+
+        // Artist must match ALL keywords
+        return keywords.every(keyword => searchText.includes(keyword));
       });
-      console.log(`🏷️ After keywords filter: ${artists.length} artists`);
+
+      console.log(`🔑 After keywords filter: ${artists.length} artists`);
     }
 
     console.log(`✅ ${artists.length} artists after all filtering`);
