@@ -592,27 +592,21 @@ export function populateArtistDetail(artist) {
 
   // ========== DESKTOP ELEMENTS ==========
 
-  // Profile pic
   const detailProfilePic = document.getElementById('detail-profile-pic');
   if (detailProfilePic) detailProfilePic.src = profilePicUrl;
 
-  // Name
   const detailArtistName = document.getElementById('detail-artist-name');
   if (detailArtistName) detailArtistName.textContent = artistName;
 
-  // Age
   const detailAge = document.getElementById('detail-age');
   if (detailAge) detailAge.textContent = age ? `${age} years old` : 'Age unknown';
 
-  // Gender
   const detailGender = document.getElementById('detail-gender');
   if (detailGender) detailGender.textContent = genderText;
 
-  // Location
   const detailLocation = document.getElementById('detail-location');
   if (detailLocation) detailLocation.textContent = artist.location || 'Location unknown';
 
-  // Genres
   const detailGenres = document.getElementById('detail-genres');
   if (detailGenres) {
     const genres = artist.genres || [];
@@ -621,7 +615,6 @@ export function populateArtistDetail(artist) {
       : '<span style="color: #9ca3af; font-size: 13px;">No genres specified</span>';
   }
 
-  // Languages
   const detailLanguages = document.getElementById('detail-languages');
   if (detailLanguages) {
     const languages = artist.languages || [];
@@ -630,15 +623,12 @@ export function populateArtistDetail(artist) {
       : '<span style="color: #9ca3af; font-size: 13px;">No languages specified</span>';
   }
 
-  // Bio
   const detailBio = document.getElementById('detail-bio');
   if (detailBio) detailBio.textContent = artist.bio || 'No biography available.';
 
-  // Pitch
   const detailPitch = document.getElementById('detail-pitch');
   if (detailPitch) detailPitch.textContent = artist.pitch || 'No pitch available.';
 
-  // Email
   const detailEmailContainer = document.getElementById('detail-email-container');
   const detailEmail = document.getElementById('detail-email');
   if (detailEmail && artist.email) {
@@ -649,7 +639,6 @@ export function populateArtistDetail(artist) {
     detailEmailContainer.style.display = 'none';
   }
 
-  // Phone
   const detailPhoneContainer = document.getElementById('detail-phone-container');
   const detailPhone = document.getElementById('detail-phone');
   if (detailPhone && artist.phone) {
@@ -659,36 +648,72 @@ export function populateArtistDetail(artist) {
     detailPhoneContainer.style.display = 'none';
   }
 
-  // Chat header
   const chatHeader = document.getElementById('chat-header-name');
   if (chatHeader) chatHeader.textContent = `Chat met ${artistName}`;
 
   // Media Gallery
-  populateMediaGallery(artist);
+  const galleryEl = document.getElementById('detail-media-gallery');
+  if (galleryEl) {
+    const mediaItems = [];
+
+    if (artist.galleryPhotos && artist.galleryPhotos.length > 0) {
+      artist.galleryPhotos.forEach((photo) => {
+        mediaItems.push(`
+          <div style="aspect-ratio: 1; border-radius: 12px; overflow: hidden;">
+            <img src="${photo}" alt="Gallery photo" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
+        `);
+      });
+    }
+
+    if (mediaItems.length === 0 && artist.profilePicUrl) {
+      mediaItems.push(`
+        <div style="aspect-ratio: 1; border-radius: 12px; overflow: hidden;">
+          <img src="${artist.profilePicUrl}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+      `);
+    }
+
+    if (artist.youtubeVideos && artist.youtubeVideos.length > 0) {
+      artist.youtubeVideos.forEach((video) => {
+        const videoId = video.videoId || (video.url ? video.url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/)?.[1] : null);
+        if (videoId) {
+          mediaItems.push(`
+            <div style="aspect-ratio: 1; border-radius: 12px; overflow: hidden; position: relative;">
+              <img src="https://img.youtube.com/vi/${videoId}/mqdefault.jpg" alt="Video" style="width: 100%; height: 100%; object-fit: cover;">
+              <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.3);">
+                <div style="width: 40px; height: 40px; background: rgba(255,255,255,0.9); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                  <svg width="20" height="20" fill="#805ad5" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                </div>
+              </div>
+            </div>
+          `);
+        }
+      });
+    }
+
+    galleryEl.innerHTML = mediaItems.length > 0
+      ? mediaItems.join('')
+      : '<div style="grid-column: span 2; aspect-ratio: 16/9; background: #f3f4f6; border-radius: 12px; display: flex; align-items: center; justify-content: center;"><span style="color: #9ca3af; font-size: 14px;">Geen media beschikbaar</span></div>';
+  }
 
   // ========== MOBILE ELEMENTS ==========
 
-  // Photo
   const mobilePhoto = document.getElementById('mobile-detail-photo');
   if (mobilePhoto) mobilePhoto.src = profilePicUrl;
 
-  // Name
   const mobileName = document.getElementById('mobile-detail-name');
   if (mobileName) mobileName.textContent = artistName;
 
-  // Age
   const mobileAge = document.getElementById('mobile-detail-age');
   if (mobileAge) mobileAge.textContent = age ? `${age} years old` : 'Age unknown';
 
-  // Gender
   const mobileGender = document.getElementById('mobile-detail-gender');
   if (mobileGender) mobileGender.textContent = genderText;
 
-  // Location
   const mobileLocation = document.getElementById('mobile-detail-location');
   if (mobileLocation) mobileLocation.textContent = artist.location || 'Location unknown';
 
-  // Genres
   const mobileGenres = document.getElementById('mobile-detail-genres');
   if (mobileGenres) {
     const genres = artist.genres || [];
@@ -697,7 +722,6 @@ export function populateArtistDetail(artist) {
       : '<span style="color: #9ca3af; font-size: 14px;">No genres specified</span>';
   }
 
-  // Languages
   const mobileLanguages = document.getElementById('mobile-detail-languages');
   if (mobileLanguages) {
     const languages = artist.languages || [];
@@ -706,15 +730,12 @@ export function populateArtistDetail(artist) {
       : '<span style="color: #9ca3af; font-size: 14px;">No languages specified</span>';
   }
 
-  // Bio
   const mobileBio = document.getElementById('mobile-detail-bio');
   if (mobileBio) mobileBio.textContent = artist.bio || 'No biography available.';
 
-  // Pitch
   const mobilePitch = document.getElementById('mobile-detail-pitch');
   if (mobilePitch) mobilePitch.textContent = artist.pitch || 'No pitch available.';
 
-  // Email
   const mobileEmailContainer = document.getElementById('mobile-detail-email-container');
   const mobileEmail = document.getElementById('mobile-detail-email');
   if (mobileEmail && artist.email) {
@@ -725,7 +746,6 @@ export function populateArtistDetail(artist) {
     mobileEmailContainer.style.display = 'none';
   }
 
-  // Phone
   const mobilePhoneContainer = document.getElementById('mobile-detail-phone-container');
   const mobilePhone = document.getElementById('mobile-detail-phone');
   if (mobilePhone && artist.phone) {
@@ -735,43 +755,34 @@ export function populateArtistDetail(artist) {
     mobilePhoneContainer.style.display = 'none';
   }
 
-  // Mobile Send Message button
+  // ========== BUTTON HANDLERS ==========
+
   const mobileSendMessageBtn = document.getElementById('mobile-send-message-btn');
   if (mobileSendMessageBtn) {
     mobileSendMessageBtn.onclick = () => {
       import('../messaging/messaging-controller.js').then(module => {
-        if (module.openMessageModal) {
-          module.openMessageModal(artist);
-        }
+        if (module.openMessageModal) module.openMessageModal(artist);
       }).catch(err => console.error('[MESSAGE] Error:', err));
     };
   }
 
-  // Mobile Write Recommendation button
   const mobileWriteRecBtn = document.getElementById('mobile-write-recommendation-btn');
   if (mobileWriteRecBtn) {
-    mobileWriteRecBtn.onclick = () => {
-      alert('Schrijf recommendation functie komt binnenkort beschikbaar.');
-    };
+    mobileWriteRecBtn.onclick = () => alert('Schrijf recommendation functie komt binnenkort.');
   }
 
-  // Desktop Write Recommendation button
   const writeRecBtn = document.getElementById('write-recommendation-btn');
   if (writeRecBtn) {
-    writeRecBtn.onclick = () => {
-      alert('Schrijf recommendation functie komt binnenkort beschikbaar.');
-    };
+    writeRecBtn.onclick = () => alert('Schrijf recommendation functie komt binnenkort.');
   }
 
-  // Desktop View Recommendations button
   const viewRecsBtn = document.getElementById('view-recommendations-btn');
   if (viewRecsBtn) {
-    viewRecsBtn.onclick = () => {
-      alert('View recommendations functie komt binnenkort beschikbaar.');
-    };
+    viewRecsBtn.onclick = () => alert('View recommendations functie komt binnenkort.');
   }
 
   // ========== RESPONSIVE LAYOUT SWITCHING ==========
+
   const updateLayout = () => {
     const isDesktop = window.innerWidth >= 1024;
     const mobileLayout = document.getElementById('mobile-artist-detail');
@@ -779,14 +790,9 @@ export function populateArtistDetail(artist) {
 
     if (mobileLayout) mobileLayout.style.display = isDesktop ? 'none' : 'block';
     if (desktopLayout) desktopLayout.style.display = isDesktop ? 'grid' : 'none';
-
-    console.log('[DETAIL] Layout updated, isDesktop:', isDesktop);
   };
 
-  // Initial layout set
   updateLayout();
-
-  // Listen for resize
   window.removeEventListener('resize', updateLayout);
   window.addEventListener('resize', updateLayout);
 
