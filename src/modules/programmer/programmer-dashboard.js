@@ -133,10 +133,14 @@ export function renderProgrammerDashboard() {
 
                         <!-- Row 3: Action Buttons -->
                         <div class="flex items-center gap-3">
-                            <button id="edit-programmer-profile-btn" class="bg-purple-700 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-purple-800 transition-all text-sm">
+                            <button id="edit-programmer-profile-btn"
+                                    class="px-5 py-2.5 rounded-xl font-semibold transition-all text-sm"
+                                    style="background-color: #7c3aed; color: white; border: none;">
                                 Edit Profile
                             </button>
-                            <button id="view-public-profile-btn" class="bg-white text-purple-700 px-5 py-2.5 rounded-xl font-semibold hover:bg-purple-50 transition-all border-2 border-purple-700 text-sm">
+                            <button id="view-public-profile-btn"
+                                    class="px-5 py-2.5 rounded-xl font-semibold transition-all text-sm"
+                                    style="background-color: white; color: #7c3aed; border: 2px solid #7c3aed;">
                                 View Public Profile
                             </button>
                         </div>
@@ -159,7 +163,9 @@ export function renderProgrammerDashboard() {
     <div id="programmer-public-preview" class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 mb-6">
         <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
             <h3 class="text-xl font-bold text-gray-900">Public Profile Preview</h3>
-            <button id="refresh-programmer-preview-btn" class="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-purple-700 transition-all shadow-sm text-sm">
+            <button id="refresh-programmer-preview-btn"
+                    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all shadow-sm text-sm"
+                    style="background-color: #7c3aed; color: white;">
                 Refresh
             </button>
         </div>
