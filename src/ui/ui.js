@@ -750,6 +750,37 @@ export async function showEditProfile() {
 }
 
 /**
+ * Shows the Public Profile Preview page
+ */
+export function showPublicProfile() {
+  const currentUserData = getStore('currentUserData');
+
+  if (!currentUserData || currentUserData.role !== 'programmer') {
+    console.warn("Only programmers can view public profile");
+    showPage('home-view');
+    return;
+  }
+
+  console.log('[UI] Showing public profile page');
+
+  // Render the public profile view
+  import('./view-renderers.js').then(module => {
+    module.renderPublicProfilePage();
+
+    // Setup back button handler
+    const backBtn = document.getElementById('back-to-profile-btn');
+    if (backBtn) {
+      backBtn.addEventListener('click', () => {
+        showProgrammerProfile();
+      });
+    }
+  });
+
+  // Update URL
+  window.history.pushState({ view: 'public-profile' }, '', '#public-profile');
+}
+
+/**
  * Populate the edit profile form with current user data
  */
 function populateEditProfileForm(userData) {

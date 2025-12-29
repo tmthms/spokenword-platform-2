@@ -986,16 +986,10 @@ function setupEditProfileButton() {
       e.stopPropagation();
       console.log("[PROGRAMMER DASHBOARD] View public profile clicked");
 
-      const publicPreview = document.getElementById('programmer-public-preview');
-      if (publicPreview) {
-        publicPreview.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
-        // Auto-refresh preview after scroll
-        setTimeout(() => {
-          const refreshBtn = document.getElementById('refresh-programmer-preview-btn');
-          if (refreshBtn) refreshBtn.click();
-        }, 300);
-      }
+      // Navigate to public profile page
+      import('../../ui/ui.js').then(module => {
+        module.showPublicProfile();
+      });
     }
   });
 
