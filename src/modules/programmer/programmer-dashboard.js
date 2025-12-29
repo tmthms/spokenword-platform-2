@@ -16,7 +16,8 @@ import { setLanguage } from '../../utils/translations.js';
 
 /**
  * Renders the programmer dashboard HTML structure
- * REDESIGNED: Matches mockup with compact card layout
+ * DESKTOP: New compact card layout matching mockup
+ * MOBILE: Original layout preserved (unchanged)
  */
 export function renderProgrammerDashboard() {
   const container = document.getElementById('programmer-dashboard');
@@ -33,138 +34,145 @@ export function renderProgrammerDashboard() {
             <i data-lucide="clock" class="h-8 w-8 text-yellow-600 flex-shrink-0 mt-1"></i>
             <div>
                 <h3 class="text-xl font-bold text-yellow-900 mb-2">Account Pending Approval</h3>
-                <p class="text-yellow-800 leading-relaxed" data-i18n="pending_approval">
+                <p class="text-yellow-800 leading-relaxed">
                     Your account is <strong>pending admin approval</strong>. You will be notified by email once it's published.
                 </p>
             </div>
         </div>
     </div>
 
-    <!-- ========== PROGRAMMER PROFILE CARD - REDESIGNED ========== -->
-    <div id="programmer-profile-overview" class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 overflow-hidden">
+    <!-- ========== PROGRAMMER PROFILE OVERVIEW ========== -->
+    <div id="programmer-profile-overview" class="mb-6">
 
-        <!-- Main Profile Card Content -->
-        <div class="p-6 md:p-8">
-            <div class="flex flex-col md:flex-row md:items-start gap-6">
-
-                <!-- Avatar Section - FIXED SIZE -->
-                <div class="flex-shrink-0 flex justify-center md:justify-start">
-                    <div id="programmer-avatar-wrapper" class="relative">
-                        <!-- Placeholder Avatar (shown when no photo) -->
-                        <div id="programmer-avatar-placeholder" class="w-24 h-24 md:w-28 md:h-28 rounded-2xl bg-purple-100 flex items-center justify-center border-2 border-purple-200 shadow-sm">
-                            <span id="programmer-avatar-initial" class="text-4xl md:text-5xl font-bold text-purple-600">P</span>
+        <!-- ===== MOBILE VIEW (< md) - ORIGINAL UNCHANGED ===== -->
+        <div class="block md:hidden bg-white p-10 rounded-3xl shadow-sm border border-gray-100">
+            <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
+                <h3 class="text-3xl font-bold text-gray-900 tracking-tight">Your Profile</h3>
+                <button id="edit-programmer-profile-btn-mobile" class="bg-indigo-600 text-white px-6 py-3 rounded-2xl font-semibold hover:bg-indigo-700 transition-all shadow-sm hover:shadow">
+                    Edit Profile
+                </button>
+            </div>
+            <div class="grid grid-cols-1 gap-10">
+                <div class="flex justify-center">
+                    <img id="programmer-overview-pic-mobile" src="https://placehold.co/200x200/e0e7ff/6366f1?text=P" alt="Profile" class="w-52 h-52 object-cover rounded-3xl shadow-lg border border-gray-100">
+                </div>
+                <div class="space-y-5">
+                    <div class="pb-5 border-b border-gray-50 text-center">
+                        <h4 id="programmer-overview-name-mobile" class="text-4xl font-bold text-gray-900 tracking-tight mb-2">Programmer Name</h4>
+                        <p id="programmer-overview-org-mobile" class="text-2xl text-indigo-600 font-semibold">Organization Name</p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4 text-sm">
+                        <div class="bg-gray-50 p-3 rounded-xl">
+                            <span class="block text-xs font-semibold text-gray-500 mb-1">EMAIL</span>
+                            <span id="programmer-overview-email-mobile" class="font-medium text-gray-900">email@example.com</span>
                         </div>
-                        <!-- Actual Profile Picture (hidden by default, shown when photo exists) -->
-                        <img id="programmer-overview-pic"
-                             src=""
-                             alt="Profile"
-                             class="hidden w-24 h-24 md:w-28 md:h-28 rounded-2xl object-cover border-2 border-purple-200 shadow-sm"
-                             style="max-width: 112px; max-height: 112px;">
+                        <div class="bg-gray-50 p-3 rounded-xl">
+                            <span class="block text-xs font-semibold text-gray-500 mb-1">PHONE</span>
+                            <span id="programmer-overview-phone-mobile" class="font-medium text-gray-900">Phone</span>
+                        </div>
+                        <div class="col-span-2 bg-gray-50 p-3 rounded-xl">
+                            <span class="block text-xs font-semibold text-gray-500 mb-1">WEBSITE</span>
+                            <a id="programmer-overview-website-mobile" href="#" target="_blank" class="font-medium text-indigo-600 hover:text-indigo-800 transition-colors">Website</a>
+                        </div>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-xl">
+                        <p class="text-xs font-semibold text-gray-500 mb-2">ABOUT ORGANIZATION</p>
+                        <p id="programmer-overview-about-mobile" class="text-gray-700 leading-relaxed">Organization description here</p>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                <!-- Info Section -->
-                <div class="flex-grow min-w-0 text-center md:text-left">
-
-                    <!-- Name + Badge Row -->
-                    <div class="flex flex-col md:flex-row md:items-start md:justify-between gap-3 mb-4">
-                        <div>
-                            <h2 id="programmer-overview-name" class="text-2xl md:text-3xl font-bold text-purple-700 mb-1">Programmer Name</h2>
-                            <p id="programmer-overview-org" class="text-lg text-gray-600 font-medium">Organization Name</p>
+        <!-- ===== DESKTOP VIEW (>= md) - NEW COMPACT LAYOUT ===== -->
+        <div class="hidden md:block bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+            <div class="p-8">
+                <div class="flex items-start gap-6">
+                    <!-- Left: Avatar -->
+                    <div class="flex-shrink-0">
+                        <div id="programmer-avatar-wrapper" class="relative">
+                            <div id="programmer-avatar-placeholder" class="w-28 h-28 rounded-2xl bg-purple-100 flex items-center justify-center border-2 border-purple-200 shadow-sm">
+                                <span id="programmer-avatar-initial" class="text-5xl font-bold text-purple-600">P</span>
+                            </div>
+                            <img id="programmer-overview-pic-desktop" src="" alt="Profile" class="hidden w-28 h-28 rounded-2xl object-cover border-2 border-purple-200 shadow-sm absolute top-0 left-0">
                         </div>
-                        <!-- Verified Badge -->
-                        <div class="flex justify-center md:justify-start">
-                            <div class="inline-flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1.5 rounded-full text-sm font-medium border border-green-200">
+                    </div>
+
+                    <!-- Middle: Info -->
+                    <div class="flex-grow min-w-0">
+                        <div class="flex items-start justify-between mb-4">
+                            <div>
+                                <h2 id="programmer-overview-name-desktop" class="text-3xl font-bold text-purple-700 mb-1">Programmer Name</h2>
+                                <p id="programmer-overview-org-desktop" class="text-lg text-gray-600 font-medium">Organization Name</p>
+                            </div>
+                            <div class="flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1.5 rounded-full text-sm font-medium border border-green-200">
                                 <i data-lucide="check-circle" class="h-4 w-4"></i>
                                 <span>Verified Programmer</span>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Contact Info Row -->
-                    <div class="flex flex-wrap justify-center md:justify-start items-center gap-x-5 gap-y-2 text-sm text-gray-600 mb-5">
-                        <div class="flex items-center">
-                            <i data-lucide="mail" class="h-4 w-4 mr-2 text-purple-500 flex-shrink-0"></i>
-                            <span id="programmer-overview-email" class="truncate max-w-[200px]">email@example.com</span>
+                        <div class="flex flex-wrap items-center gap-x-6 gap-y-2 text-sm text-gray-600 mb-6">
+                            <div class="flex items-center">
+                                <i data-lucide="mail" class="h-4 w-4 mr-2 text-purple-500"></i>
+                                <span id="programmer-overview-email-desktop">email@example.com</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i data-lucide="phone" class="h-4 w-4 mr-2 text-purple-500"></i>
+                                <span id="programmer-overview-phone-desktop">Not specified</span>
+                            </div>
+                            <div class="flex items-center">
+                                <i data-lucide="globe" class="h-4 w-4 mr-2 text-purple-500"></i>
+                                <a id="programmer-overview-website-desktop" href="#" target="_blank" class="text-purple-600 hover:text-purple-800">Website</a>
+                            </div>
                         </div>
-                        <div class="flex items-center">
-                            <i data-lucide="phone" class="h-4 w-4 mr-2 text-purple-500 flex-shrink-0"></i>
-                            <span id="programmer-overview-phone">Not specified</span>
-                        </div>
-                        <div class="flex items-center">
-                            <i data-lucide="globe" class="h-4 w-4 mr-2 text-purple-500 flex-shrink-0"></i>
-                            <a id="programmer-overview-website" href="#" target="_blank" class="text-purple-600 hover:text-purple-800 truncate max-w-[150px]">Website</a>
-                        </div>
-                    </div>
 
-                    <!-- Action Buttons -->
-                    <div class="flex flex-wrap justify-center md:justify-start items-center gap-3">
-                        <button id="edit-programmer-profile-btn" class="bg-purple-700 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-purple-800 transition-all shadow-sm text-sm flex items-center gap-2">
-                            <i data-lucide="pencil" class="h-4 w-4"></i>
-                            Edit Profile
-                        </button>
-                        <button id="view-public-profile-btn" class="bg-white text-purple-700 px-5 py-2.5 rounded-xl font-semibold hover:bg-purple-50 transition-all border-2 border-purple-700 text-sm flex items-center gap-2">
-                            <i data-lucide="eye" class="h-4 w-4"></i>
-                            View Public Profile
-                        </button>
+                        <div class="flex items-center gap-3">
+                            <button id="edit-programmer-profile-btn" class="inline-flex items-center gap-2 bg-purple-700 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-purple-800 transition-all shadow-sm text-sm">
+                                Edit Profile
+                            </button>
+                            <button id="view-public-profile-btn" class="inline-flex items-center gap-2 bg-white text-purple-700 px-5 py-2.5 rounded-xl font-semibold hover:bg-purple-50 transition-all border-2 border-purple-700 text-sm">
+                                View Public Profile
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ========== ABOUT ORGANIZATION CARD ========== -->
-    <div id="programmer-about-card" class="bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 p-6 md:p-8">
-        <h3 class="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
-            <i data-lucide="building-2" class="h-5 w-5 text-purple-600"></i>
-            About Organization
-        </h3>
-        <p id="programmer-overview-about" class="text-gray-600 leading-relaxed">Organization description here</p>
+    <!-- About Organization Card (Desktop only) -->
+    <div id="programmer-about-card" class="hidden md:block bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 p-6">
+        <h3 class="text-xl font-bold text-gray-900 mb-3">About Organization</h3>
+        <p id="programmer-overview-about-desktop" class="text-gray-600 leading-relaxed">Organization description here</p>
     </div>
 
-    <!-- Programmer Profile Editor (rendered by programmer-profile.js) -->
-    <div id="programmer-profile-editor" class="hidden">
-        <!-- Content will be rendered by renderProgrammerProfileEditor() -->
-    </div>
+    <!-- Programmer Profile Editor -->
+    <div id="programmer-profile-editor" class="hidden"></div>
 
     <!-- Programmer Public Preview Section -->
     <div id="programmer-public-preview" class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 mb-6">
         <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
             <h3 class="text-xl font-bold text-gray-900">Public Profile Preview</h3>
-            <button id="refresh-programmer-preview-btn" class="bg-purple-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-purple-700 transition-all shadow-sm text-sm flex items-center gap-2">
-                <i data-lucide="refresh-cw" class="h-4 w-4"></i>
+            <button id="refresh-programmer-preview-btn" class="inline-flex items-center gap-2 bg-purple-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-purple-700 transition-all shadow-sm text-sm">
                 Refresh
             </button>
         </div>
-
         <div class="bg-gray-50 p-6 rounded-xl border-2 border-dashed border-gray-200">
-            <p class="text-sm text-gray-500 mb-4 flex items-center">
-                <i data-lucide="info" class="h-4 w-4 mr-2 flex-shrink-0"></i>
-                This is how artists see your profile when they view your organization information.
-            </p>
-
-            <!-- Preview Content Container -->
+            <p class="text-sm text-gray-500 mb-4">This is how artists see your profile.</p>
             <div id="programmer-preview-content" class="bg-white rounded-xl shadow-sm border border-gray-100">
                 <div class="text-center py-10 text-gray-400">
-                    <i data-lucide="eye" class="h-10 w-10 mx-auto mb-3"></i>
                     <p class="font-medium">Click "Refresh" to see your public profile</p>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Search and Filter Section -->
-    <div id="artist-search-section" class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100" style="min-height: 400px;">
-        <!-- Content will be injected dynamically by artist-search.js -->
-    </div>
+    <!-- Search Section -->
+    <div id="artist-search-section" class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100" style="min-height: 400px;"></div>
 
-    <!-- Version Badge -->
-    <div class="text-center py-4 text-xs text-gray-400">
-        Staging v2.2 (Profile Redesign) [29-12-2025]
-    </div>
+    <div class="text-center py-4 text-xs text-gray-400">v2.3 [29-12-2025]</div>
   `;
 
-  console.log("Programmer dashboard HTML rendered (redesigned)");
+  console.log("Programmer dashboard HTML rendered");
 }
 
 /**
@@ -816,7 +824,7 @@ async function handleMobilePhotoUpload(e) {
 /**
  * Displays the programmer profile overview (read-only)
  * Called on initial load and after profile updates
- * UPDATED: Handles avatar placeholder vs actual photo
+ * UPDATED: Handles mobile and desktop views separately
  */
 export function displayProgrammerProfileOverview() {
   const currentUserData = getStore('currentUserData');
@@ -838,50 +846,65 @@ export function displayProgrammerProfileOverview() {
   const about = currentUserData.organizationAbout || 'No description available';
   const profilePicUrl = currentUserData.profilePicUrl || '';
 
-  // === AVATAR HANDLING ===
+  // === DESKTOP AVATAR HANDLING ===
   const avatarPlaceholder = document.getElementById('programmer-avatar-placeholder');
   const avatarInitial = document.getElementById('programmer-avatar-initial');
-  const avatarPic = document.getElementById('programmer-overview-pic');
+  const avatarPicDesktop = document.getElementById('programmer-overview-pic-desktop');
 
-  if (profilePicUrl && avatarPic) {
+  if (profilePicUrl && avatarPicDesktop) {
     // Has profile picture - show image, hide placeholder
-    avatarPic.src = profilePicUrl;
-    avatarPic.classList.remove('hidden');
+    avatarPicDesktop.src = profilePicUrl;
+    avatarPicDesktop.classList.remove('hidden');
     if (avatarPlaceholder) avatarPlaceholder.classList.add('hidden');
-    console.log("[PROFILE] Showing profile picture");
+    console.log("[PROFILE] Showing desktop profile picture");
   } else {
     // No profile picture - show placeholder with initial
-    if (avatarPic) avatarPic.classList.add('hidden');
+    if (avatarPicDesktop) avatarPicDesktop.classList.add('hidden');
     if (avatarPlaceholder) avatarPlaceholder.classList.remove('hidden');
     if (avatarInitial) avatarInitial.textContent = initial;
-    console.log("[PROFILE] Showing avatar placeholder with initial:", initial);
+    console.log("[PROFILE] Showing desktop avatar placeholder with initial:", initial);
   }
 
-  // === UPDATE TEXT ELEMENTS ===
+  // === MOBILE PROFILE PICTURE ===
+  const mobilePic = document.getElementById('programmer-overview-pic-mobile');
+  if (mobilePic) {
+    mobilePic.src = profilePicUrl || `https://placehold.co/200x200/e0e7ff/6366f1?text=${initial}`;
+  }
+
+  // === UPDATE TEXT ELEMENTS (DESKTOP) ===
   const updateText = (id, value) => {
     const el = document.getElementById(id);
     if (el) el.textContent = value;
   };
 
-  updateText('programmer-overview-name', fullName);
-  updateText('programmer-overview-org', organizationName);
-  updateText('programmer-overview-email', email);
-  updateText('programmer-overview-phone', phone);
-  updateText('programmer-overview-about', about);
+  updateText('programmer-overview-name-desktop', fullName);
+  updateText('programmer-overview-org-desktop', organizationName);
+  updateText('programmer-overview-email-desktop', email);
+  updateText('programmer-overview-phone-desktop', phone);
+  updateText('programmer-overview-about-desktop', about);
 
-  // Website link
-  const websiteEl = document.getElementById('programmer-overview-website');
-  if (websiteEl) {
-    if (website) {
-      websiteEl.href = website.startsWith('http') ? website : `https://${website}`;
-      websiteEl.textContent = website.replace(/^https?:\/\//, '');
-    } else {
-      websiteEl.href = '#';
-      websiteEl.textContent = 'Not specified';
+  // === UPDATE TEXT ELEMENTS (MOBILE) ===
+  updateText('programmer-overview-name-mobile', fullName);
+  updateText('programmer-overview-org-mobile', organizationName);
+  updateText('programmer-overview-email-mobile', email);
+  updateText('programmer-overview-phone-mobile', phone);
+  updateText('programmer-overview-about-mobile', about);
+
+  // === WEBSITE LINKS (DESKTOP + MOBILE) ===
+  ['programmer-overview-website-desktop', 'programmer-overview-website-mobile'].forEach(id => {
+    const websiteEl = document.getElementById(id);
+    if (websiteEl) {
+      if (website) {
+        websiteEl.href = website.startsWith('http') ? website : `https://${website}`;
+        websiteEl.textContent = website.replace(/^https?:\/\//, '');
+      } else {
+        websiteEl.href = '#';
+        websiteEl.textContent = 'Not specified';
+      }
     }
-  }
+  });
 
-  console.log("[PROFILE] Profile overview displayed successfully");
+  console.log("[PROFILE] Profile overview displayed successfully (mobile + desktop)");
 }
 
 /**
@@ -903,8 +926,8 @@ function setupEditProfileButton() {
   }
 
   container.addEventListener('click', (e) => {
-    // Handle Edit Profile button
-    const clickedEditBtn = e.target.closest('#edit-programmer-profile-btn');
+    // Handle Edit Profile button (both desktop and mobile)
+    const clickedEditBtn = e.target.closest('#edit-programmer-profile-btn') || e.target.closest('#edit-programmer-profile-btn-mobile');
     if (clickedEditBtn) {
       e.preventDefault();
       e.stopPropagation();
