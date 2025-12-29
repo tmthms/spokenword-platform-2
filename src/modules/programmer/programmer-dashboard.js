@@ -973,28 +973,9 @@ function setupEditProfileButton() {
       e.stopPropagation();
       console.log("[PROGRAMMER DASHBOARD] Edit profile button clicked");
 
-      import('./programmer-profile.js').then(module => {
-        const isHidden = editor.classList.contains('hidden') || editor.style.display === 'none';
-
-        if (isHidden) {
-          // Show editor
-          module.renderProgrammerProfileEditor();
-          editor.classList.remove('hidden');
-          editor.style.display = 'block';
-          module.setupProfileFormHandlers();
-          module.populateProgrammerEditor();
-
-          setTimeout(() => {
-            editor.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }, 100);
-        } else {
-          // Hide editor
-          editor.classList.add('hidden');
-          editor.style.display = 'none';
-          displayProgrammerProfileOverview();
-        }
-      }).catch(error => {
-        console.error("[EDIT BTN] Error loading programmer-profile.js:", error);
+      // Navigate to edit profile page
+      import('../../ui/ui.js').then(module => {
+        module.showEditProfile();
       });
     }
 

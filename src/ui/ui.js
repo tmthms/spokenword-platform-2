@@ -5,7 +5,7 @@
  */
 
 // Importeer de "store" (globale state) om de data van de ingelogde gebruiker te lezen
-import { getStore } from '../utils/store.js';
+import { getStore, setStore } from '../utils/store.js';
 
 // Importeer de functies die we nodig hebben van andere modules
 import { handleLogout, handleLogin, handleArtistSignup, handleProgrammerSignup, updateUserEmail, updateUserPassword } from '../services/auth.js';
@@ -26,7 +26,8 @@ import {
   renderProgrammerSignup,
   renderMessages as renderMessagesView,
   renderDashboard as renderDashboardView,
-  renderAccountSettings
+  renderAccountSettings,
+  renderEditProfile
 } from './view-renderers.js'; 
 
 // --- DOM Elementen ---
@@ -713,6 +714,216 @@ export function showProgrammerSettings() {
   // Re-initialize Lucide icons
   if (window.lucide) {
     setTimeout(() => lucide.createIcons(), 100);
+  }
+}
+
+/**
+ * Shows the Edit Profile page
+ */
+export async function showEditProfile() {
+  const currentUserData = getStore('currentUserData');
+
+  if (!currentUserData || currentUserData.role !== 'programmer') {
+    console.warn("Only programmers can edit profile");
+    showPage('home-view');
+    return;
+  }
+
+  console.log('[UI] Showing edit profile page');
+
+  // Render the edit profile view
+  renderEditProfile();
+
+  // Populate form with current data
+  populateEditProfileForm(currentUserData);
+
+  // Setup form handlers
+  setupEditProfileHandlers();
+
+  // Update URL
+  window.history.pushState({ view: 'edit-profile' }, '', '#edit-profile');
+
+  // Re-initialize icons
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 100);
+  }
+}
+
+/**
+ * Populate the edit profile form with current user data
+ */
+function populateEditProfileForm(userData) {
+  const currentUser = getStore('currentUser');
+
+  // Personal Details
+  const firstNameInput = document.getElementById('edit-first-name');
+  const lastNameInput = document.getElementById('edit-last-name');
+  const phoneInput = document.getElementById('edit-phone');
+
+  if (firstNameInput) firstNameInput.value = userData.firstName || '';
+  if (lastNameInput) lastNameInput.value = userData.lastName || '';
+  if (phoneInput) phoneInput.value = userData.phone || '';
+
+  // Avatar
+  const avatarPlaceholder = document.getElementById('edit-avatar-placeholder');
+  const avatarInitial = document.getElementById('edit-avatar-initial');
+  const avatarPic = document.getElementById('edit-profile-pic-preview');
+
+  if (userData.profilePicUrl) {
+    if (avatarPic) {
+      avatarPic.src = userData.profilePicUrl;
+      avatarPic.classList.remove('hidden');
+    }
+    if (avatarPlaceholder) avatarPlaceholder.classList.add('hidden');
+  } else {
+    const initial = (userData.firstName?.charAt(0) || 'P').toUpperCase();
+    if (avatarInitial) avatarInitial.textContent = initial;
+  }
+
+  // Organization Details
+  const orgNameInput = document.getElementById('edit-organization-name');
+  const websiteInput = document.getElementById('edit-website');
+  const aboutInput = document.getElementById('edit-about');
+
+  if (orgNameInput) orgNameInput.value = userData.organizationName || '';
+  if (websiteInput) websiteInput.value = userData.website || '';
+  if (aboutInput) aboutInput.value = userData.organizationAbout || '';
+
+  // Preferences
+  const languageSelect = document.getElementById('edit-language');
+  if (languageSelect) languageSelect.value = userData.language || 'nl';
+}
+
+/**
+ * Setup form handlers for edit profile page
+ */
+function setupEditProfileHandlers() {
+  const form = document.getElementById('edit-profile-form');
+  const cancelBtn = document.getElementById('cancel-edit-btn');
+  const fileInput = document.getElementById('edit-profile-pic-input');
+
+  // Cancel button - go back to profile
+  if (cancelBtn) {
+    cancelBtn.addEventListener('click', () => {
+      showProgrammerProfile();
+    });
+  }
+
+  // File input - preview image
+  if (fileInput) {
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const avatarPic = document.getElementById('edit-profile-pic-preview');
+          const avatarPlaceholder = document.getElementById('edit-avatar-placeholder');
+
+          if (avatarPic) {
+            avatarPic.src = event.target.result;
+            avatarPic.classList.remove('hidden');
+          }
+          if (avatarPlaceholder) avatarPlaceholder.classList.add('hidden');
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+  }
+
+  // Form submit
+  if (form) {
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      await handleEditProfileSubmit();
+    });
+  }
+}
+
+/**
+ * Handle edit profile form submission
+ */
+async function handleEditProfileSubmit() {
+  const successEl = document.getElementById('edit-profile-success');
+  const errorEl = document.getElementById('edit-profile-error');
+  const saveBtn = document.getElementById('save-profile-btn');
+
+  // Hide previous messages
+  if (successEl) successEl.classList.add('hidden');
+  if (errorEl) errorEl.classList.add('hidden');
+
+  // Disable button
+  if (saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = 'Saving...';
+  }
+
+  try {
+    const currentUser = getStore('currentUser');
+    const currentUserData = getStore('currentUserData');
+
+    if (!currentUser) throw new Error('No user logged in');
+
+    // Gather form data
+    const dataToUpdate = {
+      firstName: document.getElementById('edit-first-name')?.value.trim() || '',
+      lastName: document.getElementById('edit-last-name')?.value.trim() || '',
+      phone: document.getElementById('edit-phone')?.value.trim() || '',
+      organizationName: document.getElementById('edit-organization-name')?.value.trim() || '',
+      website: document.getElementById('edit-website')?.value.trim() || '',
+      organizationAbout: document.getElementById('edit-about')?.value.trim() || '',
+      language: document.getElementById('edit-language')?.value || 'nl'
+    };
+
+    // Handle profile picture upload
+    const fileInput = document.getElementById('edit-profile-pic-input');
+    const file = fileInput?.files[0];
+
+    if (file) {
+      const { getStorage, ref, uploadBytes, getDownloadURL } = await import('firebase/storage');
+      const storage = getStorage();
+      const storageRef = ref(storage, `programmers/${currentUser.uid}/profile.jpg`);
+
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      dataToUpdate.profilePicUrl = downloadURL;
+    }
+
+    // Update Firestore
+    const { doc, updateDoc } = await import('firebase/firestore');
+    const { db } = await import('../services/firebase.js');
+
+    const docRef = doc(db, 'users', currentUser.uid);
+    await updateDoc(docRef, dataToUpdate);
+
+    // Update local store
+    setStore('currentUserData', { ...currentUserData, ...dataToUpdate });
+
+    // Apply language change
+    const { setLanguage } = await import('../utils/translations.js');
+    setLanguage(dataToUpdate.language);
+
+    // Show success
+    if (successEl) {
+      successEl.textContent = '✓ Profile updated successfully!';
+      successEl.classList.remove('hidden');
+    }
+
+    // Navigate back after short delay
+    setTimeout(() => {
+      showProgrammerProfile();
+    }, 1500);
+
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    if (errorEl) {
+      errorEl.textContent = `Error: ${error.message}`;
+      errorEl.classList.remove('hidden');
+    }
+  } finally {
+    if (saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = 'Save All Changes';
+    }
   }
 }
 
