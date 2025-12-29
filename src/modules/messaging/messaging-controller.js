@@ -652,6 +652,15 @@ export function setupMessaging() {
     });
   }
 
+  // Fallback event listener for conversation clicks (minified build safety)
+  window.addEventListener('openConversation', async (e) => {
+    const { conversationId } = e.detail;
+    if (conversationId) {
+      console.log('[MESSAGING] Fallback: Opening conversation via event:', conversationId);
+      await openConversation(conversationId);
+    }
+  });
+
   console.log("Messaging listeners ingesteld.");
 }
 

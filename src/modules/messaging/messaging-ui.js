@@ -191,7 +191,7 @@ export async function displayConversations(conversations, currentUserId, onConve
     mobileList.innerHTML = cardsHTML;
 
     mobileList.querySelectorAll('.conversation-card').forEach(card => {
-      card.addEventListener('click', () => {
+      card.addEventListener('click', (e) => {
         // Show mobile chat view
         const listView = document.getElementById('mobile-conversations-view');
         const chatView = document.getElementById('mobile-chat-view');
@@ -206,7 +206,14 @@ export async function displayConversations(conversations, currentUserId, onConve
         if (name) name.textContent = card.dataset.otherName;
         if (role) role.textContent = card.dataset.otherRole;
 
-        onConversationClick(card.dataset.conversationId);
+        // Safe function call with fallback
+        if (typeof onConversationClick === 'function') {
+          onConversationClick(card.dataset.conversationId);
+        } else {
+          console.warn('[MESSAGING] onConversationClick is not a function, conversation ID:', card.dataset.conversationId);
+          // Fallback: dispatch custom event
+          window.dispatchEvent(new CustomEvent('openConversation', { detail: { conversationId: card.dataset.conversationId } }));
+        }
       });
     });
   }
