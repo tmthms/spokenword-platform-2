@@ -635,7 +635,7 @@ export function renderAccountSettings() {
 export function renderDashboard() {
   const appContent = document.getElementById('app-content');
   appContent.innerHTML = `
-    <div id="dashboard-view">
+    <div id="dashboard-view" style="min-height: 100vh; background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #ede9fe 100%);">
       <!-- Artist Dashboard -->
       <div id="artist-dashboard" class="hidden">
         <!-- Content rendered by renderArtistDashboard() in artist-dashboard.js -->

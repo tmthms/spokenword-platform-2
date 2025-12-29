@@ -168,26 +168,6 @@ export function renderProgrammerDashboard() {
     <!-- Programmer Profile Editor -->
     <div id="programmer-profile-editor" class="hidden"></div>
 
-    <!-- Programmer Public Preview Section -->
-    <div id="programmer-public-preview" class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 mb-6">
-        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
-            <h3 class="text-xl font-bold text-gray-900">Public Profile Preview</h3>
-            <button id="refresh-programmer-preview-btn"
-                    class="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all shadow-sm text-sm"
-                    style="background-color: #7c3aed; color: white;">
-                Refresh
-            </button>
-        </div>
-        <div class="bg-gray-50 p-6 rounded-xl border-2 border-dashed border-gray-200">
-            <p class="text-sm text-gray-500 mb-4">This is how artists see your profile.</p>
-            <div id="programmer-preview-content" class="bg-white rounded-xl shadow-sm border border-gray-100">
-                <div class="text-center py-10 text-gray-400">
-                    <p class="font-medium">Click "Refresh" to see your public profile</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Search Section -->
     <div id="artist-search-section" class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100" style="min-height: 400px;"></div>
 
