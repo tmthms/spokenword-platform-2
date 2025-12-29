@@ -525,9 +525,9 @@ export function showSearchOnly() {
     programmerDashboard.style.display = 'block';
   }
 
-  // Import and render
-  import('../modules/programmer/programmer-dashboard.js').then(module => {
-    module.renderProgrammerDashboard();
+  // Import programmer dashboard
+  import('../modules/programmer/programmer-dashboard.js').then(dashboardModule => {
+    dashboardModule.renderProgrammerDashboard();
 
     // HIDE all profile sections
     const sectionsToHide = [
@@ -551,11 +551,15 @@ export function showSearchOnly() {
       searchSection.style.display = 'block';
     }
 
-    // Setup and load search
-    import('../modules/search/search-controller.js').then(searchModule => {
-      searchModule.renderArtistSearch();
-      searchModule.setupArtistSearch();
-      searchModule.loadArtists();
+    // Import search UI (renderArtistSearch is in search-ui.js)
+    import('../modules/search/search-ui.js').then(searchUiModule => {
+      searchUiModule.renderArtistSearch();
+
+      // Import search controller (setupArtistSearch and loadArtists are in search-controller.js)
+      import('../modules/search/search-controller.js').then(searchControllerModule => {
+        searchControllerModule.setupArtistSearch();
+        searchControllerModule.loadArtists();
+      });
     });
 
   });
