@@ -1139,11 +1139,11 @@ function setupDesktopNavigation() {
       return;
     }
 
-    // Desktop Profile Settings (Programmer: edit profile, Artist: edit profile)
+    // Desktop Profile Settings → Edit Profile page
     if (e.target.closest('#desktop-profile-settings')) {
       const dropdown = document.getElementById('desktop-profile-dropdown');
       if (dropdown) dropdown.classList.add('hidden');
-      showProgrammerSettings(); // Updates hash internally
+      showEditProfile(); // Updates hash internally
       return;
     }
 
