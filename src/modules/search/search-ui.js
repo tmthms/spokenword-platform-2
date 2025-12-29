@@ -153,7 +153,7 @@ export function renderArtistSearch() {
         </main>
 
         <!-- RIGHT COLUMN: Artist Detail Panel -->
-        <aside id="desktop-artist-detail" style="width: 300px; flex-shrink: 0;">
+        <aside id="search-detail-panel" style="width: 300px; flex-shrink: 0;">
           <div style="background: white; border-radius: 20px; padding: 28px; box-shadow: 0 4px 20px rgba(128, 90, 213, 0.08); border: 1px solid rgba(128, 90, 213, 0.1); position: sticky; top: 100px;">
 
             <!-- Empty State -->
@@ -358,7 +358,7 @@ function setupSearchInteractions() {
       console.log('[SEARCH] Card clicked:', artistId);
 
       // Desktop: show in detail panel
-      const detailPanel = document.getElementById('desktop-artist-detail');
+      const detailPanel = document.getElementById('search-detail-panel');
       const isDesktop = window.innerWidth >= 1024;
 
       if (detailPanel && isDesktop) {
@@ -786,7 +786,7 @@ export function populateArtistDetail(artist) {
   const updateLayout = () => {
     const isDesktop = window.innerWidth >= 1024;
     const mobileLayout = document.getElementById('mobile-artist-detail');
-    const desktopLayout = document.getElementById('desktop-artist-detail');
+    const desktopLayout = document.getElementById('search-detail-panel');
 
     if (mobileLayout) mobileLayout.style.display = isDesktop ? 'none' : 'block';
     if (desktopLayout) desktopLayout.style.display = isDesktop ? 'grid' : 'none';
