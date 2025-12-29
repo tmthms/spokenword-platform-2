@@ -781,20 +781,38 @@ export function populateArtistDetail(artist) {
     viewRecsBtn.onclick = () => alert('View recommendations functie komt binnenkort.');
   }
 
-  // ========== RESPONSIVE LAYOUT SWITCHING ==========
+  // ========== FORCE RESPONSIVE LAYOUT ==========
+  const isDesktop = window.innerWidth >= 1024;
+  const mobileLayout = document.getElementById('mobile-artist-detail');
+  const desktopLayout = document.getElementById('desktop-artist-detail');
 
-  const updateLayout = () => {
-    const isDesktop = window.innerWidth >= 1024;
-    const mobileLayout = document.getElementById('mobile-artist-detail');
-    const desktopLayout = document.getElementById('search-detail-panel');
+  console.log('[DETAIL] Layout switch - isDesktop:', isDesktop);
+  console.log('[DETAIL] Mobile element:', mobileLayout);
+  console.log('[DETAIL] Desktop element:', desktopLayout);
 
-    if (mobileLayout) mobileLayout.style.display = isDesktop ? 'none' : 'block';
-    if (desktopLayout) desktopLayout.style.display = isDesktop ? 'grid' : 'none';
+  if (mobileLayout) {
+    mobileLayout.style.display = isDesktop ? 'none' : 'block';
+    console.log('[DETAIL] Mobile display set to:', mobileLayout.style.display);
+  }
+
+  if (desktopLayout) {
+    // Remove hidden class and force display
+    desktopLayout.classList.remove('hidden');
+    desktopLayout.style.display = isDesktop ? 'grid' : 'none';
+    console.log('[DETAIL] Desktop display set to:', desktopLayout.style.display);
+  }
+
+  // Resize listener
+  const handleResize = () => {
+    const nowDesktop = window.innerWidth >= 1024;
+    if (mobileLayout) mobileLayout.style.display = nowDesktop ? 'none' : 'block';
+    if (desktopLayout) {
+      desktopLayout.classList.remove('hidden');
+      desktopLayout.style.display = nowDesktop ? 'grid' : 'none';
+    }
   };
-
-  updateLayout();
-  window.removeEventListener('resize', updateLayout);
-  window.addEventListener('resize', updateLayout);
+  window.removeEventListener('resize', handleResize);
+  window.addEventListener('resize', handleResize);
 
   console.log('[DETAIL] Artist detail populated successfully');
 }
