@@ -830,8 +830,7 @@ async function handleMobilePhotoUpload(e) {
 
 /**
  * Displays the programmer profile overview (read-only)
- * Called on initial load and after profile updates
- * UPDATED: Handles mobile and desktop views separately
+ * UPDATED: Supports separate mobile and desktop element IDs
  */
 export function displayProgrammerProfileOverview() {
   const currentUserData = getStore('currentUserData');
@@ -842,6 +841,7 @@ export function displayProgrammerProfileOverview() {
     return;
   }
 
+  // Extract data with fallbacks
   const firstName = currentUserData.firstName || '';
   const lastName = currentUserData.lastName || '';
   const fullName = `${firstName} ${lastName}`.trim() || 'Programmer Name';
@@ -853,70 +853,86 @@ export function displayProgrammerProfileOverview() {
   const about = currentUserData.organizationAbout || 'No description available';
   const profilePicUrl = currentUserData.profilePicUrl || '';
 
-  // === DESKTOP AVATAR HANDLING ===
-  const avatarPlaceholder = document.getElementById('programmer-avatar-placeholder');
-  const avatarInitial = document.getElementById('programmer-avatar-initial');
-  const avatarPicDesktop = document.getElementById('programmer-overview-pic-desktop');
-
-  if (profilePicUrl && avatarPicDesktop) {
-    // Has profile picture - show image, hide placeholder
-    avatarPicDesktop.src = profilePicUrl;
-    avatarPicDesktop.classList.remove('hidden');
-    if (avatarPlaceholder) avatarPlaceholder.classList.add('hidden');
-    console.log("[PROFILE] Showing desktop profile picture");
-  } else {
-    // No profile picture - show placeholder with initial
-    if (avatarPicDesktop) avatarPicDesktop.classList.add('hidden');
-    if (avatarPlaceholder) avatarPlaceholder.classList.remove('hidden');
-    if (avatarInitial) avatarInitial.textContent = initial;
-    console.log("[PROFILE] Showing desktop avatar placeholder with initial:", initial);
-  }
-
-  // === MOBILE PROFILE PICTURE ===
-  const mobilePic = document.getElementById('programmer-overview-pic-mobile');
-  if (mobilePic) {
-    mobilePic.src = profilePicUrl || `https://placehold.co/200x200/e0e7ff/6366f1?text=${initial}`;
-  }
-
-  // === UPDATE TEXT ELEMENTS (DESKTOP) ===
-  const updateText = (id, value) => {
+  // Helper: Set text content safely
+  const setText = (id, value) => {
     const el = document.getElementById(id);
     if (el) el.textContent = value;
   };
 
-  updateText('programmer-overview-name-desktop', fullName);
-  updateText('programmer-overview-org-desktop', organizationName);
-  updateText('programmer-overview-email-desktop', email);
-  updateText('programmer-overview-phone-desktop', phone);
-  updateText('programmer-overview-about-desktop', about);
-
-  // === UPDATE TEXT ELEMENTS (MOBILE) ===
-  updateText('programmer-overview-name-mobile', fullName);
-  updateText('programmer-overview-org-mobile', organizationName);
-  updateText('programmer-overview-email-mobile', email);
-  updateText('programmer-overview-phone-mobile', phone);
-  updateText('programmer-overview-about-mobile', about);
-
-  // === WEBSITE LINKS (DESKTOP + MOBILE) ===
-  ['programmer-overview-website-desktop', 'programmer-overview-website-mobile'].forEach(id => {
-    const websiteEl = document.getElementById(id);
-    if (websiteEl) {
-      if (website) {
-        websiteEl.href = website.startsWith('http') ? website : `https://${website}`;
-        websiteEl.textContent = website.replace(/^https?:\/\//, '');
+  // Helper: Set link safely
+  const setLink = (id, url) => {
+    const el = document.getElementById(id);
+    if (el) {
+      if (url) {
+        el.href = url.startsWith('http') ? url : `https://${url}`;
+        el.textContent = url.replace(/^https?:\/\//, '');
       } else {
-        websiteEl.href = '#';
-        websiteEl.textContent = 'Not specified';
+        el.href = '#';
+        el.textContent = 'Not specified';
       }
     }
-  });
+  };
 
-  console.log("[PROFILE] Profile overview displayed successfully (mobile + desktop)");
+  // ===== MOBILE ELEMENTS =====
+  const mobilePic = document.getElementById('programmer-overview-pic-mobile');
+  if (mobilePic) {
+    mobilePic.src = profilePicUrl || `https://placehold.co/200x200/e0e7ff/6366f1?text=${encodeURIComponent(initial)}`;
+  }
+  setText('programmer-overview-name-mobile', fullName);
+  setText('programmer-overview-org-mobile', organizationName);
+  setText('programmer-overview-email-mobile', email);
+  setText('programmer-overview-phone-mobile', phone);
+  setLink('programmer-overview-website-mobile', website);
+  setText('programmer-overview-about-mobile', about);
+
+  // ===== DESKTOP ELEMENTS =====
+  // Avatar: show photo OR placeholder with initial
+  const avatarPlaceholder = document.getElementById('programmer-avatar-placeholder');
+  const avatarInitial = document.getElementById('programmer-avatar-initial');
+  const desktopPic = document.getElementById('programmer-overview-pic-desktop');
+
+  if (profilePicUrl) {
+    // Has profile picture - show image, hide placeholder
+    if (desktopPic) {
+      desktopPic.src = profilePicUrl;
+      desktopPic.classList.remove('hidden');
+      desktopPic.style.display = 'block';
+    }
+    if (avatarPlaceholder) {
+      avatarPlaceholder.classList.add('hidden');
+      avatarPlaceholder.style.display = 'none';
+    }
+    console.log("[PROFILE] Desktop: Showing profile picture");
+  } else {
+    // No profile picture - show placeholder with initial
+    if (desktopPic) {
+      desktopPic.classList.add('hidden');
+      desktopPic.style.display = 'none';
+    }
+    if (avatarPlaceholder) {
+      avatarPlaceholder.classList.remove('hidden');
+      avatarPlaceholder.style.display = 'flex';
+    }
+    if (avatarInitial) {
+      avatarInitial.textContent = initial;
+    }
+    console.log("[PROFILE] Desktop: Showing avatar placeholder with initial:", initial);
+  }
+
+  // Desktop text fields
+  setText('programmer-overview-name-desktop', fullName);
+  setText('programmer-overview-org-desktop', organizationName);
+  setText('programmer-overview-email-desktop', email);
+  setText('programmer-overview-phone-desktop', phone);
+  setLink('programmer-overview-website-desktop', website);
+  setText('programmer-overview-about-desktop', about);
+
+  console.log("[PROFILE] Profile overview displayed (mobile + desktop)");
 }
 
 /**
- * Setup edit profile button click handler
- * UPDATED: Also handles View Public Profile button
+ * Setup edit profile button click handlers
+ * Supports both mobile and desktop edit buttons
  */
 function setupEditProfileButton() {
   const container = document.getElementById('programmer-dashboard');
@@ -927,14 +943,16 @@ function setupEditProfileButton() {
     return;
   }
 
+  // Prevent duplicate listeners
   if (container.dataset.editListenerAttached === 'true') {
     console.log("[PROGRAMMER DASHBOARD] Edit button listener already attached, skipping");
     return;
   }
 
   container.addEventListener('click', (e) => {
-    // Handle Edit Profile button (both desktop and mobile)
-    const clickedEditBtn = e.target.closest('#edit-programmer-profile-btn') || e.target.closest('#edit-programmer-profile-btn-mobile');
+    // Handle BOTH edit buttons (mobile: #edit-programmer-profile-btn-mobile, desktop: #edit-programmer-profile-btn)
+    const clickedEditBtn = e.target.closest('#edit-programmer-profile-btn, #edit-programmer-profile-btn-mobile');
+
     if (clickedEditBtn) {
       e.preventDefault();
       e.stopPropagation();
@@ -944,6 +962,7 @@ function setupEditProfileButton() {
         const isHidden = editor.classList.contains('hidden') || editor.style.display === 'none';
 
         if (isHidden) {
+          // Show editor
           module.renderProgrammerProfileEditor();
           editor.classList.remove('hidden');
           editor.style.display = 'block';
@@ -954,12 +973,13 @@ function setupEditProfileButton() {
             editor.scrollIntoView({ behavior: 'smooth', block: 'start' });
           }, 100);
         } else {
+          // Hide editor
           editor.classList.add('hidden');
           editor.style.display = 'none';
           displayProgrammerProfileOverview();
         }
       }).catch(error => {
-        console.error("[EDIT BTN] Error:", error);
+        console.error("[EDIT BTN] Error loading programmer-profile.js:", error);
       });
     }
 
@@ -974,7 +994,7 @@ function setupEditProfileButton() {
       if (publicPreview) {
         publicPreview.scrollIntoView({ behavior: 'smooth', block: 'start' });
 
-        // Auto-refresh preview
+        // Auto-refresh preview after scroll
         setTimeout(() => {
           const refreshBtn = document.getElementById('refresh-programmer-preview-btn');
           if (refreshBtn) refreshBtn.click();
@@ -984,5 +1004,5 @@ function setupEditProfileButton() {
   });
 
   container.dataset.editListenerAttached = 'true';
-  console.log("[PROGRAMMER DASHBOARD] Button listeners attached");
+  console.log("[PROGRAMMER DASHBOARD] Button listeners attached (mobile + desktop)");
 }
