@@ -902,6 +902,11 @@ async function handleEditProfileSubmit() {
     const { setLanguage } = await import('../utils/translations.js');
     setLanguage(dataToUpdate.language);
 
+    // Update navigation to reflect new profile picture
+    const { renderDesktopNav, renderMobileNav } = await import('../modules/navigation/navigation.js');
+    renderDesktopNav();
+    renderMobileNav();
+
     // Show success
     if (successEl) {
       successEl.textContent = '✓ Profile updated successfully!';

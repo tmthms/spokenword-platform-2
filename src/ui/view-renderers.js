@@ -872,7 +872,7 @@ export function renderEditProfile() {
 
       <!-- Header -->
       <div class="max-w-6xl mx-auto px-6 py-8">
-        <h1 class="text-4xl font-light text-gray-800 mb-8" style="font-family: Georgia, serif; font-style: italic;">Edit Profile</h1>
+        <h1 class="text-3xl font-bold text-gray-900 mb-8">Edit Profile</h1>
 
         <!-- Form Container -->
         <form id="edit-profile-form">
