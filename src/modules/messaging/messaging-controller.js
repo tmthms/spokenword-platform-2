@@ -246,36 +246,14 @@ export async function loadConversations() {
       if (emptyEl) emptyEl.style.display = 'block';
       if (mobileEmptyEl) mobileEmptyEl.classList.remove('hidden');
     } else {
-      // Toon conversaties (desktop)
+      // Toon conversaties (desktop en mobile)
       await displayConversations(
         conversations,
-        currentUser.uid,
-        openConversation,
-        viewUserProfile
+        currentUser.uid
       );
 
-      // Toon conversaties (mobile) - gebruik dezelfde data
-      if (mobileListEl) {
-        mobileListEl.classList.remove('hidden');
-        mobileListEl.innerHTML = ''; // Clear first
-
-        // Clone the conversations to mobile list
-        const desktopListEl = document.getElementById('conversations-list');
-        if (desktopListEl) {
-          // Copy all conversation cards to mobile list
-          Array.from(desktopListEl.children).forEach(card => {
-            const clone = card.cloneNode(true);
-            // Re-attach event listeners
-            clone.addEventListener('click', (e) => {
-              const conversationId = clone.dataset.conversationId;
-              if (conversationId) {
-                openConversation(conversationId);
-              }
-            });
-            mobileListEl.appendChild(clone);
-          });
-        }
-      }
+      // Setup click handlers via event delegation
+      setupConversationClickHandlers();
     }
 
     // Update unread badge
@@ -297,6 +275,127 @@ export async function loadConversations() {
     // Show toast notification
     showErrorToast(errorMessage);
   }
+}
+
+/**
+ * Setup click handlers for conversation cards using event delegation
+ * This avoids callback issues in minified builds
+ */
+function setupConversationClickHandlers() {
+  const desktopListEl = document.getElementById('conversations-list');
+  const mobileListEl = document.getElementById('mobile-conversations-list');
+
+  // Setup desktop click handler
+  if (desktopListEl) {
+    // Remove existing listener to prevent duplicates
+    desktopListEl.removeEventListener('click', handleDesktopConversationClick);
+    desktopListEl.addEventListener('click', handleDesktopConversationClick);
+    console.log('[MESSAGING] Desktop conversation click handlers attached');
+  }
+
+  // Setup mobile click handler
+  if (mobileListEl) {
+    // Remove existing listener to prevent duplicates
+    mobileListEl.removeEventListener('click', handleMobileConversationClick);
+    mobileListEl.addEventListener('click', handleMobileConversationClick);
+    console.log('[MESSAGING] Mobile conversation click handlers attached');
+  }
+}
+
+/**
+ * Handle clicks on desktop conversation cards
+ * @param {Event} e - Click event
+ */
+async function handleDesktopConversationClick(e) {
+  const card = e.target.closest('.conversation-card');
+  if (!card) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  const conversationId = card.dataset.conversationId;
+  const otherName = card.dataset.otherName;
+  const otherRole = card.dataset.otherRole;
+  const profilePic = card.dataset.profilePic;
+
+  console.log('[MESSAGING] Desktop: Opening conversation:', conversationId);
+
+  // Update chat header
+  const chatAvatar = document.getElementById('chat-avatar');
+  const chatName = document.getElementById('chat-name');
+  const chatRole = document.getElementById('chat-role');
+
+  if (chatAvatar) chatAvatar.innerHTML = '<img src="' + profilePic + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+  if (chatName) chatName.textContent = otherName;
+  if (chatRole) chatRole.textContent = otherRole;
+
+  // Show chat container, hide placeholder
+  const chatPlaceholder = document.getElementById('chat-placeholder');
+  const chatContainer = document.getElementById('chat-container');
+
+  if (chatPlaceholder) chatPlaceholder.style.display = 'none';
+  if (chatContainer) {
+    chatContainer.style.display = 'flex';
+    chatContainer.dataset.conversationId = conversationId;
+  }
+
+  // Highlight selected conversation
+  const desktopList = document.getElementById('conversations-list');
+  if (desktopList) {
+    desktopList.querySelectorAll('.conversation-card').forEach(c => {
+      c.style.background = 'white';
+      c.style.borderColor = 'rgba(128, 90, 213, 0.08)';
+    });
+    card.style.background = '#faf5ff';
+    card.style.borderColor = 'rgba(128, 90, 213, 0.25)';
+  }
+
+  // Load messages
+  try {
+    const currentUser = getStore('currentUser');
+    if (currentUser) {
+      await markConversationAsRead(conversationId, currentUser.uid);
+    }
+    await loadMessages(conversationId);
+  } catch (err) {
+    console.error('[MESSAGING] Error loading conversation:', err);
+  }
+}
+
+/**
+ * Handle clicks on mobile conversation cards
+ * @param {Event} e - Click event
+ */
+async function handleMobileConversationClick(e) {
+  const card = e.target.closest('.conversation-card');
+  if (!card) return;
+
+  e.preventDefault();
+  e.stopPropagation();
+
+  const conversationId = card.dataset.conversationId;
+  const otherName = card.dataset.otherName;
+  const otherRole = card.dataset.otherRole;
+  const profilePic = card.dataset.profilePic;
+
+  console.log('[MESSAGING] Mobile: Opening conversation:', conversationId);
+
+  // Show mobile chat view
+  const listView = document.getElementById('mobile-conversations-view');
+  const chatView = document.getElementById('mobile-chat-view');
+  if (listView) listView.style.display = 'none';
+  if (chatView) chatView.style.display = 'flex';
+
+  // Update mobile header
+  const avatar = document.getElementById('mobile-chat-avatar');
+  const name = document.getElementById('mobile-chat-name');
+  const role = document.getElementById('mobile-chat-role');
+  if (avatar) avatar.innerHTML = `<img src="${profilePic}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+  if (name) name.textContent = otherName;
+  if (role) role.textContent = otherRole;
+
+  // Open conversation
+  await openConversation(conversationId);
 }
 
 /**

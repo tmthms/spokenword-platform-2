@@ -31,11 +31,9 @@ export function formatTimeAgo(date) {
  * Toont de lijst met conversaties
  * @param {Array} conversations - Array of conversation objects
  * @param {string} currentUserId - Current user ID
- * @param {Function} onConversationClick - Callback when conversation is clicked
- * @param {Function} onProfileClick - Callback when profile picture is clicked
  * @returns {Promise<void>}
  */
-export async function displayConversations(conversations, currentUserId, onConversationClick, onProfileClick) {
+export async function displayConversations(conversations, currentUserId) {
   // Get all list containers
   const desktopList = document.getElementById('conversations-list');
   const mobileList = document.getElementById('mobile-conversations-list');
@@ -115,107 +113,15 @@ export async function displayConversations(conversations, currentUserId, onConve
 
   const cardsHTML = conversationsWithPics.map(c => generateCard(c)).join('');
 
-  // Render desktop
+  // Render desktop (no inline event listeners - handled by event delegation)
   if (desktopList) {
     desktopList.innerHTML = cardsHTML;
     desktopList.style.display = 'block';
-
-    desktopList.querySelectorAll('.conversation-card').forEach(card => {
-      card.addEventListener('click', async (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-
-        const conversationId = card.dataset.conversationId;
-        const otherName = card.dataset.otherName;
-        const otherRole = card.dataset.otherRole;
-        const profilePic = card.dataset.profilePic;
-
-        // Update chat header
-        const chatAvatar = document.getElementById('chat-avatar');
-        const chatName = document.getElementById('chat-name');
-        const chatRole = document.getElementById('chat-role');
-
-        if (chatAvatar) chatAvatar.innerHTML = '<img src="' + profilePic + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
-        if (chatName) chatName.textContent = otherName;
-        if (chatRole) chatRole.textContent = otherRole;
-
-        // Show chat container, hide placeholder
-        const chatPlaceholder = document.getElementById('chat-placeholder');
-        const chatContainer = document.getElementById('chat-container');
-
-        if (chatPlaceholder) chatPlaceholder.style.display = 'none';
-        if (chatContainer) {
-          chatContainer.style.display = 'flex';
-          chatContainer.dataset.conversationId = conversationId;
-        }
-
-        // Highlight selected conversation
-        desktopList.querySelectorAll('.conversation-card').forEach(c => {
-          c.style.background = 'white';
-          c.style.borderColor = 'rgba(128, 90, 213, 0.08)';
-        });
-        card.style.background = '#faf5ff';
-        card.style.borderColor = 'rgba(128, 90, 213, 0.25)';
-
-        // Load messages
-        try {
-          const { loadMessages, markConversationAsRead } = await import('./messaging-controller.js');
-          const { getStore } = await import('../../utils/store.js');
-          const currentUser = getStore('currentUser');
-
-          if (currentUser) {
-            await markConversationAsRead(conversationId, currentUser.uid);
-          }
-          await loadMessages(conversationId);
-        } catch (err) {
-          console.error('Error loading conversation:', err);
-        }
-      });
-
-      // Hover effects
-      card.addEventListener('mouseenter', () => {
-        if (card.style.background !== 'rgb(250, 245, 255)') {
-          card.style.transform = 'translateX(4px)';
-          card.style.boxShadow = '0 2px 8px rgba(128,90,213,0.1)';
-        }
-      });
-      card.addEventListener('mouseleave', () => {
-        card.style.transform = 'none';
-        card.style.boxShadow = 'none';
-      });
-    });
   }
 
-  // Render mobile
+  // Render mobile (no inline event listeners - handled by event delegation)
   if (mobileList) {
     mobileList.innerHTML = cardsHTML;
-
-    mobileList.querySelectorAll('.conversation-card').forEach(card => {
-      card.addEventListener('click', (e) => {
-        // Show mobile chat view
-        const listView = document.getElementById('mobile-conversations-view');
-        const chatView = document.getElementById('mobile-chat-view');
-        if (listView) listView.style.display = 'none';
-        if (chatView) chatView.style.display = 'flex';
-
-        // Update mobile header
-        const avatar = document.getElementById('mobile-chat-avatar');
-        const name = document.getElementById('mobile-chat-name');
-        const role = document.getElementById('mobile-chat-role');
-        if (avatar) avatar.innerHTML = `<img src="${card.dataset.profilePic}" style="width:100%;height:100%;object-fit:cover;">`;
-        if (name) name.textContent = card.dataset.otherName;
-        if (role) role.textContent = card.dataset.otherRole;
-
-        // Safe function call with fallback
-        if (typeof onConversationClick === 'function') {
-          onConversationClick(card.dataset.conversationId);
-        } else {
-          console.warn('[MESSAGING] onConversationClick is not a function, conversation ID:', card.dataset.conversationId);
-          // Fallback: dispatch custom event
-          window.dispatchEvent(new CustomEvent('openConversation', { detail: { conversationId: card.dataset.conversationId } }));
-        }
-      });
-    });
   }
 }
 
