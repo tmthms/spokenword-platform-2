@@ -285,6 +285,12 @@
             transform: translateY(0);
             opacity: 1;
         }
+
+        /* Safety: Prevent profile images from becoming too large */
+        img[id*="profile"], img[id*="overview-pic"], img[id*="avatar"] {
+            max-width: 200px !important;
+            max-height: 200px !important;
+        }
     </style>
 
     <!-- Lucide Icons -->
