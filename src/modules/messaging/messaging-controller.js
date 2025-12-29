@@ -326,72 +326,47 @@ export async function openConversation(conversationId) {
     const otherParticipantName = conversation.participantNames[otherParticipantId] || 'Unknown';
     const otherParticipantRole = conversation.participantRoles[otherParticipantId] || '';
 
-    // Desktop: Show chat container and hide placeholder
+    // Fetch profile picture
+    const profilePicUrl = conversation.participantProfilePics?.[otherParticipantId] ||
+      `https://placehold.co/48x48/e9d5ff/805ad5?text=${encodeURIComponent(otherParticipantName.charAt(0))}`;
+
+    // Update desktop chat header
+    const chatAvatar = document.getElementById('chat-avatar');
+    const chatName = document.getElementById('chat-name');
+    const chatRole = document.getElementById('chat-role');
+
+    if (chatAvatar) chatAvatar.innerHTML = `<img src="${profilePicUrl}" style="width:100%;height:100%;object-fit:cover;">`;
+    if (chatName) chatName.textContent = otherParticipantName;
+    if (chatRole) chatRole.textContent = otherParticipantRole;
+
+    // Show chat container, hide placeholder
     const chatPlaceholder = document.getElementById('chat-placeholder');
     const chatContainer = document.getElementById('chat-container');
-    const chatHeader = document.getElementById('chat-header');
 
     if (chatPlaceholder) chatPlaceholder.style.display = 'none';
     if (chatContainer) {
-      chatContainer.classList.remove('hidden');
-      chatContainer.classList.add('flex');
-      // Store conversation ID for message form
+      chatContainer.style.display = 'flex';
       chatContainer.dataset.conversationId = conversationId;
-    }
-
-    // Update desktop chat header
-    if (chatHeader) {
-      chatHeader.innerHTML = `
-        <div class="flex items-center gap-3">
-          <img src="${conversation.participantProfilePics?.[otherParticipantId] || 'https://placehold.co/40x40/e0e7ff/6366f1?text=' + encodeURIComponent(otherParticipantName.charAt(0))}"
-               alt="${otherParticipantName}"
-               class="h-10 w-10 rounded-full object-cover">
-          <div>
-            <h3 class="text-lg font-semibold text-gray-900">${otherParticipantName}</h3>
-            <p class="text-sm text-gray-500">${otherParticipantRole}</p>
-          </div>
-        </div>
-      `;
     }
 
     // Mobile: Show mobile chat view
     const mobileChatView = document.getElementById('mobile-chat-view');
-    const mobileChatHeader = document.getElementById('mobile-chat-header');
 
     if (mobileChatView) {
-      mobileChatView.classList.remove('hidden');
-      mobileChatView.classList.add('flex');
+      mobileChatView.style.display = 'flex';
       mobileChatView.dataset.conversationId = conversationId;
     }
 
     // Update mobile chat header
-    if (mobileChatHeader) {
-      mobileChatHeader.innerHTML = `
-        <button id="mobile-chat-back-btn" class="text-gray-600 hover:text-gray-900">
-          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-          </svg>
-        </button>
-        <img src="${conversation.participantProfilePics?.[otherParticipantId] || 'https://placehold.co/40x40/e0e7ff/6366f1?text=' + encodeURIComponent(otherParticipantName.charAt(0))}"
-             alt="${otherParticipantName}"
-             class="h-10 w-10 rounded-full object-cover">
-        <div class="flex-1">
-          <h3 class="text-base font-semibold text-gray-900">${otherParticipantName}</h3>
-          <p class="text-xs text-gray-500">${otherParticipantRole}</p>
-        </div>
-      `;
+    const mobileChatAvatar = document.getElementById('mobile-chat-avatar');
+    const mobileChatName = document.getElementById('mobile-chat-name');
+    const mobileChatRole = document.getElementById('mobile-chat-role');
 
-      // Add event listener for mobile back button
-      const mobileBackBtn = document.getElementById('mobile-chat-back-btn');
-      if (mobileBackBtn) {
-        mobileBackBtn.addEventListener('click', () => {
-          if (mobileChatView) {
-            mobileChatView.classList.add('hidden');
-            mobileChatView.classList.remove('flex');
-          }
-        });
-      }
+    if (mobileChatAvatar) {
+      mobileChatAvatar.innerHTML = `<img src="${profilePicUrl}" alt="${otherParticipantName}" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">`;
     }
+    if (mobileChatName) mobileChatName.textContent = otherParticipantName;
+    if (mobileChatRole) mobileChatRole.textContent = otherParticipantRole;
 
     // Markeer conversatie als gelezen
     await markConversationAsRead(conversationId, currentUser.uid);
@@ -575,6 +550,49 @@ export function stopBadgeListener() {
 }
 
 /**
+ * Handle mobile message form submit
+ * @param {Event} e - Form submit event
+ */
+async function handleMobileMessageSubmit(e) {
+  e.preventDefault();
+
+  const input = document.getElementById('mobile-message-input');
+  const messageText = input?.value.trim();
+
+  if (!messageText) return;
+
+  const mobileChatView = document.getElementById('mobile-chat-view');
+  const conversationId = mobileChatView?.dataset.conversationId;
+
+  if (!conversationId) {
+    console.error("No conversation ID found");
+    return;
+  }
+
+  try {
+    const currentUser = getStore('currentUser');
+    const currentUserData = getStore('currentUserData');
+
+    if (!currentUser || !currentUserData) {
+      throw new Error('User not logged in');
+    }
+
+    // Send message
+    await addMessage(conversationId, currentUser.uid, currentUserData, messageText);
+
+    // Clear input
+    input.value = '';
+
+    // Reload messages
+    await loadMessages(conversationId);
+
+  } catch (error) {
+    console.error("Error sending mobile message:", error);
+    showErrorToast("Failed to send message. Please try again.");
+  }
+}
+
+/**
  * Initialiseert de messaging event listeners
  */
 export function setupMessaging() {
@@ -606,6 +624,31 @@ export function setupMessaging() {
       if (e.target === modal) {
         closeMessageModal();
       }
+    });
+  }
+
+  // Mobile back button handler
+  document.addEventListener('click', (e) => {
+    if (e.target.closest('#mobile-back-btn')) {
+      const listView = document.getElementById('mobile-conversations-view');
+      const chatView = document.getElementById('mobile-chat-view');
+      if (chatView) chatView.style.display = 'none';
+      if (listView) listView.style.display = 'block';
+    }
+  });
+
+  // Mobile message form
+  const mobileMessageForm = document.getElementById('mobile-message-form');
+  if (mobileMessageForm) {
+    mobileMessageForm.addEventListener('submit', handleMobileMessageSubmit);
+  }
+
+  // FAB new message button
+  const fabNewMessage = document.getElementById('mobile-new-message-fab');
+  if (fabNewMessage) {
+    fabNewMessage.addEventListener('click', () => {
+      console.log('FAB new message clicked');
+      showSuccessToast('New message feature coming soon!');
     });
   }
 

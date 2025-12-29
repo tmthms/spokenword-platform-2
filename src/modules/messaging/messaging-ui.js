@@ -36,107 +36,179 @@ export function formatTimeAgo(date) {
  * @returns {Promise<void>}
  */
 export async function displayConversations(conversations, currentUserId, onConversationClick, onProfileClick) {
-  const listEl = document.getElementById('conversations-list');
+  // Get all list containers
+  const desktopList = document.getElementById('conversations-list');
+  const mobileList = document.getElementById('mobile-conversations-list');
+  const loadingEl = document.getElementById('conversations-loading');
+  const emptyEl = document.getElementById('conversations-empty');
+  const mobileEmptyEl = document.getElementById('mobile-conversations-empty');
 
-  if (!listEl) return;
+  // Hide loading
+  if (loadingEl) loadingEl.style.display = 'none';
 
-  listEl.innerHTML = '';
-  listEl.style.display = 'block';
+  // Handle empty state
+  if (!conversations || conversations.length === 0) {
+    if (emptyEl) emptyEl.style.display = 'block';
+    if (mobileEmptyEl) mobileEmptyEl.style.display = 'block';
+    if (desktopList) desktopList.innerHTML = '';
+    if (mobileList) mobileList.innerHTML = '';
+    return;
+  }
 
-  // Fetch profile pictures for all participants
-  const conversationsWithPics = await Promise.all(conversations.map(async (conversation) => {
-    // Bepaal de andere participant
-    const otherParticipantId = conversation.participants.find(id => id !== currentUserId);
-    const otherParticipantRole = conversation.participantRoles[otherParticipantId] || '';
+  // Hide empty states
+  if (emptyEl) emptyEl.style.display = 'none';
+  if (mobileEmptyEl) mobileEmptyEl.style.display = 'none';
 
-    // Fetch profile picture
-    let profilePic = conversation.participantProfilePics?.[otherParticipantId] || '';
+  // Fetch profile pics
+  const conversationsWithPics = await Promise.all(conversations.map(async (conv) => {
+    const otherParticipantId = conv.participants.find(id => id !== currentUserId);
+    const otherParticipantRole = conv.participantRoles?.[otherParticipantId] || '';
 
-    // If not in conversation data, fetch from user's profile
+    let profilePic = conv.participantProfilePics?.[otherParticipantId];
     if (!profilePic) {
-      const userData = await fetchUserProfile(otherParticipantId, otherParticipantRole);
-      if (userData) {
-        profilePic = userData.profilePicUrl || '';
-      }
+      try {
+        const profile = await fetchUserProfile(otherParticipantId, otherParticipantRole);
+        profilePic = profile?.profilePicUrl;
+      } catch (e) { /* ignore */ }
     }
 
-    return {
-      ...conversation,
-      otherParticipantId,
-      otherParticipantRole,
-      otherParticipantPic: profilePic
-    };
+    return { ...conv, otherParticipantId, otherParticipantRole, profilePic };
   }));
 
-  // Now display all conversations with their profile pictures
-  conversationsWithPics.forEach(conversation => {
-    const otherParticipantName = conversation.participantNames[conversation.otherParticipantId] || 'Unknown';
+  // Generate card HTML
+  const generateCard = (conv) => {
+    const otherName = conv.participantNames?.[conv.otherParticipantId] || 'Unknown';
+    const lastMsg = conv.lastMessage || 'Geen berichten';
+    const isUnread = conv.unreadBy?.includes(currentUserId);
 
-    // Use fetched profile picture with fallback
-    const profilePic = conversation.otherParticipantPic ||
-                       'https://placehold.co/80x80/e0e7ff/6366f1?text=' +
-                       encodeURIComponent(otherParticipantName.charAt(0));
-
-    // Check of dit bericht unread is
-    const isUnread = conversation.unreadBy && conversation.unreadBy.includes(currentUserId);
-
-    // Format timestamp
-    let timeAgo = 'Just now';
-    if (conversation.lastMessageAt && conversation.lastMessageAt.toDate) {
-      const date = conversation.lastMessageAt.toDate();
-      timeAgo = formatTimeAgo(date);
+    let timeStr = '';
+    if (conv.lastMessageAt?.toDate) {
+      const d = conv.lastMessageAt.toDate();
+      const now = new Date();
+      const diffH = Math.floor((now - d) / 3600000);
+      timeStr = diffH < 24
+        ? d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
+        : d.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
     }
 
-    // Maak conversation card met nieuwe styling
-    const conversationCard = document.createElement('div');
-    conversationCard.className = `bg-white rounded-xl p-4 hover:bg-gray-50 cursor-pointer border border-gray-100 transition-all ${isUnread ? 'ring-2 ring-indigo-100' : ''}`;
-    conversationCard.dataset.conversationId = conversation.id;
-    conversationCard.dataset.otherParticipantId = conversation.otherParticipantId;
-    conversationCard.dataset.otherParticipantRole = conversation.otherParticipantRole;
+    const picUrl = conv.profilePic || `https://placehold.co/48x48/e9d5ff/805ad5?text=${encodeURIComponent(otherName.charAt(0))}`;
 
-    // Profile Picture with Hover Effect
-    conversationCard.innerHTML = `
-      <div class="flex items-center gap-3">
-        <!-- Profile Picture -->
-        <div class="relative flex-shrink-0">
-          <img src="${profilePic}"
-               alt="${otherParticipantName}"
-               class="h-12 w-12 rounded-full object-cover"
-               data-view-profile="${conversation.otherParticipantId}"
-               data-profile-role="${conversation.otherParticipantRole}">
-          ${isUnread ? '<div class="absolute -top-1 -right-1 bg-indigo-600 w-3 h-3 rounded-full border-2 border-white"></div>' : ''}
+    return `
+      <div class="conversation-card" data-conversation-id="${conv.id}" data-other-id="${conv.otherParticipantId}" data-other-name="${otherName}" data-other-role="${conv.otherParticipantRole}" data-profile-pic="${picUrl}"
+        style="display: flex; align-items: center; gap: 12px; padding: 14px 12px; background: ${isUnread ? '#faf5ff' : 'white'}; border-radius: 12px; margin-bottom: 6px; cursor: pointer; border: 1px solid ${isUnread ? 'rgba(128, 90, 213, 0.25)' : 'rgba(128, 90, 213, 0.08)'}; transition: all 0.15s;">
+
+        <div style="position: relative; flex-shrink: 0;">
+          <img src="${picUrl}" alt="${otherName}" style="width: 52px; height: 52px; border-radius: 50%; object-fit: cover;">
+          ${isUnread ? '<div style="position: absolute; top: 0; right: 0; width: 12px; height: 12px; background: #805ad5; border-radius: 50%; border: 2px solid white;"></div>' : ''}
         </div>
 
-        <!-- Conversation Info -->
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center justify-between mb-1">
-            <h3 class="text-base font-semibold text-gray-900 truncate">${otherParticipantName}</h3>
-            <span class="text-xs text-gray-400 ml-2 flex-shrink-0">${timeAgo}</span>
+        <div style="flex: 1; min-width: 0;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+            <span style="font-size: 15px; font-weight: ${isUnread ? '700' : '600'}; color: #1f2937; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${otherName}</span>
+            <span style="font-size: 12px; color: ${isUnread ? '#805ad5' : '#9ca3af'}; flex-shrink: 0; margin-left: 8px;">${timeStr}</span>
           </div>
-          <p class="text-sm text-gray-500 truncate">${conversation.lastMessage || 'No messages yet'}</p>
+          <p style="font-size: 13px; color: ${isUnread ? '#4b5563' : '#9ca3af'}; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: ${isUnread ? '500' : '400'};">${lastMsg}</p>
         </div>
       </div>
     `;
+  };
 
-    // Click handler om conversatie te openen OF profiel te bekijken
-    conversationCard.addEventListener('click', (e) => {
-      // Check if clicked on profile picture
-      if (e.target.hasAttribute('data-view-profile')) {
+  const cardsHTML = conversationsWithPics.map(c => generateCard(c)).join('');
+
+  // Render desktop
+  if (desktopList) {
+    desktopList.innerHTML = cardsHTML;
+    desktopList.style.display = 'block';
+
+    desktopList.querySelectorAll('.conversation-card').forEach(card => {
+      card.addEventListener('click', async (e) => {
+        e.preventDefault();
         e.stopPropagation();
-        const userId = e.target.getAttribute('data-view-profile');
-        const role = e.target.getAttribute('data-profile-role');
-        onProfileClick(userId, role);
-      } else {
-        onConversationClick(conversation.id);
-      }
+
+        const conversationId = card.dataset.conversationId;
+        const otherName = card.dataset.otherName;
+        const otherRole = card.dataset.otherRole;
+        const profilePic = card.dataset.profilePic;
+
+        // Update chat header
+        const chatAvatar = document.getElementById('chat-avatar');
+        const chatName = document.getElementById('chat-name');
+        const chatRole = document.getElementById('chat-role');
+
+        if (chatAvatar) chatAvatar.innerHTML = '<img src="' + profilePic + '" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">';
+        if (chatName) chatName.textContent = otherName;
+        if (chatRole) chatRole.textContent = otherRole;
+
+        // Show chat container, hide placeholder
+        const chatPlaceholder = document.getElementById('chat-placeholder');
+        const chatContainer = document.getElementById('chat-container');
+
+        if (chatPlaceholder) chatPlaceholder.style.display = 'none';
+        if (chatContainer) {
+          chatContainer.style.display = 'flex';
+          chatContainer.dataset.conversationId = conversationId;
+        }
+
+        // Highlight selected conversation
+        desktopList.querySelectorAll('.conversation-card').forEach(c => {
+          c.style.background = 'white';
+          c.style.borderColor = 'rgba(128, 90, 213, 0.08)';
+        });
+        card.style.background = '#faf5ff';
+        card.style.borderColor = 'rgba(128, 90, 213, 0.25)';
+
+        // Load messages
+        try {
+          const { loadMessages, markConversationAsRead } = await import('./messaging-controller.js');
+          const { getStore } = await import('../../utils/store.js');
+          const currentUser = getStore('currentUser');
+
+          if (currentUser) {
+            await markConversationAsRead(conversationId, currentUser.uid);
+          }
+          await loadMessages(conversationId);
+        } catch (err) {
+          console.error('Error loading conversation:', err);
+        }
+      });
+
+      // Hover effects
+      card.addEventListener('mouseenter', () => {
+        if (card.style.background !== 'rgb(250, 245, 255)') {
+          card.style.transform = 'translateX(4px)';
+          card.style.boxShadow = '0 2px 8px rgba(128,90,213,0.1)';
+        }
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.transform = 'none';
+        card.style.boxShadow = 'none';
+      });
     });
+  }
 
-    listEl.appendChild(conversationCard);
-  });
+  // Render mobile
+  if (mobileList) {
+    mobileList.innerHTML = cardsHTML;
 
-  // Activeer Lucide icons
-  if (window.lucide) {
-    window.lucide.createIcons();
+    mobileList.querySelectorAll('.conversation-card').forEach(card => {
+      card.addEventListener('click', () => {
+        // Show mobile chat view
+        const listView = document.getElementById('mobile-conversations-view');
+        const chatView = document.getElementById('mobile-chat-view');
+        if (listView) listView.style.display = 'none';
+        if (chatView) chatView.style.display = 'flex';
+
+        // Update mobile header
+        const avatar = document.getElementById('mobile-chat-avatar');
+        const name = document.getElementById('mobile-chat-name');
+        const role = document.getElementById('mobile-chat-role');
+        if (avatar) avatar.innerHTML = `<img src="${card.dataset.profilePic}" style="width:100%;height:100%;object-fit:cover;">`;
+        if (name) name.textContent = card.dataset.otherName;
+        if (role) role.textContent = card.dataset.otherRole;
+
+        onConversationClick(card.dataset.conversationId);
+      });
+    });
   }
 }
 
@@ -147,75 +219,56 @@ export async function displayConversations(conversations, currentUserId, onConve
  * @returns {void}
  */
 export function displayMessages(messages, currentUserId) {
-  const messagesContainer = document.getElementById('messages-container');
-  const mobileMessagesContainer = document.getElementById('mobile-messages-container');
+  const desktopContainer = document.getElementById('messages-container');
+  const mobileContainer = document.getElementById('mobile-messages-container');
 
-  if (!messagesContainer && !mobileMessagesContainer) return;
+  const renderToContainer = (container) => {
+    if (!container) return;
+    container.innerHTML = '';
 
-  // Clear both containers
-  if (messagesContainer) messagesContainer.innerHTML = '';
-  if (mobileMessagesContainer) mobileMessagesContainer.innerHTML = '';
+    if (!messages || messages.length === 0) {
+      container.innerHTML = `
+        <div style="text-align: center; padding: 40px 20px; color: #9ca3af;">
+          <p>Nog geen berichten. Start het gesprek!</p>
+        </div>
+      `;
+      return;
+    }
 
-  if (messages.length === 0) {
-    if (messagesContainer) messagesContainer.innerHTML = '<p class="text-gray-500 text-center py-4">No messages yet.</p>';
-    if (mobileMessagesContainer) mobileMessagesContainer.innerHTML = '<p class="text-gray-500 text-center py-4">No messages yet.</p>';
-  } else {
-    messages.forEach(message => {
-      const isOwnMessage = message.senderId === currentUserId;
+    messages.forEach(msg => {
+      const isOwn = msg.senderId === currentUserId;
 
-      // Format timestamp
-      let timeAgo = 'Just now';
-      if (message.createdAt && message.createdAt.toDate) {
-        const date = message.createdAt.toDate();
-        timeAgo = formatTimeAgo(date);
+      let timeStr = 'Zojuist';
+      if (msg.createdAt?.toDate) {
+        timeStr = formatTimeAgo(msg.createdAt.toDate());
       }
 
-      // Get profile picture with proper fallback
-      const profilePic = message.senderProfilePic ||
-                        'https://placehold.co/48x48/e0e7ff/6366f1?text=' +
-                        encodeURIComponent(message.senderName?.charAt(0) || '?');
+      const pic = msg.senderProfilePic || `https://placehold.co/36x36/e9d5ff/805ad5?text=${encodeURIComponent(msg.senderName?.charAt(0) || '?')}`;
 
-      // Create message bubble
-      const messageDiv = document.createElement('div');
-      messageDiv.className = `flex items-start space-x-3 mb-4 ${isOwnMessage ? 'flex-row-reverse space-x-reverse' : ''}`;
+      const div = document.createElement('div');
+      div.style.cssText = `display: flex; align-items: flex-end; gap: 8px; margin-bottom: 12px; ${isOwn ? 'flex-direction: row-reverse;' : ''}`;
 
-      messageDiv.innerHTML = `
-        <div class="flex-shrink-0">
-          <img src="${profilePic}"
-               alt="${message.senderName}"
-               class="h-10 w-10 rounded-full object-cover">
-        </div>
-
-        <div class="max-w-xl ${isOwnMessage ? 'bg-indigo-100' : 'bg-white border border-gray-100'} rounded-2xl p-4">
-          <p class="text-gray-800 whitespace-pre-wrap text-sm">${message.text}</p>
-          <p class="text-xs text-gray-400 mt-2">${timeAgo}</p>
+      div.innerHTML = `
+        <img src="${pic}" alt="" style="width: 32px; height: 32px; border-radius: 50%; object-fit: cover; flex-shrink: 0;">
+        <div style="max-width: 75%;">
+          <div style="padding: 10px 14px; background: ${isOwn ? '#e9d5ff' : 'white'}; border-radius: 14px; ${isOwn ? 'border-bottom-right-radius: 4px;' : 'border-bottom-left-radius: 4px;'} ${!isOwn ? 'border: 1px solid rgba(128,90,213,0.1);' : ''}">
+            <p style="font-size: 14px; color: #1f2937; margin: 0; white-space: pre-wrap; word-break: break-word;">${msg.text}</p>
+          </div>
+          <p style="font-size: 11px; color: #9ca3af; margin: 3px 4px 0; ${isOwn ? 'text-align: right;' : ''}">${timeStr}</p>
         </div>
       `;
 
-      // Append to both desktop and mobile containers
-      if (messagesContainer) messagesContainer.appendChild(messageDiv);
-      if (mobileMessagesContainer) {
-        const mobileClone = messageDiv.cloneNode(true);
-        mobileMessagesContainer.appendChild(mobileClone);
-      }
+      container.appendChild(div);
     });
-  }
 
-  // Scroll to latest message with smooth behavior
-  setTimeout(() => {
-    if (messagesContainer) {
-      messagesContainer.scrollTo({
-        top: messagesContainer.scrollHeight,
-        behavior: 'smooth'
-      });
-    }
-    if (mobileMessagesContainer) {
-      mobileMessagesContainer.scrollTo({
-        top: mobileMessagesContainer.scrollHeight,
-        behavior: 'smooth'
-      });
-    }
-  }, 100);
+    // Scroll to bottom
+    requestAnimationFrame(() => {
+      container.scrollTop = container.scrollHeight;
+    });
+  };
+
+  renderToContainer(desktopContainer);
+  renderToContainer(mobileContainer);
 }
 
 /**

@@ -176,9 +176,38 @@ export function setupGlobalFormHandlers() {
     }
 
     // ✅ FIX: Message form (inline chat messages)
-    if (form.id === 'message-form' || form.id === 'mobile-message-form') {
+    if (form.id === 'message-form') {
       console.log('[UI] ✅ Message form submit intercepted');
       await handleInlineMessageSubmit(e);
+      return;
+    }
+
+    // ✅ FIX: Mobile message form (separate handler for mobile)
+    if (form.id === 'mobile-message-form') {
+      e.preventDefault();
+      const input = document.getElementById('mobile-message-input');
+      const text = input?.value?.trim();
+      if (!text) return;
+
+      const chatContainer = document.getElementById('chat-container');
+      const conversationId = chatContainer?.dataset?.conversationId;
+      if (!conversationId) {
+        console.error('[UI] No conversation ID found for mobile message');
+        return;
+      }
+
+      input.value = '';
+
+      // Import and call message functions
+      import('../modules/messaging/messaging-controller.js').then(async ({ addMessage, loadMessages }) => {
+        const { getStore } = await import('../utils/store.js');
+        const currentUser = getStore('currentUser');
+        const currentUserData = getStore('currentUserData');
+        if (currentUser && currentUserData) {
+          await addMessage(conversationId, currentUser.uid, currentUserData, text);
+          await loadMessages(conversationId);
+        }
+      });
       return;
     }
   }, { capture: true }); // CRITICAL: Capture phase ensures we intercept FIRST

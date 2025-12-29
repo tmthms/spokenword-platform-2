@@ -54,7 +54,7 @@ export function renderDesktopNav() {
             <!-- Profile Menu Dropdown -->
             <div class="relative">
               <button id="desktop-profile-btn" class="flex items-center space-x-2 text-gray-700 hover:text-indigo-600">
-                <img id="desktop-profile-pic" src="${profilePicUrl}" class="h-8 w-8 rounded-full object-cover" alt="Profile">
+                <img id="desktop-profile-pic" src="${profilePicUrl}" class="h-8 w-8 rounded-full object-cover" style="max-width: 32px; max-height: 32px;" alt="Profile">
                 <i data-lucide="chevron-down" class="h-4 w-4"></i>
               </button>
 

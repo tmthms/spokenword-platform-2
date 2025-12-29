@@ -437,170 +437,112 @@ export function renderProgrammerSignup() {
  */
 export function renderMessages() {
   const appContent = document.getElementById('app-content');
+
+  // Hide profile picture on messages page
+  const profilePicContainer = document.querySelector('.programmer-profile-pattern, #programmer-profile-overview, #programmer-dashboard');
+  if (profilePicContainer) {
+    profilePicContainer.style.display = 'none';
+  }
+
   appContent.innerHTML = `
-    <div id="messages-view" class="h-screen flex flex-col bg-gray-50">
+    <div id="messages-view" style="min-height: 100vh; background: #F8F9FA;">
 
-      <!-- Desktop Layout -->
-      <div class="hidden md:flex flex-1 max-w-7xl mx-auto w-full gap-4 p-6">
+      <!-- DESKTOP: Two columns -->
+      <div id="desktop-messages-layout" style="height: 100vh; display: none;">
 
-        <!-- Left Column: Conversation List (1/3) -->
-        <div class="w-1/3 flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <!-- Header -->
-          <div class="p-6 border-b border-gray-100">
-            <h2 class="text-2xl font-bold text-gray-900 mb-4">Berichten</h2>
-
-            <!-- Search Bar -->
-            <div class="relative">
-              <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-              </svg>
-              <input type="text"
-                     id="desktop-search-conversations"
-                     placeholder="Zoek in berichten..."
-                     class="w-full bg-gray-50 border-0 rounded-xl pl-12 pr-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none">
-            </div>
+        <!-- Left: Conversation list -->
+        <div style="width: 380px; background: white; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column;">
+          <div style="padding: 24px 20px; border-bottom: 1px solid #e5e7eb;">
+            <h2 style="font-size: 26px; font-weight: 700; margin: 0 0 16px;">Berichten</h2>
+            <input id="desktop-search" type="text" placeholder="Zoek in berichten..."
+              style="width: 100%; padding: 12px 16px; background: #f3f4f6; border: none; border-radius: 12px; font-size: 14px;">
           </div>
-
-          <!-- Conversations List -->
-          <div class="flex-1 overflow-y-auto">
-            <div id="conversations-loading" class="p-4">
-              <!-- Loading skeleton inserted by JS -->
-            </div>
-            <div id="conversations-empty" class="p-8 text-center hidden">
-              <div class="flex flex-col items-center justify-center py-12">
-                <svg class="h-16 w-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-                </svg>
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">Geen berichten</h3>
-                <p class="text-sm text-gray-500 max-w-xs">Je hebt nog geen gesprekken. Stuur een bericht naar een artiest om te beginnen!</p>
-              </div>
-            </div>
-            <div id="conversations-list" class="p-4 space-y-4 hidden">
-              <!-- Conversations will be loaded here -->
-            </div>
-          </div>
+          <div id="conversations-list" style="flex: 1; overflow-y: auto; padding: 8px 12px;"></div>
+          <div id="conversations-loading" style="padding: 40px; text-align: center; color: #9ca3af;">Laden...</div>
+          <div id="conversations-empty" style="display: none; padding: 60px 20px; text-align: center; color: #9ca3af;">Geen berichten</div>
         </div>
 
-        <!-- Right Column: Chat (2/3) -->
-        <div class="w-2/3 flex flex-col bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-          <!-- Placeholder State -->
-          <div id="chat-placeholder" class="flex-1 flex items-center justify-center text-gray-500 bg-gray-50">
-            <div class="text-center">
-              <svg class="h-16 w-16 text-gray-300 mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-              </svg>
-              <p class="text-gray-500 font-medium">Selecteer een gesprek</p>
-            </div>
+        <!-- Right: Chat area -->
+        <div style="flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden;">
+          <div id="chat-placeholder" style="flex: 1; display: flex; align-items: center; justify-content: center; color: #9ca3af;">
+            <p>Selecteer een gesprek</p>
           </div>
-
-          <!-- Chat Container -->
-          <div id="chat-container" class="hidden flex-1 flex flex-col min-h-0">
-            <!-- Chat Header -->
-            <div id="chat-header" class="bg-white border-b border-gray-100 p-4">
-              <h3 class="text-lg font-semibold text-gray-900">Gesprek</h3>
+          <div id="chat-container" style="display: none; flex-direction: column; flex: 1; min-height: 0; overflow: hidden;">
+            <div id="chat-header" style="padding: 16px 24px; background: white; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 12px;">
+              <div id="chat-avatar" style="width: 48px; height: 48px; border-radius: 50%; background: #e9d5ff;"></div>
+              <div>
+                <h3 id="chat-name" style="font-size: 17px; font-weight: 600; margin: 0;">Gesprek</h3>
+                <p id="chat-role" style="font-size: 13px; color: #805ad5; margin: 0;"></p>
+              </div>
             </div>
-
-            <!-- Messages Container -->
-            <div id="messages-container" class="flex-1 overflow-y-auto p-6 space-y-4 bg-gray-50">
-              <!-- Messages will be inserted here -->
-            </div>
-
-            <!-- Message Input -->
-            <div class="bg-white border-t border-gray-100 p-4">
-              <form id="message-form" class="flex gap-3">
-                <input id="message-input"
-                       type="text"
-                       placeholder="Type je bericht..."
-                       class="flex-1 bg-gray-50 border-0 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none"
-                       required>
-                <button type="submit" class="btn-press bg-indigo-600 text-white rounded-xl px-6 py-3 font-semibold hover:bg-indigo-700 transition-colors">
-                  Verstuur
-                </button>
+            <div id="messages-container" style="flex: 1; overflow-y: auto; padding: 20px 24px; background: #F8F9FA; min-height: 0;"></div>
+            <div style="padding: 16px 24px; background: white; border-top: 1px solid #e5e7eb;">
+              <form id="message-form" style="display: flex; gap: 12px;">
+                <input id="message-input" type="text" placeholder="Typ een bericht..." required
+                  style="flex: 1; padding: 14px 18px; background: #f3f4f6; border: none; border-radius: 12px; font-size: 15px;">
+                <button type="submit" style="padding: 14px 24px; background: #805ad5; color: white; border: none; border-radius: 12px; font-weight: 600; cursor: pointer;">Verstuur</button>
               </form>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Mobile Layout -->
-      <div class="md:hidden flex flex-col flex-1">
-        <!-- Mobile Header -->
-        <div class="bg-white border-b border-gray-100 p-4">
-          <h2 class="text-2xl font-bold text-gray-900 mb-3">Berichten</h2>
-
-          <!-- Search Bar -->
-          <div class="relative">
-            <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-            </svg>
-            <input type="text"
-                   id="mobile-search-conversations"
-                   placeholder="Zoek in berichten..."
-                   class="w-full bg-gray-50 border-0 rounded-xl pl-12 pr-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none">
-          </div>
+      <!-- MOBILE: List view -->
+      <div id="mobile-conversations-view" style="min-height: 100vh; padding-bottom: 100px; display: block;">
+        <div style="padding: 20px 16px; background: white; border-bottom: 1px solid #e5e7eb; position: sticky; top: 0; z-index: 20;">
+          <h2 style="font-size: 24px; font-weight: 700; margin: 0 0 14px;">Berichten</h2>
+          <input type="text" placeholder="Zoek..." style="width: 100%; padding: 11px 16px; background: #f3f4f6; border: none; border-radius: 10px; font-size: 14px;">
         </div>
-
-        <!-- Mobile Conversations List -->
-        <div class="flex-1 overflow-y-auto bg-gray-50 p-4">
-          <div id="mobile-conversations-loading" class="text-center py-8">
-            <!-- Loading skeleton inserted by JS -->
-          </div>
-          <div id="mobile-conversations-empty" class="text-center py-12 hidden">
-            <svg class="h-16 w-16 text-gray-300 mb-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"/>
-            </svg>
-            <h3 class="text-lg font-semibold text-gray-900 mb-2">Geen berichten</h3>
-            <p class="text-sm text-gray-500 max-w-xs mx-auto">Je hebt nog geen gesprekken.</p>
-          </div>
-          <div id="mobile-conversations-list" class="space-y-3 hidden">
-            <!-- Mobile conversations will be loaded here -->
-          </div>
-        </div>
-
-        <!-- FAB (Floating Action Button) -->
-        <button id="mobile-fab-new-message" class="fixed bottom-24 right-6 bg-indigo-600 text-white rounded-full w-14 h-14 shadow-lg flex items-center justify-center hover:bg-indigo-700 transition-all z-40">
-          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-          </svg>
-        </button>
+        <div id="mobile-conversations-list" style="padding: 8px 12px;"></div>
+        <div id="mobile-conversations-empty" style="display: none; padding: 60px; text-align: center; color: #9ca3af;">Geen berichten</div>
+        <button id="mobile-fab" style="position: fixed; bottom: 100px; right: 20px; width: 56px; height: 56px; background: #805ad5; color: white; border: none; border-radius: 50%; box-shadow: 0 4px 12px rgba(128,90,213,0.4); cursor: pointer; z-index: 30;">+</button>
       </div>
 
-      <!-- Mobile Chat View (fullscreen, initially hidden) -->
-      <div id="mobile-chat-view" class="hidden md:hidden fixed inset-0 bg-white z-50 flex flex-col">
-        <!-- Mobile Chat Header -->
-        <div id="mobile-chat-header" class="bg-white border-b border-gray-100 p-4 flex items-center gap-3">
-          <button id="mobile-chat-back-btn" class="text-gray-600 hover:text-gray-900">
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
-          </button>
-          <h3 class="text-lg font-semibold text-gray-900">Gesprek</h3>
+      <!-- MOBILE: Chat view (overlay) -->
+      <div id="mobile-chat-view" style="display: none; position: fixed; inset: 0; background: white; z-index: 100; flex-direction: column;">
+        <div style="padding: 12px 16px; background: white; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 12px;">
+          <button id="mobile-back-btn" style="padding: 8px; background: none; border: none; cursor: pointer; font-size: 24px;">←</button>
+          <div id="mobile-chat-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: #e9d5ff;"></div>
+          <div style="flex: 1;">
+            <h3 id="mobile-chat-name" style="font-size: 16px; font-weight: 600; margin: 0;"></h3>
+            <p id="mobile-chat-role" style="font-size: 12px; color: #805ad5; margin: 0;"></p>
+          </div>
         </div>
-
-        <!-- Mobile Messages Container -->
-        <div id="mobile-messages-container" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
-          <!-- Messages will be inserted here -->
-        </div>
-
-        <!-- Mobile Message Input -->
-        <div class="bg-white border-t border-gray-100 p-4">
-          <form id="mobile-message-form" class="flex gap-3">
-            <input id="mobile-message-input"
-                   type="text"
-                   placeholder="Type je bericht..."
-                   class="flex-1 bg-gray-50 border-0 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500 outline-none"
-                   required>
-            <button type="submit" class="btn-press bg-indigo-600 text-white rounded-xl px-6 py-3 font-semibold hover:bg-indigo-700 transition-colors">
-              <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-              </svg>
-            </button>
+        <div id="mobile-messages-container" style="flex: 1; overflow-y: auto; padding: 16px; background: #F8F9FA;"></div>
+        <div style="padding: 12px 16px 90px 16px; background: white; border-top: 1px solid #e5e7eb;">
+          <form id="mobile-message-form" style="display: flex; gap: 10px;">
+            <input id="mobile-message-input" type="text" placeholder="Typ een bericht..." required
+              style="flex: 1; padding: 12px 16px; background: #f3f4f6; border: none; border-radius: 12px; font-size: 15px;">
+            <button type="submit" style="width: 48px; height: 48px; background: #805ad5; color: white; border: none; border-radius: 12px; cursor: pointer;">→</button>
           </form>
         </div>
       </div>
 
     </div>
   `;
+
+  // Handle responsive layout with JavaScript
+  function handleMessagesResize() {
+    const isDesktop = window.innerWidth >= 1024;
+    const desktopLayout = document.getElementById('desktop-messages-layout');
+    const mobileListView = document.getElementById('mobile-conversations-view');
+    const mobileChatView = document.getElementById('mobile-chat-view');
+
+    if (desktopLayout && mobileListView) {
+      if (isDesktop) {
+        desktopLayout.style.display = 'flex';
+        mobileListView.style.display = 'none';
+        if (mobileChatView) mobileChatView.style.display = 'none';
+      } else {
+        desktopLayout.style.display = 'none';
+        mobileListView.style.display = 'block';
+      }
+    }
+  }
+
+  // Run on load and resize
+  handleMessagesResize();
+  window.addEventListener('resize', handleMessagesResize);
 }
 
 /**

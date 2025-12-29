@@ -286,10 +286,18 @@
             opacity: 1;
         }
 
-        /* Safety: Prevent profile images from becoming too large */
-        img[id*="profile"], img[id*="overview-pic"], img[id*="avatar"] {
+        /* SAFETY: Prevent any profile image from becoming too large */
+        #desktop-profile-pic,
+        #programmer-overview-pic-desktop,
+        #programmer-overview-pic-mobile,
+        img[id*="profile-pic"] {
             max-width: 200px !important;
             max-height: 200px !important;
+        }
+
+        #desktop-profile-pic {
+            max-width: 32px !important;
+            max-height: 32px !important;
         }
     </style>
 
