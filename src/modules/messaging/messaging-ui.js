@@ -87,58 +87,33 @@ export async function displayConversations(conversations, currentUserId, onConve
       timeAgo = formatTimeAgo(date);
     }
 
-    // Maak conversation card
+    // Maak conversation card met nieuwe styling
     const conversationCard = document.createElement('div');
-    conversationCard.className = `border border-gray-200 rounded-lg p-4 hover:bg-gray-50 cursor-pointer transition ${isUnread ? 'bg-indigo-50 border-indigo-300' : ''}`;
+    conversationCard.className = `bg-white rounded-xl p-4 hover:bg-gray-50 cursor-pointer border border-gray-100 transition-all ${isUnread ? 'ring-2 ring-indigo-100' : ''}`;
     conversationCard.dataset.conversationId = conversation.id;
     conversationCard.dataset.otherParticipantId = conversation.otherParticipantId;
     conversationCard.dataset.otherParticipantRole = conversation.otherParticipantRole;
 
     // Profile Picture with Hover Effect
     conversationCard.innerHTML = `
-      <div class="flex items-start space-x-4">
-        <!-- Profile Picture with Hover Effect -->
-        <div class="relative group flex-shrink-0">
+      <div class="flex items-center gap-3">
+        <!-- Profile Picture -->
+        <div class="relative flex-shrink-0">
           <img src="${profilePic}"
                alt="${otherParticipantName}"
-               class="h-16 w-16 rounded-full object-cover border-2 ${isUnread ? 'border-indigo-300' : 'border-gray-200'} cursor-pointer hover:border-indigo-500 transition-all duration-200 hover:shadow-lg transform hover:scale-105"
+               class="h-12 w-12 rounded-full object-cover"
                data-view-profile="${conversation.otherParticipantId}"
                data-profile-role="${conversation.otherParticipantRole}">
-
-          <!-- Hover Tooltip (Subtle & Smaller) -->
-          <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 translate-y-full opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10">
-            <div class="bg-gray-800 text-white text-xs px-2 py-1 rounded shadow-md whitespace-nowrap mt-1">
-              <svg class="inline-block h-2.5 w-2.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-              </svg>
-              View profile
-            </div>
-          </div>
-
-          <!-- Click indicator icon (Smaller & More Subtle) -->
-          <div class="absolute bottom-0 right-0 h-4 w-4 bg-indigo-500 rounded-full flex items-center justify-center shadow-sm opacity-0 group-hover:opacity-90 transition-opacity duration-200">
-            <svg class="h-2 w-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/>
-            </svg>
-          </div>
+          ${isUnread ? '<div class="absolute -top-1 -right-1 bg-indigo-600 w-3 h-3 rounded-full border-2 border-white"></div>' : ''}
         </div>
 
         <!-- Conversation Info -->
         <div class="flex-1 min-w-0">
-          <div class="flex items-center mb-1">
-            <h3 class="text-lg font-semibold ${isUnread ? 'text-indigo-900' : 'text-gray-900'} truncate">${otherParticipantName}</h3>
-            ${isUnread ? '<span class="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-red-500 text-white flex-shrink-0">New</span>' : ''}
-            <span class="ml-2 text-sm text-gray-500 capitalize flex-shrink-0">${conversation.otherParticipantRole}</span>
+          <div class="flex items-center justify-between mb-1">
+            <h3 class="text-base font-semibold text-gray-900 truncate">${otherParticipantName}</h3>
+            <span class="text-xs text-gray-400 ml-2 flex-shrink-0">${timeAgo}</span>
           </div>
-          <p class="text-sm text-gray-700 mb-1"><strong>Subject:</strong> ${conversation.subject || 'No subject'}</p>
-          <p class="text-sm text-gray-600 line-clamp-2">${conversation.lastMessage || 'No messages yet'}</p>
-        </div>
-
-        <!-- Timestamp & Status -->
-        <div class="text-right flex-shrink-0">
-          <p class="text-xs text-gray-500 whitespace-nowrap">${timeAgo}</p>
-          ${isUnread ? '<div class="mt-2"><i data-lucide="mail" class="h-5 w-5 text-indigo-600"></i></div>' : ''}
+          <p class="text-sm text-gray-500 truncate">${conversation.lastMessage || 'No messages yet'}</p>
         </div>
       </div>
     `;
@@ -173,13 +148,17 @@ export async function displayConversations(conversations, currentUserId, onConve
  */
 export function displayMessages(messages, currentUserId) {
   const messagesContainer = document.getElementById('messages-container');
+  const mobileMessagesContainer = document.getElementById('mobile-messages-container');
 
-  if (!messagesContainer) return;
+  if (!messagesContainer && !mobileMessagesContainer) return;
 
-  messagesContainer.innerHTML = '';
+  // Clear both containers
+  if (messagesContainer) messagesContainer.innerHTML = '';
+  if (mobileMessagesContainer) mobileMessagesContainer.innerHTML = '';
 
   if (messages.length === 0) {
-    messagesContainer.innerHTML = '<p class="text-gray-500 text-center py-4">No messages yet.</p>';
+    if (messagesContainer) messagesContainer.innerHTML = '<p class="text-gray-500 text-center py-4">No messages yet.</p>';
+    if (mobileMessagesContainer) mobileMessagesContainer.innerHTML = '<p class="text-gray-500 text-center py-4">No messages yet.</p>';
   } else {
     messages.forEach(message => {
       const isOwnMessage = message.senderId === currentUserId;
@@ -207,26 +186,35 @@ export function displayMessages(messages, currentUserId) {
                class="h-10 w-10 rounded-full object-cover">
         </div>
 
-        <div class="max-w-xl ${isOwnMessage ? 'bg-indigo-100' : 'bg-gray-100'} rounded-lg p-4 shadow-sm">
-          <div class="flex items-center mb-2">
-            <span class="font-semibold text-sm ${isOwnMessage ? 'text-indigo-900' : 'text-gray-900'}">${message.senderName}</span>
-            <span class="text-xs text-gray-500 ml-2 capitalize">${message.senderRole || ''}</span>
-          </div>
-          <p class="text-gray-800 whitespace-pre-wrap">${message.text}</p>
-          <p class="text-xs text-gray-500 mt-2">${timeAgo}</p>
+        <div class="max-w-xl ${isOwnMessage ? 'bg-indigo-100' : 'bg-white border border-gray-100'} rounded-2xl p-4">
+          <p class="text-gray-800 whitespace-pre-wrap text-sm">${message.text}</p>
+          <p class="text-xs text-gray-400 mt-2">${timeAgo}</p>
         </div>
       `;
 
-      messagesContainer.appendChild(messageDiv);
+      // Append to both desktop and mobile containers
+      if (messagesContainer) messagesContainer.appendChild(messageDiv);
+      if (mobileMessagesContainer) {
+        const mobileClone = messageDiv.cloneNode(true);
+        mobileMessagesContainer.appendChild(mobileClone);
+      }
     });
   }
 
   // Scroll to latest message with smooth behavior
   setTimeout(() => {
-    messagesContainer.scrollTo({
-      top: messagesContainer.scrollHeight,
-      behavior: 'smooth'
-    });
+    if (messagesContainer) {
+      messagesContainer.scrollTo({
+        top: messagesContainer.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+    if (mobileMessagesContainer) {
+      mobileMessagesContainer.scrollTo({
+        top: mobileMessagesContainer.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
   }, 100);
 }
 
@@ -238,13 +226,18 @@ export function displayMessages(messages, currentUserId) {
  */
 export function appendMessageToUI(message, currentUserId) {
   const messagesContainer = document.getElementById('messages-container');
+  const mobileMessagesContainer = document.getElementById('mobile-messages-container');
 
-  if (!messagesContainer) return;
+  if (!messagesContainer && !mobileMessagesContainer) return;
 
   // Remove "no messages" placeholder if it exists
-  const placeholder = messagesContainer.querySelector('p.text-gray-500');
-  if (placeholder) {
-    placeholder.remove();
+  if (messagesContainer) {
+    const placeholder = messagesContainer.querySelector('p.text-gray-500');
+    if (placeholder) placeholder.remove();
+  }
+  if (mobileMessagesContainer) {
+    const mobilePlaceholder = mobileMessagesContainer.querySelector('p.text-gray-500');
+    if (mobilePlaceholder) mobilePlaceholder.remove();
   }
 
   const isOwnMessage = message.senderId === currentUserId;
@@ -272,32 +265,40 @@ export function appendMessageToUI(message, currentUserId) {
            class="h-10 w-10 rounded-full object-cover">
     </div>
 
-    <div class="max-w-xl ${isOwnMessage ? 'bg-indigo-100' : 'bg-gray-100'} rounded-lg p-4 shadow-sm">
-      <div class="flex items-center mb-2">
-        <span class="font-semibold text-sm ${isOwnMessage ? 'text-indigo-900' : 'text-gray-900'}">${message.senderName}</span>
-        <span class="text-xs text-gray-500 ml-2 capitalize">${message.senderRole || ''}</span>
-      </div>
-      <p class="text-gray-800 whitespace-pre-wrap">${message.text}</p>
-      <p class="text-xs text-gray-500 mt-2">${timeAgo}</p>
+    <div class="max-w-xl ${isOwnMessage ? 'bg-indigo-100' : 'bg-white border border-gray-100'} rounded-2xl p-4">
+      <p class="text-gray-800 whitespace-pre-wrap text-sm">${message.text}</p>
+      <p class="text-xs text-gray-400 mt-2">${timeAgo}</p>
     </div>
   `;
 
-  // Append message
-  messagesContainer.appendChild(messageDiv);
+  // Append message to both containers
+  if (messagesContainer) messagesContainer.appendChild(messageDiv);
+  if (mobileMessagesContainer) {
+    const mobileClone = messageDiv.cloneNode(true);
+    mobileMessagesContainer.appendChild(mobileClone);
+  }
 
   // Smooth scroll to the new message (keep focus on message + input field)
   // Use requestAnimationFrame for better scroll performance
   requestAnimationFrame(() => {
-    messagesContainer.scrollTo({
-      top: messagesContainer.scrollHeight,
-      behavior: 'smooth'
-    });
-
-    // Keep focus on input field after sending
-    const messageInput = document.getElementById('message-input');
-    if (messageInput) {
-      messageInput.focus();
+    if (messagesContainer) {
+      messagesContainer.scrollTo({
+        top: messagesContainer.scrollHeight,
+        behavior: 'smooth'
+      });
     }
+    if (mobileMessagesContainer) {
+      mobileMessagesContainer.scrollTo({
+        top: mobileMessagesContainer.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+
+    // Keep focus on input field after sending (both desktop and mobile)
+    const messageInput = document.getElementById('message-input');
+    const mobileMessageInput = document.getElementById('mobile-message-input');
+    if (messageInput) messageInput.focus();
+    if (mobileMessageInput) mobileMessageInput.focus();
   });
 }
 

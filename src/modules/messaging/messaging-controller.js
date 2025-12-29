@@ -179,16 +179,23 @@ export async function loadConversations() {
   const emptyEl = document.getElementById('conversations-empty');
   const listEl = document.getElementById('conversations-list');
 
-  // Show loading skeleton
+  // Mobile elements
+  const mobileLoadingEl = document.getElementById('mobile-conversations-loading');
+  const mobileEmptyEl = document.getElementById('mobile-conversations-empty');
+  const mobileListEl = document.getElementById('mobile-conversations-list');
+
+  // Show loading skeleton for desktop
   if (loadingEl) {
     loadingEl.innerHTML = `
-      <div class="space-y-3 p-4 animate-pulse">
+      <div class="space-y-3 animate-pulse">
         ${Array(4).fill(0).map(() => `
-          <div class="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg">
-            <div class="h-12 w-12 bg-gray-200 rounded-full"></div>
-            <div class="flex-1 space-y-2">
-              <div class="h-3 bg-gray-200 rounded w-2/3"></div>
-              <div class="h-2 bg-gray-200 rounded w-1/2"></div>
+          <div class="bg-white rounded-xl p-4 border border-gray-100">
+            <div class="flex items-center gap-3">
+              <div class="h-12 w-12 bg-gray-200 rounded-full"></div>
+              <div class="flex-1 space-y-2">
+                <div class="h-3 bg-gray-200 rounded w-2/3"></div>
+                <div class="h-2 bg-gray-200 rounded w-1/2"></div>
+              </div>
             </div>
           </div>
         `).join('')}
@@ -202,23 +209,73 @@ export async function loadConversations() {
     listEl.innerHTML = '';
   }
 
+  // Show loading skeleton for mobile
+  if (mobileLoadingEl) {
+    mobileLoadingEl.innerHTML = `
+      <div class="space-y-3 animate-pulse">
+        ${Array(3).fill(0).map(() => `
+          <div class="bg-white rounded-xl p-4 border border-gray-100">
+            <div class="flex items-center gap-3">
+              <div class="h-12 w-12 bg-gray-200 rounded-full"></div>
+              <div class="flex-1 space-y-2">
+                <div class="h-3 bg-gray-200 rounded w-2/3"></div>
+                <div class="h-2 bg-gray-200 rounded w-1/2"></div>
+              </div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+    mobileLoadingEl.style.display = 'block';
+  }
+  if (mobileEmptyEl) mobileEmptyEl.classList.add('hidden');
+  if (mobileListEl) {
+    mobileListEl.classList.add('hidden');
+    mobileListEl.innerHTML = '';
+  }
+
   try {
     const conversations = await fetchConversations(currentUser.uid);
 
     // Verberg loading
     if (loadingEl) loadingEl.style.display = 'none';
+    if (mobileLoadingEl) mobileLoadingEl.style.display = 'none';
 
     if (conversations.length === 0) {
       // Toon empty state
       if (emptyEl) emptyEl.style.display = 'block';
+      if (mobileEmptyEl) mobileEmptyEl.classList.remove('hidden');
     } else {
-      // Toon conversaties
+      // Toon conversaties (desktop)
       await displayConversations(
         conversations,
         currentUser.uid,
         openConversation,
         viewUserProfile
       );
+
+      // Toon conversaties (mobile) - gebruik dezelfde data
+      if (mobileListEl) {
+        mobileListEl.classList.remove('hidden');
+        mobileListEl.innerHTML = ''; // Clear first
+
+        // Clone the conversations to mobile list
+        const desktopListEl = document.getElementById('conversations-list');
+        if (desktopListEl) {
+          // Copy all conversation cards to mobile list
+          Array.from(desktopListEl.children).forEach(card => {
+            const clone = card.cloneNode(true);
+            // Re-attach event listeners
+            clone.addEventListener('click', (e) => {
+              const conversationId = clone.dataset.conversationId;
+              if (conversationId) {
+                openConversation(conversationId);
+              }
+            });
+            mobileListEl.appendChild(clone);
+          });
+        }
+      }
     }
 
     // Update unread badge
@@ -269,76 +326,68 @@ export async function openConversation(conversationId) {
     const otherParticipantName = conversation.participantNames[otherParticipantId] || 'Unknown';
     const otherParticipantRole = conversation.participantRoles[otherParticipantId] || '';
 
-    // Show chat container and hide placeholder
+    // Desktop: Show chat container and hide placeholder
     const chatPlaceholder = document.getElementById('chat-placeholder');
     const chatContainer = document.getElementById('chat-container');
     const chatHeader = document.getElementById('chat-header');
-
-    // Get the chat area wrapper (parent of chatContainer)
-    const chatAreaWrapper = chatContainer?.parentElement;
-
-    // Hide conversation list on mobile when opening chat
-    const conversationsList = document.querySelector('.md\\:w-1\\/3');
-    if (conversationsList) {
-      conversationsList.classList.add('hidden', 'md:block');
-    }
-
-    // Make chat area wrapper visible on mobile
-    if (chatAreaWrapper) {
-      chatAreaWrapper.classList.remove('hidden');
-      chatAreaWrapper.classList.add('flex', 'w-full', 'md:w-2/3');
-      chatAreaWrapper.style.display = 'flex';
-    }
 
     if (chatPlaceholder) chatPlaceholder.style.display = 'none';
     if (chatContainer) {
       chatContainer.classList.remove('hidden');
       chatContainer.classList.add('flex');
-      chatContainer.style.display = 'flex';
       // Store conversation ID for message form
       chatContainer.dataset.conversationId = conversationId;
     }
 
-    // Update chat header with participant info (add back button for mobile)
+    // Update desktop chat header
     if (chatHeader) {
       chatHeader.innerHTML = `
-        <div class="flex items-center">
-          <button id="back-to-conversations-mobile" class="mr-3 md:hidden text-gray-600 hover:text-gray-900">
-            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
-            </svg>
-          </button>
+        <div class="flex items-center gap-3">
+          <img src="${conversation.participantProfilePics?.[otherParticipantId] || 'https://placehold.co/40x40/e0e7ff/6366f1?text=' + encodeURIComponent(otherParticipantName.charAt(0))}"
+               alt="${otherParticipantName}"
+               class="h-10 w-10 rounded-full object-cover">
           <div>
             <h3 class="text-lg font-semibold text-gray-900">${otherParticipantName}</h3>
             <p class="text-sm text-gray-500">${otherParticipantRole}</p>
-            ${conversation.subject ? `<p class="text-sm text-gray-600 mt-1"><strong>Subject:</strong> ${conversation.subject}</p>` : ''}
           </div>
+        </div>
+      `;
+    }
+
+    // Mobile: Show mobile chat view
+    const mobileChatView = document.getElementById('mobile-chat-view');
+    const mobileChatHeader = document.getElementById('mobile-chat-header');
+
+    if (mobileChatView) {
+      mobileChatView.classList.remove('hidden');
+      mobileChatView.classList.add('flex');
+      mobileChatView.dataset.conversationId = conversationId;
+    }
+
+    // Update mobile chat header
+    if (mobileChatHeader) {
+      mobileChatHeader.innerHTML = `
+        <button id="mobile-chat-back-btn" class="text-gray-600 hover:text-gray-900">
+          <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+          </svg>
+        </button>
+        <img src="${conversation.participantProfilePics?.[otherParticipantId] || 'https://placehold.co/40x40/e0e7ff/6366f1?text=' + encodeURIComponent(otherParticipantName.charAt(0))}"
+             alt="${otherParticipantName}"
+             class="h-10 w-10 rounded-full object-cover">
+        <div class="flex-1">
+          <h3 class="text-base font-semibold text-gray-900">${otherParticipantName}</h3>
+          <p class="text-xs text-gray-500">${otherParticipantRole}</p>
         </div>
       `;
 
       // Add event listener for mobile back button
-      const backBtn = document.getElementById('back-to-conversations-mobile');
-      if (backBtn) {
-        backBtn.addEventListener('click', () => {
-          // Hide chat area wrapper on mobile
-          if (chatAreaWrapper) {
-            chatAreaWrapper.classList.add('hidden', 'md:flex');
-            chatAreaWrapper.classList.remove('flex', 'w-full');
-            chatAreaWrapper.style.display = '';
-          }
-          // Hide chat container
-          if (chatContainer) {
-            chatContainer.classList.add('hidden');
-            chatContainer.style.display = 'none';
-          }
-          // Show conversation list
-          if (conversationsList) {
-            conversationsList.classList.remove('hidden', 'md:block');
-            conversationsList.classList.add('block');
-          }
-          // Show placeholder on desktop
-          if (chatPlaceholder) {
-            chatPlaceholder.style.display = '';
+      const mobileBackBtn = document.getElementById('mobile-chat-back-btn');
+      if (mobileBackBtn) {
+        mobileBackBtn.addEventListener('click', () => {
+          if (mobileChatView) {
+            mobileChatView.classList.add('hidden');
+            mobileChatView.classList.remove('flex');
           }
         });
       }

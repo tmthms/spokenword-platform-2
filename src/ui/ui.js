@@ -176,7 +176,7 @@ export function setupGlobalFormHandlers() {
     }
 
     // ✅ FIX: Message form (inline chat messages)
-    if (form.id === 'message-form') {
+    if (form.id === 'message-form' || form.id === 'mobile-message-form') {
       console.log('[UI] ✅ Message form submit intercepted');
       await handleInlineMessageSubmit(e);
       return;
@@ -194,13 +194,18 @@ export function setupGlobalFormHandlers() {
 async function handleInlineMessageSubmit(e) {
   e.preventDefault();
 
+  // Support both desktop and mobile forms
   const messageInput = document.getElementById('message-input');
-  const messageText = messageInput?.value.trim();
+  const mobileMessageInput = document.getElementById('mobile-message-input');
+  const activeInput = messageInput || mobileMessageInput;
+  const messageText = activeInput?.value.trim();
 
   if (!messageText) return;
 
+  // Get conversation ID from either desktop or mobile container
   const chatContainer = document.getElementById('chat-container');
-  const conversationId = chatContainer?.dataset.conversationId;
+  const mobileChatView = document.getElementById('mobile-chat-view');
+  const conversationId = chatContainer?.dataset.conversationId || mobileChatView?.dataset.conversationId;
 
   if (!conversationId) {
     console.error('[UI] No conversation ID found');
@@ -229,7 +234,7 @@ async function handleInlineMessageSubmit(e) {
     };
 
     // Clear input immediately (better UX)
-    messageInput.value = '';
+    activeInput.value = '';
 
     // Import messaging functions dynamically
     const { addMessage, appendMessageToUI } = await import('../modules/messaging/messaging-controller.js');

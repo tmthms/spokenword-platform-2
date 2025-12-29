@@ -856,18 +856,6 @@ function extractYouTubeId(url) {
   return match ? match[1] : null;
 }
 
-function calculateAge(dob) {
-  if (!dob) return null;
-  const birthDate = dob.toDate ? dob.toDate() : new Date(dob);
-  const today = new Date();
-  let age = today.getFullYear() - birthDate.getFullYear();
-  const monthDiff = today.getMonth() - birthDate.getMonth();
-  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
-    age--;
-  }
-  return age;
-}
-
 /**
  * Populate mobile recommendations
  */
