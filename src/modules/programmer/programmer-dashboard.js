@@ -441,23 +441,19 @@ export function showProgrammerPublicView() {
 export function showSearchOnlyView() {
   console.log('[PROGRAMMER DASHBOARD] Showing search-only view');
 
-  // Hide all profile views
+  // Hide ALL profile elements
   const profileView = document.getElementById('programmer-profile-view');
   const editView = document.getElementById('programmer-edit-view');
   const publicView = document.getElementById('programmer-public-view');
+  const mobileProfileLayout = document.getElementById('mobile-profile-layout');
+  const desktopProfileLayout = document.getElementById('desktop-profile-layout');
 
-  if (profileView) {
-    profileView.style.display = 'none';
-    profileView.classList.add('hidden');
-  }
-  if (editView) {
-    editView.style.display = 'none';
-    editView.classList.add('hidden');
-  }
-  if (publicView) {
-    publicView.style.display = 'none';
-    publicView.classList.add('hidden');
-  }
+  [profileView, editView, publicView, mobileProfileLayout, desktopProfileLayout].forEach(el => {
+    if (el) {
+      el.style.display = 'none';
+      el.classList.add('hidden');
+    }
+  });
 
   // SHOW search section
   const searchSection = document.getElementById('artist-search-section');

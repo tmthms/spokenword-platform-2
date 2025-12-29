@@ -238,8 +238,9 @@ export function monitorAuthState() {
         updateNav(user);
         // Setup real-time badge listener (Fase 2.5)
         setupBadgeListener();
-        // Toon het juiste dashboard (artiest of programmeur)
-        showDashboard();
+        // Toon search als default homepage
+        const { showSearch } = await import('../ui/ui.js');
+        showSearch();
       } catch (error) {
         console.error("Fout bij ophalen van gebruikersdata na inloggen:", error);
         // Als het ophalen van data mislukt, log de gebruiker uit voor de veiligheid
