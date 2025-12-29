@@ -27,6 +27,9 @@ export function renderDesktopNav() {
     profilePicUrl = `https://placehold.co/40x40/e0e7ff/6366f1?text=${encodeURIComponent(initial)}`;
   }
 
+  // Only show search for programmers
+  const isProgrammer = currentUserData?.role === 'programmer';
+
   container.innerHTML = `
     <nav id="desktop-top-nav" class="hidden md:block bg-white border-b border-gray-200 sticky top-0 z-50">
       <div class="max-w-7xl mx-auto px-6 py-4">
@@ -40,9 +43,9 @@ export function renderDesktopNav() {
 
           <!-- Menu Items -->
           <div class="flex items-center space-x-8">
-            <button id="desktop-nav-search" class="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+            ${isProgrammer ? `<button id="desktop-nav-search" class="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
               Zoeken
-            </button>
+            </button>` : ''}
             <button id="desktop-nav-profile" class="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
               Profiel
             </button>
@@ -96,12 +99,15 @@ export function renderMobileNav() {
 
   const currentUserData = getStore('currentUserData');
 
+  // Only show search for programmers
+  const isProgrammer = currentUserData?.role === 'programmer';
+
   container.innerHTML = `
     <nav id="bottom-nav" class="bottom-nav">
-      <button class="bottom-nav-item active" data-nav="search">
+      ${isProgrammer ? `<button class="bottom-nav-item active" data-nav="search">
         <i data-lucide="search" class="bottom-nav-icon"></i>
         <span class="bottom-nav-label">Zoeken</span>
-      </button>
+      </button>` : ''}
       <button class="bottom-nav-item" data-nav="messages">
         <i data-lucide="message-circle" class="bottom-nav-icon"></i>
         <span class="bottom-nav-label">Berichten</span>

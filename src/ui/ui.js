@@ -1299,9 +1299,11 @@ export function showSearch() {
   console.log('[UI] Showing search view');
 
   const currentUserData = getStore('currentUserData');
-  if (!currentUserData) {
-    console.warn("No user data found");
-    showPage('home-view');
+
+  // Only programmers can access search
+  if (!currentUserData || currentUserData.role !== 'programmer') {
+    console.warn('[UI] Access denied: Only programmers can access search');
+    showDashboard();
     return;
   }
 

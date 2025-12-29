@@ -129,6 +129,16 @@ function setupBrowserNavigation() {
 
     // Route based on hash
     switch(hash) {
+      case 'search':
+        // Only programmers can access search
+        const currentUserData = getStore('currentUserData');
+        if (currentUserData?.role === 'programmer') {
+          import('./src/ui/ui.js').then(module => module.showSearch());
+        } else {
+          console.warn('[BROWSER NAV] Access denied: Only programmers can access search');
+          showDashboard();
+        }
+        break;
       case 'profile':
       case 'dashboard':
         showDashboard();
