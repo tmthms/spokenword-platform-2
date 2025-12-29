@@ -494,6 +494,149 @@ export function showDashboard() {
 }
 
 /**
+ * Shows ONLY the search view (hides profile sections)
+ * Used when clicking "Zoeken" in navigation
+ */
+export function showSearchOnly() {
+  const currentUserData = getStore('currentUserData');
+
+  if (!currentUserData) {
+    console.warn("No user data, cannot show search");
+    showPage('home-view');
+    return;
+  }
+
+  console.log('[UI] Showing search-only view');
+
+  // Render the dashboard container structure
+  showPage('dashboard-view');
+
+  // Get containers
+  const artistDashboard = document.getElementById('artist-dashboard');
+  const programmerDashboard = document.getElementById('programmer-dashboard');
+
+  // Hide artist dashboard
+  if (artistDashboard) {
+    artistDashboard.style.display = 'none';
+  }
+
+  // Show programmer dashboard container (needed for search section)
+  if (programmerDashboard) {
+    programmerDashboard.style.display = 'block';
+  }
+
+  // Import and render
+  import('../modules/programmer/programmer-dashboard.js').then(module => {
+    module.renderProgrammerDashboard();
+
+    // HIDE all profile sections
+    const sectionsToHide = [
+      'programmer-profile-overview',
+      'programmer-public-preview',
+      'programmer-profile-editor',
+      'programmer-about-card',
+      'programmer-pending-view'
+    ];
+
+    sectionsToHide.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.display = 'none';
+      }
+    });
+
+    // SHOW search section
+    const searchSection = document.getElementById('artist-search-section');
+    if (searchSection) {
+      searchSection.style.display = 'block';
+    }
+
+    // Setup and load search
+    import('../modules/search/search-controller.js').then(searchModule => {
+      searchModule.renderArtistSearch();
+      searchModule.setupArtistSearch();
+      searchModule.loadArtists();
+    });
+
+  });
+
+  // Update URL
+  window.history.pushState({ view: 'search' }, '', '#search');
+
+  // Re-initialize icons
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 100);
+  }
+}
+
+/**
+ * Shows ONLY the programmer profile view (hides search)
+ * Used when clicking "Profiel" in navigation
+ */
+export function showProgrammerProfile() {
+  const currentUserData = getStore('currentUserData');
+
+  if (!currentUserData || currentUserData.role !== 'programmer') {
+    console.warn("Only programmers can view profile");
+    showPage('home-view');
+    return;
+  }
+
+  console.log('[UI] Showing programmer profile view');
+
+  // Render the dashboard container structure
+  showPage('dashboard-view');
+
+  // Get containers
+  const artistDashboard = document.getElementById('artist-dashboard');
+  const programmerDashboard = document.getElementById('programmer-dashboard');
+
+  // Hide artist dashboard
+  if (artistDashboard) {
+    artistDashboard.style.display = 'none';
+  }
+
+  // Show programmer dashboard
+  if (programmerDashboard) {
+    programmerDashboard.style.display = 'block';
+  }
+
+  // Import, render and setup
+  import('../modules/programmer/programmer-dashboard.js').then(module => {
+    module.renderProgrammerDashboard();
+    module.setupProgrammerDashboard();
+
+    // SHOW profile sections
+    const sectionsToShow = [
+      'programmer-profile-overview',
+      'programmer-public-preview',
+      'programmer-about-card'
+    ];
+
+    sectionsToShow.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.display = 'block';
+      }
+    });
+
+    // HIDE search section on profile page
+    const searchSection = document.getElementById('artist-search-section');
+    if (searchSection) {
+      searchSection.style.display = 'none';
+    }
+  });
+
+  // Update URL
+  window.history.pushState({ view: 'profile' }, '', '#profile');
+
+  // Re-initialize icons
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 100);
+  }
+}
+
+/**
  * Shows programmer settings (profile editor)
  */
 export function showProgrammerSettings() {
@@ -727,15 +870,15 @@ function updateBottomNavActive(activeNav) {
 function setupDesktopNavigation() {
   // ✅ Use event delegation on document body to catch clicks from dynamically rendered nav
   document.body.addEventListener('click', (e) => {
-    // Desktop Search
+    // Desktop Search (Zoeken)
     if (e.target.closest('#desktop-nav-search')) {
-      showSearch();
+      showSearchOnly();
       return;
     }
 
-    // Desktop Profile
+    // Desktop Profile (Profiel)
     if (e.target.closest('#desktop-nav-profile')) {
-      showProfile();
+      showProgrammerProfile();
       return;
     }
 
