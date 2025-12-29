@@ -6,7 +6,7 @@
 
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../services/firebase.js';
-import { loadArtistsData, calculateAge } from './search-data.js';
+import { loadArtistsData, calculateAge, isProgrammer } from './search-data.js';
 import { showArtistDetail } from './search-controller.js';
 import { getStore } from '../../utils/store.js';
 import { openMessageModal } from '../messaging/messaging-controller.js';
@@ -755,10 +755,67 @@ export function populateArtistDetail(artist) {
     mobilePhoneContainer.style.display = 'none';
   }
 
-  // ========== BUTTON HANDLERS ==========
+  // ========== ROLE-BASED VISIBILITY ==========
+  const isUserProgrammer = isProgrammer();
+  console.log('[DETAIL VIEW] User is programmer:', isUserProgrammer);
 
+  // === DESKTOP ELEMENTS ===
+  // Hide/show email
+  if (detailEmailContainer) {
+    detailEmailContainer.style.display = isUserProgrammer && artist.email ? 'flex' : 'none';
+  }
+
+  // Hide/show phone
+  if (detailPhoneContainer) {
+    detailPhoneContainer.style.display = isUserProgrammer && artist.phone ? 'flex' : 'none';
+  }
+
+  // Hide/show Contact Information section (desktop)
+  // Find the parent section and hide if not programmer
+  const contactSection = detailEmailContainer?.closest('div[style*="border-bottom"]');
+  if (contactSection && !isUserProgrammer) {
+    contactSection.style.display = 'none';
+  }
+
+  // Hide/show chat panel (desktop - right column)
+  const chatPanel = document.querySelector('#desktop-artist-detail aside:last-child');
+  if (chatPanel) {
+    chatPanel.style.display = isUserProgrammer ? 'block' : 'none';
+  }
+
+  // === MOBILE ELEMENTS ===
+  // Hide/show email
+  if (mobileEmailContainer) {
+    mobileEmailContainer.style.display = isUserProgrammer && artist.email ? 'flex' : 'none';
+  }
+
+  // Hide/show phone
+  if (mobilePhoneContainer) {
+    mobilePhoneContainer.style.display = isUserProgrammer && artist.phone ? 'flex' : 'none';
+  }
+
+  // Hide/show Send Message button (mobile)
   const mobileSendMessageBtn = document.getElementById('mobile-send-message-btn');
   if (mobileSendMessageBtn) {
+    mobileSendMessageBtn.style.display = isUserProgrammer ? 'flex' : 'none';
+  }
+
+  // Hide/show Contact Information section header (mobile)
+  const mobileContactHeader = mobileEmailContainer?.parentElement?.previousElementSibling;
+  if (mobileContactHeader && mobileContactHeader.tagName === 'H2' && mobileContactHeader.textContent.includes('Contact')) {
+    mobileContactHeader.style.display = isUserProgrammer ? 'block' : 'none';
+  }
+
+  // Also hide the contact info container div for artists
+  const mobileContactContainer = mobileEmailContainer?.parentElement;
+  if (mobileContactContainer && !isUserProgrammer) {
+    mobileContactContainer.style.display = 'none';
+  }
+
+  // ========== BUTTON HANDLERS ==========
+
+  // Mobile Send Message - only for programmers
+  if (mobileSendMessageBtn && isUserProgrammer) {
     mobileSendMessageBtn.onclick = () => {
       import('../messaging/messaging-controller.js').then(module => {
         if (module.openMessageModal) module.openMessageModal(artist);
@@ -766,14 +823,25 @@ export function populateArtistDetail(artist) {
     };
   }
 
+  // Write Recommendation button - only for programmers
   const mobileWriteRecBtn = document.getElementById('mobile-write-recommendation-btn');
   if (mobileWriteRecBtn) {
-    mobileWriteRecBtn.onclick = () => alert('Schrijf recommendation functie komt binnenkort.');
+    if (isUserProgrammer) {
+      mobileWriteRecBtn.style.display = 'block';
+      mobileWriteRecBtn.onclick = () => alert('Schrijf recommendation functie komt binnenkort.');
+    } else {
+      mobileWriteRecBtn.style.display = 'none';
+    }
   }
 
   const writeRecBtn = document.getElementById('write-recommendation-btn');
   if (writeRecBtn) {
-    writeRecBtn.onclick = () => alert('Schrijf recommendation functie komt binnenkort.');
+    if (isUserProgrammer) {
+      writeRecBtn.style.display = 'inline-block';
+      writeRecBtn.onclick = () => alert('Schrijf recommendation functie komt binnenkort.');
+    } else {
+      writeRecBtn.style.display = 'none';
+    }
   }
 
   const viewRecsBtn = document.getElementById('view-recommendations-btn');

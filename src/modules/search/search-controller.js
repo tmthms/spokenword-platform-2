@@ -4,7 +4,7 @@
  * Manages event listeners, user interactions, and browser history
  */
 
-import { loadArtistsData, fetchArtistById, requireAuth, isAuthenticatedProgrammer } from './search-data.js';
+import { loadArtistsData, fetchArtistById, requireAuth, isAuthenticatedUser } from './search-data.js';
 import { renderArtistSearch, renderArtists, populateArtistDetail } from './search-ui.js';
 import { loadRecommendations, openRecommendationModal } from '../recommendations/recommendations.js';
 import { getStore } from '../../utils/store.js';
@@ -400,7 +400,7 @@ function setupBrowserHistory() {
     console.log("Popstate event:", event.state);
 
     // Security check: Block if not authenticated
-    if (!isAuthenticatedProgrammer()) {
+    if (!isAuthenticatedUser()) {
       console.error("Popstate blocked: User not authenticated");
 
       // Redirect to login

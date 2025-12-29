@@ -9,15 +9,14 @@ import { db } from '../../services/firebase.js';
 import { getStore } from '../../utils/store.js';
 
 /**
- * Security: Check if user is authenticated as a programmer
- * @returns {boolean} True if authenticated programmer, false otherwise
+ * Security: Check if user is authenticated (programmer OR artist)
+ * @returns {boolean} True if authenticated, false otherwise
  */
-export function isAuthenticatedProgrammer() {
+export function isAuthenticatedUser() {
   const currentUser = getStore('currentUser');
   const currentUserData = getStore('currentUserData');
   const userRole = currentUserData?.role;
 
-  // DEBUG: Log wat we hebben
   console.log('[AUTH CHECK] currentUser:', currentUser ? 'EXISTS (uid: ' + currentUser.uid + ')' : 'NULL');
   console.log('[AUTH CHECK] userRole:', userRole);
 
@@ -26,47 +25,49 @@ export function isAuthenticatedProgrammer() {
     return false;
   }
 
-  if (userRole !== 'programmer') {
-    console.warn("[AUTH CHECK] ❌ Access denied: userRole is not 'programmer', got:", userRole);
+  if (userRole !== 'programmer' && userRole !== 'artist') {
+    console.warn("[AUTH CHECK] ❌ Access denied: userRole is not 'programmer' or 'artist', got:", userRole);
     return false;
   }
 
-  console.log("[AUTH CHECK] ✅ Authentication passed - User is authenticated programmer");
+  console.log("[AUTH CHECK] ✅ Authentication passed - User is authenticated " + userRole);
   return true;
 }
 
 /**
- * Security: Require authentication for sensitive operations
+ * Check if current user is a programmer (for privileged actions)
+ * @returns {boolean} True if programmer, false otherwise
+ */
+export function isProgrammer() {
+  const currentUserData = getStore('currentUserData');
+  return currentUserData?.role === 'programmer';
+}
+
+/**
+ * Security: Check if user is authenticated as a programmer
+ * @deprecated Use isAuthenticatedUser() and isProgrammer() instead
+ * @returns {boolean} True if authenticated programmer, false otherwise
+ */
+export function isAuthenticatedProgrammer() {
+  return isAuthenticatedUser() && isProgrammer();
+}
+
+/**
+ * Security: Require authentication for search operations
  * Redirects to login if not authenticated
  */
 export function requireAuth() {
   console.log("[REQUIRE AUTH] Checking authentication...");
 
-  if (!isAuthenticatedProgrammer()) {
+  if (!isAuthenticatedUser()) {
     console.error("[REQUIRE AUTH] ❌ Access denied: Redirecting to login");
-    console.error("[REQUIRE AUTH] TIP: Check if auth.js properly sets store values:");
-    console.error("[REQUIRE AUTH]   - setStore('currentUser', user)");
-    console.error("[REQUIRE AUTH]   - setStore('userRole', 'programmer')");
+    alert("You must be logged in to access this page.");
 
-    alert("You must be logged in as a programmer to access this page.");
-
-    // Hide all content
-    const programmerDashboard = document.getElementById('programmer-dashboard');
-    const artistDetailView = document.getElementById('artist-detail-view');
-
-    if (programmerDashboard) programmerDashboard.classList.add('hidden');
-    if (artistDetailView) artistDetailView.classList.add('hidden');
-
-    // Show login page
-    const loginView = document.getElementById('login-view');
-    if (loginView) {
-      loginView.style.display = 'block';
-    }
-
+    import('../../ui/ui.js').then(module => {
+      module.showPage('login-view');
+    });
     return false;
   }
-
-  console.log("[REQUIRE AUTH] ✅ Auth check passed");
   return true;
 }
 
