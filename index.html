@@ -299,6 +299,44 @@
             max-width: 32px !important;
             max-height: 32px !important;
         }
+
+        /* Selectable Chips */
+        .chip-label {
+            user-select: none;
+        }
+
+        .chip-input:checked + .chip-text {
+            color: white;
+        }
+
+        .chip-input:checked ~ .chip-text {
+            color: white;
+        }
+
+        .chip-label:has(.chip-input:checked) {
+            background-color: #7c3aed;
+            border-color: #7c3aed;
+            color: white;
+        }
+
+        .chip-label:has(.chip-input:checked):hover {
+            background-color: #6d28d9;
+            border-color: #6d28d9;
+        }
+
+        .chip-label:has(.chip-input:checked) .chip-text {
+            color: white;
+        }
+
+        /* Fallback voor browsers zonder :has() support */
+        .chip-selected {
+            background-color: #7c3aed !important;
+            border-color: #7c3aed !important;
+        }
+
+        .chip-selected .chip-text {
+            color: white !important;
+        }
     </style>
 
     <!-- Lucide Icons -->

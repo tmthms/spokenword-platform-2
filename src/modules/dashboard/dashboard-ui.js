@@ -426,6 +426,7 @@ export function renderProfileEditor() {
   initEditorTabs();
   initMobileAccordions();
   renderEditorCheckboxes();
+  setupChipToggle();
   initPitchCounter();
   setupGalleryUploadHandler();
   setupYouTubeAddHandler();
@@ -518,7 +519,7 @@ function renderEditorCheckboxes() {
       { value: 'comedy', label: 'Comedy' },
       { value: '1-on-1', label: '1-on-1 Sessions' }
     ];
-    genresContainer.innerHTML = genres.map(g => createCheckbox('genre', g.value, g.label)).join('');
+    genresContainer.innerHTML = genres.map(g => createChip('genre', g.value, g.label)).join('');
   }
 
   // Languages
@@ -529,7 +530,7 @@ function renderEditorCheckboxes() {
       { value: 'en', label: 'EN (English)' },
       { value: 'fr', label: 'FR (French)' }
     ];
-    langsContainer.innerHTML = langs.map(l => createCheckbox('language', l.value, l.label)).join('');
+    langsContainer.innerHTML = langs.map(l => createChip('language', l.value, l.label)).join('');
   }
 
   // Payment
@@ -542,7 +543,7 @@ function renderEditorCheckboxes() {
       { value: 'volunteer', label: 'Volunteer Fee' },
       { value: 'other', label: 'Other' }
     ];
-    paymentContainer.innerHTML = payments.map(p => createCheckbox('payment', p.value, p.label)).join('');
+    paymentContainer.innerHTML = payments.map(p => createChip('payment', p.value, p.label)).join('');
   }
 
   // Themes
@@ -556,7 +557,7 @@ function renderEditorCheckboxes() {
       { value: 'duurzaamheid', label: 'Duurzaamheid' },
       { value: 'zakelijk', label: 'Zakelijk' }
     ];
-    themesContainer.innerHTML = themes.map(t => createCheckbox('theme', t.value, t.label)).join('');
+    themesContainer.innerHTML = themes.map(t => createChip('theme', t.value, t.label)).join('');
   }
 
   // Energy Levels
@@ -567,7 +568,7 @@ function renderEditorCheckboxes() {
       { value: 'interactief', label: 'Interactief' },
       { value: 'energiek', label: 'Energiek' }
     ];
-    energyContainer.innerHTML = energyLevels.map(e => createCheckbox('energy', e.value, e.label)).join('');
+    energyContainer.innerHTML = energyLevels.map(e => createChip('energy', e.value, e.label)).join('');
   }
 
   // Formats
@@ -579,15 +580,15 @@ function renderEditorCheckboxes() {
       { value: 'hosting', label: 'Hosting / Presentatie' },
       { value: 'gedichten-op-maat', label: 'Gedichten op Maat' }
     ];
-    formatsContainer.innerHTML = formats.map(f => createCheckbox('format', f.value, f.label)).join('');
+    formatsContainer.innerHTML = formats.map(f => createChip('format', f.value, f.label)).join('');
   }
 }
 
-function createCheckbox(name, value, label) {
+function createChip(name, value, label) {
   return `
-    <label class="flex items-center gap-2 p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 border border-gray-200">
-      <input type="checkbox" name="${name}" value="${value}" class="w-4 h-4 rounded text-indigo-600 border-gray-300">
-      <span class="text-sm text-gray-700">${label}</span>
+    <label class="chip-label inline-flex items-center px-4 py-2 rounded-full border-2 border-gray-300 bg-white cursor-pointer transition-all duration-200 hover:border-purple-400 hover:bg-purple-50 select-none">
+      <input type="checkbox" name="${name}" value="${value}" class="chip-input sr-only">
+      <span class="chip-text text-sm font-medium text-gray-700">${label}</span>
     </label>
   `;
 }
@@ -600,6 +601,21 @@ function initPitchCounter() {
     pitch.addEventListener('input', update);
     update();
   }
+}
+
+function setupChipToggle() {
+  document.addEventListener('change', (e) => {
+    if (e.target.classList.contains('chip-input')) {
+      const label = e.target.closest('.chip-label');
+      if (label) {
+        if (e.target.checked) {
+          label.classList.add('chip-selected');
+        } else {
+          label.classList.remove('chip-selected');
+        }
+      }
+    }
+  });
 }
 
 
