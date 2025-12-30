@@ -390,13 +390,21 @@ export function renderProfileEditor() {
     </div>
   `;
 
-  // Initialize
+  // Initialize all handlers
   initEditorTabs();
   initMobileAccordions();
   renderEditorCheckboxes();
   initPitchCounter();
   setupGalleryUploadHandler();
   setupYouTubeAddHandler();
+  setupProfilePicPreview();
+  setupViewPublicProfileHandler();
+
+  // Attach form submit handler
+  const form = document.getElementById('artist-profile-form');
+  if (form) {
+    form.addEventListener('submit', handleProfileSubmit);
+  }
 
   // Populate with current data
   const currentUserData = getStore('currentUserData');
@@ -918,6 +926,215 @@ function setupYouTubeAddHandler() {
     } catch (error) {
       console.error('[YOUTUBE] Add error:', error);
       alert('Error adding video');
+    }
+  });
+}
+
+/**
+ * Setup profile picture preview
+ */
+function setupProfilePicPreview() {
+  const input = document.getElementById('artist-edit-profile-pic');
+  const preview = document.getElementById('artist-profile-pic-preview');
+  if (!input || !preview) return;
+
+  input.addEventListener('change', (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        preview.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+}
+
+/**
+ * Get checked checkbox values by name
+ */
+function getCheckedValues(name) {
+  return Array.from(document.querySelectorAll(`input[name="${name}"]:checked`))
+    .map(cb => cb.value);
+}
+
+/**
+ * Handle profile form submission
+ */
+async function handleProfileSubmit(e) {
+  e.preventDefault();
+
+  const errorMsg = document.getElementById('artist-profile-error');
+  const successMsg = document.getElementById('artist-profile-success');
+  const submitBtn = document.getElementById('save-artist-profile-btn');
+
+  // Reset messages
+  if (errorMsg) {
+    errorMsg.classList.add('hidden');
+    errorMsg.textContent = '';
+  }
+  if (successMsg) {
+    successMsg.classList.add('hidden');
+    successMsg.textContent = '';
+  }
+
+  // Disable button
+  const originalBtnText = submitBtn?.textContent;
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Saving...';
+  }
+
+  try {
+    const { doc, updateDoc } = await import('firebase/firestore');
+    const { getStorage, ref, uploadBytes, getDownloadURL } = await import('firebase/storage');
+    const { db } = await import('../../services/firebase.js');
+    const { getStore, setStore } = await import('../../utils/store.js');
+
+    const currentUser = getStore('currentUser');
+    if (!currentUser) throw new Error('Not logged in');
+
+    // === Collect data from all tabs ===
+    const profileData = {
+      // Tab 1: Basics & Identity
+      stageName: document.getElementById('artist-edit-stagename')?.value.trim() || '',
+      location: document.getElementById('artist-edit-location')?.value.trim() || '',
+      pitch: document.getElementById('artist-edit-pitch')?.value.trim() || '',
+      genres: getCheckedValues('genre'),
+      languages: getCheckedValues('language'),
+
+      // Tab 2: Bio & Media
+      bio: document.getElementById('artist-edit-bio')?.value.trim() || '',
+      videoUrl: document.getElementById('artist-edit-video')?.value.trim() || '',
+      audioUrl: document.getElementById('artist-edit-audio')?.value.trim() || '',
+      textContent: document.getElementById('artist-edit-text')?.value.trim() || '',
+
+      // Tab 3: Contact & Socials
+      phone: document.getElementById('artist-edit-phone')?.value.trim() || '',
+      website: document.getElementById('artist-edit-website')?.value.trim() || '',
+      paymentMethods: getCheckedValues('payment'),
+      notifyEmail: document.getElementById('artist-edit-notify-email')?.checked ?? true,
+      notifySms: document.getElementById('artist-edit-notify-sms')?.checked ?? false,
+
+      // Hidden fields (preserve existing data)
+      firstName: document.getElementById('artist-edit-firstname')?.value || '',
+      lastName: document.getElementById('artist-edit-lastname')?.value || '',
+      dob: document.getElementById('artist-edit-dob')?.value || '',
+      gender: document.getElementById('artist-edit-gender')?.value || ''
+    };
+
+    // === Validation ===
+    if (!profileData.stageName) {
+      throw new Error('Display name is required');
+    }
+    if (!profileData.location) {
+      throw new Error('Location is required');
+    }
+    if (!profileData.pitch) {
+      throw new Error('Short pitch is required');
+    }
+    if (profileData.genres.length === 0) {
+      throw new Error('Please select at least one genre');
+    }
+    if (profileData.languages.length === 0) {
+      throw new Error('Please select at least one language');
+    }
+    if (!profileData.bio) {
+      throw new Error('Bio is required');
+    }
+    if (!profileData.phone) {
+      throw new Error('Phone number is required');
+    }
+    if (profileData.paymentMethods.length === 0) {
+      throw new Error('Please select at least one payment method');
+    }
+
+    // === Profile Picture Upload ===
+    const picInput = document.getElementById('artist-edit-profile-pic');
+    if (picInput?.files?.[0]) {
+      const file = picInput.files[0];
+
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('Profile picture must be less than 5MB');
+      }
+
+      const storage = getStorage();
+      const storageRef = ref(storage, `artists/${currentUser.uid}/profile_${Date.now()}.jpg`);
+      await uploadBytes(storageRef, file);
+      profileData.profilePicUrl = await getDownloadURL(storageRef);
+      console.log('[SAVE] Profile picture uploaded');
+    }
+
+    // === Document Upload ===
+    const docInput = document.getElementById('artist-edit-document');
+    if (docInput?.files?.[0]) {
+      const file = docInput.files[0];
+
+      // Validate file size (max 10MB)
+      if (file.size > 10 * 1024 * 1024) {
+        throw new Error('Document must be less than 10MB');
+      }
+
+      const storage = getStorage();
+      const storageRef = ref(storage, `artists/${currentUser.uid}/docs/${file.name}`);
+      await uploadBytes(storageRef, file);
+      profileData.documentUrl = await getDownloadURL(storageRef);
+      profileData.documentName = file.name;
+      console.log('[SAVE] Document uploaded');
+    }
+
+    // === Save to Firestore ===
+    const docRef = doc(db, 'artists', currentUser.uid);
+    await updateDoc(docRef, profileData);
+
+    // === Update local store ===
+    const currentUserData = getStore('currentUserData');
+    setStore('currentUserData', { ...currentUserData, ...profileData });
+
+    // === Success feedback ===
+    if (successMsg) {
+      successMsg.textContent = 'Profile saved successfully!';
+      successMsg.classList.remove('hidden');
+    }
+
+    // Scroll to top to show success message
+    document.querySelector('.tab-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    console.log('[SAVE] Profile saved successfully');
+
+  } catch (error) {
+    console.error('[SAVE] Error:', error);
+
+    if (errorMsg) {
+      errorMsg.textContent = error.message || 'Error saving profile';
+      errorMsg.classList.remove('hidden');
+    }
+  } finally {
+    // Re-enable button
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalBtnText || 'Save All Changes';
+    }
+  }
+}
+
+/**
+ * Setup view public profile button handler
+ */
+function setupViewPublicProfileHandler() {
+  const btn = document.getElementById('view-public-profile-btn');
+  if (!btn) return;
+
+  btn.addEventListener('click', async () => {
+    // Hide editor, show public profile view
+    const editor = document.getElementById('artist-profile-editor');
+    if (editor) editor.classList.add('hidden');
+
+    // Trigger the artist own profile view
+    const { showArtistOwnProfile } = await import('../../ui/ui.js');
+    if (showArtistOwnProfile) {
+      showArtistOwnProfile();
     }
   });
 }
