@@ -847,6 +847,7 @@ export function renderDashboard() {
                 position: sticky;
                 top: 100px;
                 overflow: hidden;
+                align-self: start;
               ">
                 <!-- Chat Header -->
                 <div style="padding: 20px 24px; border-bottom: 1px solid #e9e3f5; flex: 0 0 auto;">
