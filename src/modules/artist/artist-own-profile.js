@@ -285,24 +285,26 @@ function renderMediaGallery(artist) {
 function setupEditButtonHandlers() {
   // Desktop edit button
   const desktopEditBtn = document.getElementById('artist-edit-own-profile-btn');
-  if (desktopEditBtn) {
+  if (desktopEditBtn && !desktopEditBtn.dataset.listenerAttached) {
     desktopEditBtn.addEventListener('click', async () => {
       console.log('[ARTIST OWN PROFILE] Desktop edit button clicked');
-      // Update URL
+      // Update URL first
       window.history.pushState({ view: 'artist-edit-profile' }, '', '#edit-profile');
-      showProfileEditorView();
+      await showProfileEditorView();
     });
+    desktopEditBtn.dataset.listenerAttached = 'true';
   }
 
   // Mobile edit button
   const mobileEditBtn = document.getElementById('mobile-edit-own-profile-btn');
-  if (mobileEditBtn) {
+  if (mobileEditBtn && !mobileEditBtn.dataset.listenerAttached) {
     mobileEditBtn.addEventListener('click', async () => {
       console.log('[ARTIST OWN PROFILE] Mobile edit button clicked');
-      // Update URL
+      // Update URL first
       window.history.pushState({ view: 'artist-edit-profile' }, '', '#edit-profile');
-      showProfileEditorView();
+      await showProfileEditorView();
     });
+    mobileEditBtn.dataset.listenerAttached = 'true';
   }
 }
 
@@ -371,8 +373,7 @@ function setupEditorFormHandlers() {
     cancelBtn.addEventListener('click', async () => {
       // Update URL and show profile
       window.history.pushState({ view: 'artist-profile' }, '', '#profile');
-      const { showArtistOwnProfile } = await import('../../ui/ui.js');
-      showArtistOwnProfile();
+      hideProfileEditor();
     });
     cancelBtn.dataset.listenerAttached = 'true';
   }
