@@ -640,15 +640,30 @@ export function showProgrammerProfile() {
       const el = document.getElementById(id);
       if (el) {
         el.style.display = 'block';
+        el.classList.remove('hidden');
       }
     });
 
-    // HIDE search section on profile page
+    // HIDE search section and editor on profile page
     const searchSection = document.getElementById('artist-search-section');
     if (searchSection) {
       searchSection.style.display = 'none';
+      searchSection.classList.add('hidden');
+    }
+
+    // Hide editor
+    const editor = document.getElementById('programmer-profile-editor');
+    if (editor) {
+      editor.style.display = 'none';
+      editor.classList.add('hidden');
     }
   });
+
+  updateMobileNavActive('profile');
+
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 100);
+  }
 }
 
 /**
@@ -1351,23 +1366,41 @@ export function showSearch() {
     import('../modules/programmer/programmer-dashboard.js').then(module => {
       module.renderProgrammerDashboard();
       module.setupProgrammerDashboard();
-      module.showSearchOnlyView();
-    });
 
-    // BELANGRIJK: Reset setup flag en render search UI
-    const searchSection = document.getElementById('artist-search-section');
-    if (searchSection) {
-      searchSection.dataset.setupComplete = 'false';  // Reset flag
-    }
+      // CRITICAL: Hide profile sections, show only search
+      const sectionsToHide = [
+        'programmer-profile-overview',
+        'programmer-public-preview',
+        'programmer-about-card',
+        'programmer-profile-editor',
+        'programmer-pending-view'
+      ];
 
-    // Render search UI EERST, dan setup
-    import('../modules/search/search-ui.js').then(uiModule => {
-      uiModule.renderArtistSearch();
+      sectionsToHide.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.style.display = 'none';
+          el.classList.add('hidden');
+        }
+      });
 
-      // Dan setup interactions en load data
-      import('../modules/search/search-controller.js').then(ctrlModule => {
-        ctrlModule.setupArtistSearch();
-        setTimeout(() => ctrlModule.loadArtists(), 100);
+      // Show search section
+      const searchSection = document.getElementById('artist-search-section');
+      if (searchSection) {
+        searchSection.style.display = 'block';
+        searchSection.classList.remove('hidden');
+        searchSection.dataset.setupComplete = 'false';  // Reset flag
+      }
+
+      // Render search UI EERST, dan setup
+      import('../modules/search/search-ui.js').then(uiModule => {
+        uiModule.renderArtistSearch();
+
+        // Dan setup interactions en load data
+        import('../modules/search/search-controller.js').then(ctrlModule => {
+          ctrlModule.setupArtistSearch();
+          setTimeout(() => ctrlModule.loadArtists(), 100);
+        });
       });
     });
   }

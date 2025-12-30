@@ -243,14 +243,17 @@ export function showProgrammerPublicView() {
 export function showSearchOnlyView() {
   console.log('[PROGRAMMER DASHBOARD] Showing search-only view');
 
-  // Hide ALL profile elements
-  const profileView = document.getElementById('programmer-profile-view');
-  const editView = document.getElementById('programmer-edit-view');
-  const publicView = document.getElementById('programmer-public-view');
-  const mobileProfileLayout = document.getElementById('mobile-profile-layout');
-  const desktopProfileLayout = document.getElementById('desktop-profile-layout');
+  // Hide ALL profile sections (use correct IDs from actual HTML)
+  const sectionsToHide = [
+    'programmer-profile-overview',
+    'programmer-public-preview',
+    'programmer-about-card',
+    'programmer-profile-editor',
+    'programmer-pending-view'
+  ];
 
-  [profileView, editView, publicView, mobileProfileLayout, desktopProfileLayout].forEach(el => {
+  sectionsToHide.forEach(id => {
+    const el = document.getElementById(id);
     if (el) {
       el.style.display = 'none';
       el.classList.add('hidden');
@@ -276,22 +279,26 @@ export function showSearchOnlyView() {
 export function showProfileOnlyView() {
   console.log('[PROGRAMMER DASHBOARD] Showing profile-only view');
 
-  // Show profile view
-  const profileView = document.getElementById('programmer-profile-view');
-  const editView = document.getElementById('programmer-edit-view');
-  const publicView = document.getElementById('programmer-public-view');
+  // SHOW profile sections (use correct IDs from actual HTML)
+  const sectionsToShow = [
+    'programmer-profile-overview',
+    'programmer-public-preview',
+    'programmer-about-card'
+  ];
 
-  if (profileView) {
-    profileView.style.display = 'block';
-    profileView.classList.remove('hidden');
-  }
-  if (editView) {
-    editView.style.display = 'none';
-    editView.classList.add('hidden');
-  }
-  if (publicView) {
-    publicView.style.display = 'none';
-    publicView.classList.add('hidden');
+  sectionsToShow.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.display = 'block';
+      el.classList.remove('hidden');
+    }
+  });
+
+  // HIDE editor
+  const editor = document.getElementById('programmer-profile-editor');
+  if (editor) {
+    editor.style.display = 'none';
+    editor.classList.add('hidden');
   }
 
   // HIDE search section
