@@ -285,9 +285,17 @@ export function renderProfileEditor() {
               </div>
 
               <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Document (PDF, DOC, DOCX)</label>
-                <input id="artist-edit-document" type="file" accept=".pdf,.doc,.docx"
-                       class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:font-medium">
+                <div class="flex items-center justify-between mb-3">
+                  <label class="text-sm font-semibold text-gray-700">Documents (PDF, DOC, DOCX)</label>
+                  <label class="cursor-pointer bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-indigo-700">
+                    + Add Document
+                    <input id="artist-add-document" type="file" accept=".pdf,.doc,.docx" class="sr-only">
+                  </label>
+                </div>
+                <p class="text-xs text-gray-400 mb-3">Maximum 10MB per file</p>
+                <div id="artist-documents-preview" class="space-y-2">
+                  <!-- Documents rendered via JS -->
+                </div>
               </div>
 
               <div>
@@ -397,6 +405,7 @@ export function renderProfileEditor() {
   initPitchCounter();
   setupGalleryUploadHandler();
   setupYouTubeAddHandler();
+  setupDocumentUploadHandler();
   setupProfilePicPreview();
   setupViewPublicProfileHandler();
 
@@ -639,6 +648,7 @@ export function populateProfileEditor(data) {
   setValue('artist-edit-text', data.textContent || '');
   renderGalleryPreview(data.galleryPhotos || []);
   renderYouTubePreview(data.youtubeVideos || []);
+  renderDocumentsPreview(data.documents || []);
 
   // === TAB 3: Contact & Socials ===
   setValue('artist-edit-phone', data.phone || '');
@@ -930,6 +940,134 @@ function setupYouTubeAddHandler() {
   });
 }
 
+// === Document Functions ===
+
+function renderDocumentsPreview(documents) {
+  const container = document.getElementById('artist-documents-preview');
+  if (!container) return;
+
+  if (!documents || documents.length === 0) {
+    container.innerHTML = `
+      <div class="py-6 text-center text-gray-400 text-sm bg-gray-50 rounded-xl">
+        No documents uploaded yet
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = documents.map((doc, index) => `
+    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-xl group">
+      <div class="flex items-center gap-3 min-w-0">
+        <div class="w-10 h-10 bg-indigo-100 rounded-lg flex items-center justify-center flex-shrink-0">
+          <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <p class="text-sm font-medium text-gray-900 truncate">${doc.name || 'Document'}</p>
+          <a href="${doc.url}" target="_blank" class="text-xs text-indigo-600 hover:underline">View</a>
+        </div>
+      </div>
+      <button type="button"
+              class="delete-document w-8 h-8 bg-red-100 text-red-600 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center hover:bg-red-200"
+              data-index="${index}">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+  `).join('');
+
+  // Attach delete handlers
+  container.querySelectorAll('.delete-document').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const index = parseInt(btn.dataset.index);
+      await deleteDocument(index);
+    });
+  });
+}
+
+async function deleteDocument(index) {
+  if (!confirm('Delete this document?')) return;
+
+  try {
+    const { doc, updateDoc } = await import('firebase/firestore');
+    const { db } = await import('../../services/firebase.js');
+    const { getStore, setStore } = await import('../../utils/store.js');
+
+    const currentUser = getStore('currentUser');
+    const currentUserData = getStore('currentUserData');
+    const documents = [...(currentUserData.documents || [])];
+    documents.splice(index, 1);
+
+    await updateDoc(doc(db, 'artists', currentUser.uid), { documents });
+
+    setStore('currentUserData', { ...currentUserData, documents });
+    renderDocumentsPreview(documents);
+    console.log('[DOCUMENTS] Document deleted');
+  } catch (error) {
+    console.error('[DOCUMENTS] Delete error:', error);
+    alert('Error deleting document');
+  }
+}
+
+function setupDocumentUploadHandler() {
+  const input = document.getElementById('artist-add-document');
+  if (!input) return;
+
+  input.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file size (max 10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      alert('Document must be less than 10MB');
+      input.value = '';
+      return;
+    }
+
+    try {
+      const { getStorage, ref, uploadBytes, getDownloadURL } = await import('firebase/storage');
+      const { doc, updateDoc, arrayUnion } = await import('firebase/firestore');
+      const { db } = await import('../../services/firebase.js');
+      const { getStore, setStore } = await import('../../utils/store.js');
+
+      const currentUser = getStore('currentUser');
+      const currentUserData = getStore('currentUserData');
+
+      // Upload
+      const storage = getStorage();
+      const fileName = `${Date.now()}_${file.name}`;
+      const storageRef = ref(storage, `artists/${currentUser.uid}/docs/${fileName}`);
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
+
+      const docData = {
+        name: file.name,
+        url: downloadURL,
+        uploadedAt: new Date().toISOString()
+      };
+
+      // Update Firestore
+      await updateDoc(doc(db, 'artists', currentUser.uid), {
+        documents: arrayUnion(docData)
+      });
+
+      // Update local
+      const documents = [...(currentUserData.documents || []), docData];
+      setStore('currentUserData', { ...currentUserData, documents });
+      renderDocumentsPreview(documents);
+
+      input.value = '';
+      console.log('[DOCUMENTS] Document uploaded');
+    } catch (error) {
+      console.error('[DOCUMENTS] Upload error:', error);
+      alert('Error uploading document');
+    }
+  });
+}
+
 /**
  * Setup profile picture preview
  */
@@ -1066,24 +1204,6 @@ async function handleProfileSubmit(e) {
       console.log('[SAVE] Profile picture uploaded');
     }
 
-    // === Document Upload ===
-    const docInput = document.getElementById('artist-edit-document');
-    if (docInput?.files?.[0]) {
-      const file = docInput.files[0];
-
-      // Validate file size (max 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        throw new Error('Document must be less than 10MB');
-      }
-
-      const storage = getStorage();
-      const storageRef = ref(storage, `artists/${currentUser.uid}/docs/${file.name}`);
-      await uploadBytes(storageRef, file);
-      profileData.documentUrl = await getDownloadURL(storageRef);
-      profileData.documentName = file.name;
-      console.log('[SAVE] Document uploaded');
-    }
-
     // === Save to Firestore ===
     const docRef = doc(db, 'artists', currentUser.uid);
     await updateDoc(docRef, profileData);
@@ -1094,14 +1214,25 @@ async function handleProfileSubmit(e) {
 
     // === Success feedback ===
     if (successMsg) {
-      successMsg.textContent = 'Profile saved successfully!';
+      successMsg.textContent = '✓ Profile saved successfully!';
       successMsg.classList.remove('hidden');
     }
 
-    // Scroll to top to show success message
-    document.querySelector('.tab-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-
     console.log('[SAVE] Profile saved successfully');
+
+    // === Redirect to profile page after short delay ===
+    setTimeout(async () => {
+      const { showArtistOwnProfile } = await import('../../ui/ui.js');
+
+      // Hide editor
+      const editor = document.getElementById('artist-profile-editor');
+      if (editor) editor.classList.add('hidden');
+
+      // Show profile
+      if (showArtistOwnProfile) {
+        showArtistOwnProfile();
+      }
+    }, 1000); // 1 second delay to show success message
 
   } catch (error) {
     console.error('[SAVE] Error:', error);
