@@ -834,52 +834,25 @@ export function renderDashboard() {
               </main>
 
               <!-- RIGHT COLUMN: Chat Panel -->
-              <aside id="artist-chat-panel" style="
-                background: white;
-                border-radius: 20px;
-                box-shadow: 0 4px 20px rgba(128,90,213,0.08);
-                border: 1px solid rgba(128,90,213,0.1);
-                display: flex;
-                flex-direction: column;
-                height: 600px;
-                min-height: 400px;
-                max-height: 600px;
-                position: sticky;
-                top: 100px;
-                overflow: hidden;
-                align-self: start;
-              ">
-                <!-- Chat Header -->
-                <div style="padding: 20px 24px; border-bottom: 1px solid #e9e3f5; flex: 0 0 auto;">
-                  <h2 id="chat-header-name" style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin: 0;">Chat met Artist</h2>
-                </div>
-
-                <!-- Chat Messages - THIS IS THE SCROLLABLE PART -->
-                <div id="profile-chat-messages" style="
-                  flex: 1 1 0;
-                  overflow-y: auto;
-                  overflow-x: hidden;
-                  padding: 20px 24px;
-                  display: flex;
-                  flex-direction: column;
-                  gap: 16px;
-                  min-height: 0;
-                ">
-                  <div id="chat-empty-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex: 1; color: #9ca3af;">
-                    <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-bottom: 12px; opacity: 0.5;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-                    <p style="font-size: 14px; margin: 0;">Start een gesprek</p>
+              <aside id="artist-chat-panel" style="position: relative; width: 320px; height: 600px; align-self: start; flex-shrink: 0;">
+                <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: white; border-radius: 20px; box-shadow: 0 4px 20px rgba(128,90,213,0.08); border: 1px solid rgba(128,90,213,0.1); display: flex; flex-direction: column; overflow: hidden;">
+                  <div style="padding: 20px 24px; border-bottom: 1px solid #e9e3f5; flex-shrink: 0;">
+                    <h2 id="chat-header-name" style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin: 0;">Chat met Artist</h2>
                   </div>
-                </div>
-
-                <!-- Chat Input -->
-                <div style="padding: 16px 24px; border-top: 1px solid #e9e3f5; flex: 0 0 auto; background: white;">
-                  <form id="profile-chat-form" style="display: flex; gap: 12px; margin: 0;">
-                    <input type="text" id="profile-chat-input" placeholder="Type je bericht..."
-                           style="flex: 1; padding: 12px 16px; border: 1px solid #e9e3f5; border-radius: 24px; font-size: 14px; outline: none;">
-                    <button type="submit" style="width: 44px; height: 44px; background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%); border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
-                      <svg width="20" height="20" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
-                    </button>
-                  </form>
+                  <div id="profile-chat-messages" style="flex: 1; min-height: 0; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px;">
+                    <div id="chat-empty-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #9ca3af;">
+                      <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-bottom: 12px; opacity: 0.5;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                      <p style="font-size: 14px; margin: 0;">Start een gesprek</p>
+                    </div>
+                  </div>
+                  <div style="padding: 16px 24px; border-top: 1px solid #e9e3f5; flex-shrink: 0; background: white;">
+                    <form id="profile-chat-form" style="display: flex; gap: 12px; margin: 0;">
+                      <input type="text" id="profile-chat-input" placeholder="Type je bericht..." style="flex: 1; padding: 12px 16px; border: 1px solid #e9e3f5; border-radius: 24px; font-size: 14px; outline: none;">
+                      <button type="submit" style="width: 44px; height: 44px; background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%); border: none; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <svg width="20" height="20" fill="none" stroke="white" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                      </button>
+                    </form>
+                  </div>
                 </div>
               </aside>
 
