@@ -117,10 +117,11 @@ function setupBrowserNavigation() {
     console.log('[BROWSER NAV] Popstate event triggered:', event.state);
 
     const currentUser = getStore('currentUser');
+    const currentUserData = getStore('currentUserData');
     const hash = window.location.hash.replace('#', '');
 
     // Auth guard: redirect to login if not authenticated
-    const protectedRoutes = ['profile', 'messages', 'account-settings', 'profile-settings', 'dashboard'];
+    const protectedRoutes = ['profile', 'edit-profile', 'messages', 'account-settings', 'profile-settings', 'dashboard'];
     if (protectedRoutes.includes(hash) && !currentUser) {
       console.warn('[BROWSER NAV] Protected route accessed without auth, redirecting to home');
       showPage('home-view', false);
@@ -129,39 +130,58 @@ function setupBrowserNavigation() {
 
     // Route based on hash
     switch(hash) {
-      case 'search':
-        // Only programmers can access search
-        const currentUserData = getStore('currentUserData');
-        if (currentUserData?.role === 'programmer') {
-          import('./src/ui/ui.js').then(module => module.showSearch());
+      case 'profile':
+        if (currentUserData?.role === 'artist') {
+          import('./src/ui/ui.js').then(module => module.showArtistOwnProfile());
+        } else if (currentUserData?.role === 'programmer') {
+          import('./src/ui/ui.js').then(module => module.showProgrammerProfile());
         } else {
-          console.warn('[BROWSER NAV] Access denied: Only programmers can access search');
           showDashboard();
         }
         break;
-      case 'profile':
-      case 'dashboard':
-        showDashboard();
+
+      case 'edit-profile':
+        if (currentUserData?.role === 'artist') {
+          import('./src/ui/ui.js').then(module => module.showArtistEditProfile());
+        } else if (currentUserData?.role === 'programmer') {
+          import('./src/ui/ui.js').then(module => module.showEditProfile());
+        }
         break;
+
+      case 'search':
+        if (currentUserData?.role === 'programmer') {
+          import('./src/ui/ui.js').then(module => module.showSearch());
+        } else {
+          console.warn('[BROWSER NAV] Only programmers can access search');
+          showDashboard();
+        }
+        break;
+
       case 'messages':
         showMessages();
         break;
+
       case 'account-settings':
         showAccountSettings();
         break;
-      case 'profile-settings':
-        showProgrammerSettings();
+
+      case 'dashboard':
+        showDashboard();
         break;
+
       case 'login':
         showPage('login-view', false);
         break;
+
       case 'signup':
         showPage('signup-view', false);
         break;
+
       case 'home':
       case '':
         showPage('home-view', false);
         break;
+
       default:
         console.warn('[BROWSER NAV] Unknown route:', hash);
         showPage('home-view', false);

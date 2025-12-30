@@ -63,9 +63,6 @@ export function renderDesktopNav() {
 
               <!-- Dropdown Menu (hidden by default) -->
               <div id="desktop-profile-dropdown" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-200">
-                <button id="desktop-profile-settings" class="block w-full text-left px-4 py-2.5 text-gray-700 hover:bg-gray-100 font-medium">
-                  Profiel Instellingen
-                </button>
                 <button id="desktop-account-settings" class="block w-full text-left px-4 py-2.5 text-gray-700 hover:bg-gray-100 font-medium">
                   Account Instellingen
                 </button>

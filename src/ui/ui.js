@@ -1139,14 +1139,6 @@ function setupDesktopNavigation() {
       return;
     }
 
-    // Desktop Profile Settings → Edit Profile page
-    if (e.target.closest('#desktop-profile-settings')) {
-      const dropdown = document.getElementById('desktop-profile-dropdown');
-      if (dropdown) dropdown.classList.add('hidden');
-      showEditProfile(); // Updates hash internally
-      return;
-    }
-
     // Desktop Account Settings (Email/Password)
     if (e.target.closest('#desktop-account-settings')) {
       const dropdown = document.getElementById('desktop-profile-dropdown');
@@ -1366,14 +1358,14 @@ export function showProfile() {
     return;
   }
 
-  // Render dashboard zonder hash update
-  showPage('dashboard-view', false);
+  if (currentUserData.role === 'artist') {
+    // Artists get their own profile view
+    showArtistOwnProfile();
+  } else if (currentUserData.role === 'programmer') {
+    // Existing programmer profile logic
+    showPage('dashboard-view', false);
+    window.history.pushState({ view: 'profile' }, '', '#profile');
 
-  // Zet correcte hash
-  window.history.pushState({ view: 'profile' }, '', '#profile');
-
-  // Setup dashboard
-  if (currentUserData.role === 'programmer') {
     const programmerDashboard = document.getElementById('programmer-dashboard');
     if (programmerDashboard) {
       programmerDashboard.style.display = 'block';
@@ -1385,9 +1377,6 @@ export function showProfile() {
       module.setupProgrammerDashboard();
       module.showProfileOnlyView();
     });
-  } else if (currentUserData.role === 'artist') {
-    // Show artist own profile
-    showArtistOwnProfile();
   }
 
   updateMobileNavActive('profile');
@@ -1410,8 +1399,11 @@ export async function showArtistOwnProfile() {
 
   console.log('[UI] Showing artist own profile view');
 
-  // Render de dashboard container structuur
+  // Render de dashboard container structuur ZONDER hash update
   showPage('dashboard-view', false);
+
+  // Zet correcte hash voor artist profile
+  window.history.pushState({ view: 'artist-profile' }, '', '#profile');
 
   // Get containers
   const artistDashboard = document.getElementById('artist-dashboard');
@@ -1431,7 +1423,55 @@ export async function showArtistOwnProfile() {
   const { renderArtistOwnProfile } = await import('../modules/artist/artist-own-profile.js');
   renderArtistOwnProfile(currentUserData);
 
+  // Update mobile nav
+  updateMobileNavActive('profile');
+
   // Re-initialize Lucide icons
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 100);
+  }
+}
+
+/**
+ * Shows artist profile editor with correct URL
+ */
+export async function showArtistEditProfile() {
+  const currentUserData = getStore('currentUserData');
+
+  if (!currentUserData || currentUserData.role !== 'artist') {
+    console.warn('[UI] Only artists can access edit profile');
+    return;
+  }
+
+  console.log('[UI] Showing artist edit profile');
+
+  // Render dashboard container without hash update
+  showPage('dashboard-view', false);
+
+  // Set correct hash
+  window.history.pushState({ view: 'artist-edit-profile' }, '', '#edit-profile');
+
+  // Get containers
+  const artistDashboard = document.getElementById('artist-dashboard');
+  const programmerDashboard = document.getElementById('programmer-dashboard');
+
+  if (artistDashboard) {
+    artistDashboard.style.display = 'block';
+    artistDashboard.classList.remove('hidden');
+  }
+  if (programmerDashboard) {
+    programmerDashboard.style.display = 'none';
+    programmerDashboard.classList.add('hidden');
+  }
+
+  // Import and show profile editor
+  const { showProfileEditorView } = await import('../modules/artist/artist-own-profile.js');
+  if (showProfileEditorView) {
+    showProfileEditorView();
+  }
+
+  updateMobileNavActive('profile');
+
   if (window.lucide) {
     setTimeout(() => lucide.createIcons(), 100);
   }

@@ -286,31 +286,34 @@ function setupEditButtonHandlers() {
   // Desktop edit button
   const desktopEditBtn = document.getElementById('artist-edit-own-profile-btn');
   if (desktopEditBtn) {
-    desktopEditBtn.addEventListener('click', () => {
+    desktopEditBtn.addEventListener('click', async () => {
       console.log('[ARTIST OWN PROFILE] Desktop edit button clicked');
-      showProfileEditor();
+      // Update URL
+      window.history.pushState({ view: 'artist-edit-profile' }, '', '#edit-profile');
+      showProfileEditorView();
     });
   }
 
   // Mobile edit button
   const mobileEditBtn = document.getElementById('mobile-edit-own-profile-btn');
   if (mobileEditBtn) {
-    mobileEditBtn.addEventListener('click', () => {
+    mobileEditBtn.addEventListener('click', async () => {
       console.log('[ARTIST OWN PROFILE] Mobile edit button clicked');
-      showProfileEditor();
+      // Update URL
+      window.history.pushState({ view: 'artist-edit-profile' }, '', '#edit-profile');
+      showProfileEditorView();
     });
   }
 }
 
 /**
- * Show profile editor
+ * Show profile editor view (exportable for routing)
  */
-async function showProfileEditor() {
+export async function showProfileEditorView() {
   const currentUserData = getStore('currentUserData');
 
   // Import dashboard modules
   const dashboardUI = await import('../dashboard/dashboard-ui.js');
-  const dashboardController = await import('../dashboard/dashboard-controller.js');
 
   // Hide profile overview
   const mobileProfile = document.getElementById('mobile-artist-own-profile');
@@ -340,15 +343,41 @@ async function showProfileEditor() {
     dashboardUI.populateProfileEditor(currentUserData);
   }
 
-  // Setup form submission handler
+  // Setup form handlers
+  setupEditorFormHandlers();
+
+  // Re-initialize Lucide icons
+  if (window.lucide) {
+    window.lucide.createIcons();
+  }
+}
+
+/**
+ * Setup form handlers for editor
+ */
+function setupEditorFormHandlers() {
+  // Form submission
   const form = document.getElementById('artist-profile-form');
-  if (form) {
+  if (form && !form.dataset.listenerAttached) {
     form.addEventListener('submit', async (e) => {
       await handleOwnProfileSubmit(e);
     });
+    form.dataset.listenerAttached = 'true';
   }
 
-  // Setup file input handlers (from dashboard-controller)
+  // Cancel button - navigate back to profile with correct URL
+  const cancelBtn = document.getElementById('cancel-edit-profile-btn');
+  if (cancelBtn && !cancelBtn.dataset.listenerAttached) {
+    cancelBtn.addEventListener('click', async () => {
+      // Update URL and show profile
+      window.history.pushState({ view: 'artist-profile' }, '', '#profile');
+      const { showArtistOwnProfile } = await import('../../ui/ui.js');
+      showArtistOwnProfile();
+    });
+    cancelBtn.dataset.listenerAttached = 'true';
+  }
+
+  // File input handlers
   setupProfilePicPreview();
   setupDocumentInput();
 
@@ -360,19 +389,6 @@ async function showProfileEditor() {
   }).catch(err => {
     console.warn('[ARTIST OWN PROFILE] Media gallery module not loaded:', err);
   });
-
-  // Setup cancel button to return to own profile
-  const cancelBtn = document.getElementById('cancel-edit-profile-btn');
-  if (cancelBtn) {
-    cancelBtn.addEventListener('click', () => {
-      hideProfileEditor();
-    });
-  }
-
-  // Re-initialize Lucide icons
-  if (window.lucide) {
-    window.lucide.createIcons();
-  }
 }
 
 /**
