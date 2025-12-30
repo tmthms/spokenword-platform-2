@@ -289,6 +289,34 @@ export function renderProfileEditor() {
                 <input id="artist-edit-document" type="file" accept=".pdf,.doc,.docx"
                        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:font-medium">
               </div>
+
+              <div>
+                <div class="flex items-center justify-between mb-3">
+                  <label class="text-sm font-semibold text-gray-700">Gallery Photos</label>
+                  <label class="cursor-pointer bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-indigo-700">
+                    + Add Photo
+                    <input id="artist-add-gallery-photo" type="file" accept="image/*" class="sr-only">
+                  </label>
+                </div>
+                <div id="artist-gallery-preview" class="grid grid-cols-3 gap-3">
+                  <!-- Photos rendered via JS -->
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-3">YouTube Videos</label>
+                <div class="flex gap-2 mb-3">
+                  <input id="youtube-url-input" type="url"
+                         class="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                         placeholder="https://www.youtube.com/watch?v=...">
+                  <button type="button" id="add-youtube-btn" class="px-4 py-3 bg-indigo-600 text-white rounded-xl font-medium hover:bg-indigo-700 whitespace-nowrap">
+                    Add Video
+                  </button>
+                </div>
+                <div id="artist-youtube-preview" class="grid grid-cols-2 gap-3">
+                  <!-- Videos rendered via JS -->
+                </div>
+              </div>
               </div>
             </div>
 
@@ -367,6 +395,8 @@ export function renderProfileEditor() {
   initMobileAccordions();
   renderEditorCheckboxes();
   initPitchCounter();
+  setupGalleryUploadHandler();
+  setupYouTubeAddHandler();
 
   // Populate with current data
   const currentUserData = getStore('currentUserData');
@@ -599,6 +629,8 @@ export function populateProfileEditor(data) {
   setValue('artist-edit-video', data.videoUrl || '');
   setValue('artist-edit-audio', data.audioUrl || '');
   setValue('artist-edit-text', data.textContent || '');
+  renderGalleryPreview(data.galleryPhotos || []);
+  renderYouTubePreview(data.youtubeVideos || []);
 
   // === TAB 3: Contact & Socials ===
   setValue('artist-edit-phone', data.phone || '');
@@ -655,4 +687,237 @@ function updatePitchCount() {
 export function getCheckboxValues(name) {
   const checkboxes = document.querySelectorAll(`input[name="${name}"]:checked`);
   return Array.from(checkboxes).map(cb => cb.value);
+}
+
+// === Gallery Functions ===
+
+function renderGalleryPreview(photos) {
+  const container = document.getElementById('artist-gallery-preview');
+  if (!container) return;
+
+  if (!photos || photos.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-3 py-8 text-center text-gray-400 text-sm bg-gray-50 rounded-xl">
+        No photos uploaded yet
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = photos.map((url, index) => `
+    <div class="relative group aspect-square">
+      <img src="${url}" alt="Gallery photo" class="w-full h-full object-cover rounded-xl">
+      <button type="button"
+              class="delete-gallery-photo absolute top-2 right-2 w-7 h-7 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center shadow-lg"
+              data-index="${index}">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+        </svg>
+      </button>
+    </div>
+  `).join('');
+
+  // Attach delete handlers
+  container.querySelectorAll('.delete-gallery-photo').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const index = parseInt(btn.dataset.index);
+      await deleteGalleryPhoto(index);
+    });
+  });
+}
+
+async function deleteGalleryPhoto(index) {
+  if (!confirm('Delete this photo?')) return;
+
+  try {
+    const { doc, updateDoc } = await import('firebase/firestore');
+    const { db } = await import('../../services/firebase.js');
+    const { getStore, setStore } = await import('../../utils/store.js');
+
+    const currentUser = getStore('currentUser');
+    const currentUserData = getStore('currentUserData');
+    const photos = [...(currentUserData.galleryPhotos || [])];
+    photos.splice(index, 1);
+
+    await updateDoc(doc(db, 'artists', currentUser.uid), { galleryPhotos: photos });
+
+    setStore('currentUserData', { ...currentUserData, galleryPhotos: photos });
+    renderGalleryPreview(photos);
+    console.log('[GALLERY] Photo deleted');
+  } catch (error) {
+    console.error('[GALLERY] Delete error:', error);
+    alert('Error deleting photo');
+  }
+}
+
+function setupGalleryUploadHandler() {
+  const input = document.getElementById('artist-add-gallery-photo');
+  if (!input) return;
+
+  input.addEventListener('change', async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const { getStorage, ref, uploadBytes, getDownloadURL } = await import('firebase/storage');
+      const { doc, updateDoc, arrayUnion } = await import('firebase/firestore');
+      const { db } = await import('../../services/firebase.js');
+      const { getStore, setStore } = await import('../../utils/store.js');
+
+      const currentUser = getStore('currentUser');
+      const currentUserData = getStore('currentUserData');
+
+      // Upload
+      const storage = getStorage();
+      const fileName = `gallery_${Date.now()}_${file.name}`;
+      const storageRef = ref(storage, `artists/${currentUser.uid}/${fileName}`);
+      await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(storageRef);
+
+      // Update Firestore
+      await updateDoc(doc(db, 'artists', currentUser.uid), {
+        galleryPhotos: arrayUnion(downloadURL)
+      });
+
+      // Update local
+      const photos = [...(currentUserData.galleryPhotos || []), downloadURL];
+      setStore('currentUserData', { ...currentUserData, galleryPhotos: photos });
+      renderGalleryPreview(photos);
+
+      // Reset input
+      input.value = '';
+      console.log('[GALLERY] Photo uploaded');
+    } catch (error) {
+      console.error('[GALLERY] Upload error:', error);
+      alert('Error uploading photo');
+    }
+  });
+}
+
+// === YouTube Functions ===
+
+function renderYouTubePreview(videos) {
+  const container = document.getElementById('artist-youtube-preview');
+  if (!container) return;
+
+  if (!videos || videos.length === 0) {
+    container.innerHTML = `
+      <div class="col-span-2 py-8 text-center text-gray-400 text-sm bg-gray-50 rounded-xl">
+        No videos added yet
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = videos.map((video, index) => {
+    const videoId = video.videoId || extractYouTubeId(video.url || video);
+    if (!videoId) return '';
+
+    return `
+      <div class="relative group aspect-video">
+        <img src="https://img.youtube.com/vi/${videoId}/mqdefault.jpg"
+             alt="Video thumbnail"
+             class="w-full h-full object-cover rounded-xl">
+        <div class="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div class="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center shadow-lg">
+            <svg class="w-5 h-5 text-white ml-0.5" fill="currentColor" viewBox="0 0 24 24">
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </div>
+        </div>
+        <button type="button"
+                class="delete-youtube-video absolute top-2 right-2 w-7 h-7 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center shadow-lg"
+                data-index="${index}">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+    `;
+  }).join('');
+
+  // Attach delete handlers
+  container.querySelectorAll('.delete-youtube-video').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      const index = parseInt(btn.dataset.index);
+      await deleteYouTubeVideo(index);
+    });
+  });
+}
+
+function extractYouTubeId(url) {
+  if (!url) return null;
+  const match = url.match(/(?:youtube\.com\/(?:[^\/]+\/.+\/|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/\s]{11})/);
+  return match ? match[1] : null;
+}
+
+async function deleteYouTubeVideo(index) {
+  if (!confirm('Delete this video?')) return;
+
+  try {
+    const { doc, updateDoc } = await import('firebase/firestore');
+    const { db } = await import('../../services/firebase.js');
+    const { getStore, setStore } = await import('../../utils/store.js');
+
+    const currentUser = getStore('currentUser');
+    const currentUserData = getStore('currentUserData');
+    const videos = [...(currentUserData.youtubeVideos || [])];
+    videos.splice(index, 1);
+
+    await updateDoc(doc(db, 'artists', currentUser.uid), { youtubeVideos: videos });
+
+    setStore('currentUserData', { ...currentUserData, youtubeVideos: videos });
+    renderYouTubePreview(videos);
+    console.log('[YOUTUBE] Video deleted');
+  } catch (error) {
+    console.error('[YOUTUBE] Delete error:', error);
+    alert('Error deleting video');
+  }
+}
+
+function setupYouTubeAddHandler() {
+  const addBtn = document.getElementById('add-youtube-btn');
+  const input = document.getElementById('youtube-url-input');
+  if (!addBtn || !input) return;
+
+  addBtn.addEventListener('click', async () => {
+    const url = input.value.trim();
+    if (!url) {
+      alert('Please enter a YouTube URL');
+      return;
+    }
+
+    const videoId = extractYouTubeId(url);
+    if (!videoId) {
+      alert('Invalid YouTube URL');
+      return;
+    }
+
+    try {
+      const { doc, updateDoc, arrayUnion } = await import('firebase/firestore');
+      const { db } = await import('../../services/firebase.js');
+      const { getStore, setStore } = await import('../../utils/store.js');
+
+      const currentUser = getStore('currentUser');
+      const currentUserData = getStore('currentUserData');
+
+      const videoData = { url, videoId, addedAt: new Date().toISOString() };
+
+      await updateDoc(doc(db, 'artists', currentUser.uid), {
+        youtubeVideos: arrayUnion(videoData)
+      });
+
+      const videos = [...(currentUserData.youtubeVideos || []), videoData];
+      setStore('currentUserData', { ...currentUserData, youtubeVideos: videos });
+      renderYouTubePreview(videos);
+
+      input.value = '';
+      console.log('[YOUTUBE] Video added');
+    } catch (error) {
+      console.error('[YOUTUBE] Add error:', error);
+      alert('Error adding video');
+    }
+  });
 }
