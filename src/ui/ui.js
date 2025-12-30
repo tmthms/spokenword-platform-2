@@ -1089,7 +1089,12 @@ function setupBottomNavigation() {
         showSearch();
         break;
       case 'profile':
-        showProfile();
+        const currentUserData = getStore('currentUserData');
+        if (currentUserData?.role === 'artist') {
+          showArtistOwnProfile();
+        } else if (currentUserData?.role === 'programmer') {
+          showProgrammerProfile();
+        }
         break;
       case 'messages':
         showMessages(); // Updates hash internally
@@ -1129,7 +1134,16 @@ function setupDesktopNavigation() {
 
     // Desktop Profile (Profiel)
     if (e.target.closest('#desktop-nav-profile')) {
-      showProgrammerProfile();
+      e.preventDefault();
+      const currentUserData = getStore('currentUserData');
+
+      if (currentUserData?.role === 'artist') {
+        showArtistOwnProfile();
+      } else if (currentUserData?.role === 'programmer') {
+        showProgrammerProfile();
+      } else {
+        showProfile();
+      }
       return;
     }
 
@@ -1353,36 +1367,15 @@ export function showProfile() {
 
   const currentUserData = getStore('currentUserData');
   if (!currentUserData) {
-    console.warn("No user data found");
-    showPage('home-view');
+    console.warn("[UI] No user data found, cannot show profile");
+    // Don't redirect to home, just return
     return;
   }
 
   if (currentUserData.role === 'artist') {
-    // Artists get their own profile view
     showArtistOwnProfile();
   } else if (currentUserData.role === 'programmer') {
-    // Existing programmer profile logic
-    showPage('dashboard-view', false);
-    window.history.pushState({ view: 'profile' }, '', '#profile');
-
-    const programmerDashboard = document.getElementById('programmer-dashboard');
-    if (programmerDashboard) {
-      programmerDashboard.style.display = 'block';
-      programmerDashboard.classList.remove('hidden');
-    }
-
-    import('../modules/programmer/programmer-dashboard.js').then(module => {
-      module.renderProgrammerDashboard();
-      module.setupProgrammerDashboard();
-      module.showProfileOnlyView();
-    });
-  }
-
-  updateMobileNavActive('profile');
-
-  if (window.lucide) {
-    setTimeout(() => lucide.createIcons(), 100);
+    showProgrammerProfile();
   }
 }
 
