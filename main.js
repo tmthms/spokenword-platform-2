@@ -113,7 +113,7 @@ function initApp() {
  */
 function setupBrowserNavigation() {
   // Handle browser back/forward buttons
-  window.addEventListener('popstate', (event) => {
+  window.addEventListener('popstate', async (event) => {
     console.log('[BROWSER NAV] Popstate event triggered:', event.state);
 
     const currentUser = getStore('currentUser');
@@ -121,7 +121,7 @@ function setupBrowserNavigation() {
     const hash = window.location.hash.replace('#', '');
 
     // Auth guard: redirect to login if not authenticated
-    const protectedRoutes = ['profile', 'edit-profile', 'messages', 'account-settings', 'profile-settings', 'dashboard'];
+    const protectedRoutes = ['profile', 'edit-profile', 'messages', 'account-settings', 'profile-settings', 'dashboard', 'search'];
     if (protectedRoutes.includes(hash) && !currentUser) {
       console.warn('[BROWSER NAV] Protected route accessed without auth, redirecting to home');
       showPage('home-view', false);
@@ -132,9 +132,11 @@ function setupBrowserNavigation() {
     switch(hash) {
       case 'profile':
         if (currentUserData?.role === 'artist') {
-          import('./src/ui/ui.js').then(module => module.showArtistOwnProfile());
+          const uiModule = await import('./src/ui/ui.js');
+          uiModule.showArtistOwnProfile();
         } else if (currentUserData?.role === 'programmer') {
-          import('./src/ui/ui.js').then(module => module.showProgrammerProfile());
+          const uiModule = await import('./src/ui/ui.js');
+          uiModule.showProgrammerProfile();
         } else {
           showDashboard();
         }
@@ -142,15 +144,18 @@ function setupBrowserNavigation() {
 
       case 'edit-profile':
         if (currentUserData?.role === 'artist') {
-          import('./src/ui/ui.js').then(module => module.showArtistEditProfile());
+          const uiModule = await import('./src/ui/ui.js');
+          uiModule.showArtistEditProfile();
         } else if (currentUserData?.role === 'programmer') {
-          import('./src/ui/ui.js').then(module => module.showEditProfile());
+          const uiModule = await import('./src/ui/ui.js');
+          uiModule.showEditProfile();
         }
         break;
 
       case 'search':
         if (currentUserData?.role === 'programmer') {
-          import('./src/ui/ui.js').then(module => module.showSearch());
+          const uiModule = await import('./src/ui/ui.js');
+          uiModule.showSearch();
         } else {
           console.warn('[BROWSER NAV] Only programmers can access search');
           showDashboard();
@@ -186,6 +191,11 @@ function setupBrowserNavigation() {
         console.warn('[BROWSER NAV] Unknown route:', hash);
         showPage('home-view', false);
     }
+
+    // CRITICAL: Always restore navigation after any route change
+    if (currentUser && currentUserData) {
+      await restoreNavigation();
+    }
   });
 
   // Handle initial hash on page load
@@ -196,6 +206,31 @@ function setupBrowserNavigation() {
   }
 
   console.log('[BROWSER NAV] Browser navigation setup complete');
+}
+
+/**
+ * Restore navigation bars after browser navigation
+ */
+async function restoreNavigation() {
+  try {
+    const navModule = await import('./src/modules/navigation/navigation.js');
+
+    // Ensure containers are visible
+    navModule.setNavigationVisibility(true);
+
+    // Re-render navigation
+    navModule.renderDesktopNav();
+    navModule.renderMobileNav();
+
+    // Re-initialize icons
+    if (window.lucide) {
+      setTimeout(() => lucide.createIcons(), 100);
+    }
+
+    console.log('[BROWSER NAV] Navigation restored');
+  } catch (err) {
+    console.error('[BROWSER NAV] Failed to restore navigation:', err);
+  }
 }
 
 // Start de applicatie zodra de HTML-pagina is geladen
