@@ -1412,11 +1412,19 @@ export async function showArtistOwnProfile() {
 
   console.log('[UI] Showing artist own profile view');
 
+  // ALWAYS ensure navigation is visible FIRST
+  setNavigationVisibility(true);
+  const navModule = await import('../modules/navigation/navigation.js');
+  navModule.renderDesktopNav();
+  navModule.renderMobileNav();
+
   // Render de dashboard container structuur ZONDER hash update
   showPage('dashboard-view', false);
 
-  // Zet correcte hash voor artist profile
-  window.history.pushState({ view: 'artist-profile' }, '', '#profile');
+  // Zet correcte hash voor artist profile (use replaceState to avoid duplicate history)
+  if (window.location.hash !== '#profile') {
+    window.history.pushState({ view: 'artist-profile' }, '', '#profile');
+  }
 
   // Get containers
   const artistDashboard = document.getElementById('artist-dashboard');

@@ -533,8 +533,32 @@ async function handleOwnProfileSubmit(e) {
     }
 
     // Wait a moment, then return to own profile view
-    setTimeout(() => {
-      hideProfileEditor();
+    setTimeout(async () => {
+      // Hide editor
+      const editor = document.getElementById('artist-profile-editor');
+      if (editor) editor.classList.add('hidden');
+
+      // Update URL
+      window.history.pushState({ view: 'artist-profile' }, '', '#profile');
+
+      // Restore navigation FIRST
+      const navModule = await import('../navigation/navigation.js');
+      navModule.setNavigationVisibility(true);
+      navModule.renderDesktopNav();
+      navModule.renderMobileNav();
+
+      // Then show profile
+      const { showArtistOwnProfile } = await import('../../ui/ui.js');
+      if (showArtistOwnProfile) {
+        showArtistOwnProfile();
+      }
+
+      // Re-initialize icons
+      if (window.lucide) {
+        setTimeout(() => lucide.createIcons(), 100);
+      }
+
+      // Scroll to top
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }, 1000);
 
