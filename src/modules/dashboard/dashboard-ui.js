@@ -237,6 +237,30 @@ export function renderProfileEditor() {
                 <div id="artist-edit-languages" class="grid grid-cols-2 md:grid-cols-3 gap-2"></div>
               </div>
 
+              <!-- Themes -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-3">
+                  Thema's <span class="text-gray-400 font-normal">(selecteer meerdere)</span>
+                </label>
+                <div id="artist-edit-themes" class="grid grid-cols-2 gap-2"></div>
+              </div>
+
+              <!-- Energy Levels -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-3">
+                  Energieniveau <span class="text-gray-400 font-normal">(selecteer meerdere)</span>
+                </label>
+                <div id="artist-edit-energy" class="grid grid-cols-3 gap-2"></div>
+              </div>
+
+              <!-- Formats -->
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-3">
+                  Diensten / Format <span class="text-gray-400 font-normal">(selecteer meerdere)</span>
+                </label>
+                <div id="artist-edit-formats" class="grid grid-cols-1 sm:grid-cols-3 gap-2"></div>
+              </div>
+
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">
                   Short Pitch * <span class="font-normal text-gray-400">(max 150 chars)</span>
@@ -519,6 +543,42 @@ function renderEditorCheckboxes() {
       { value: 'other', label: 'Other' }
     ];
     paymentContainer.innerHTML = payments.map(p => createCheckbox('payment', p.value, p.label)).join('');
+  }
+
+  // Themes
+  const themesContainer = document.getElementById('artist-edit-themes');
+  if (themesContainer) {
+    const themes = [
+      { value: 'maatschappijkritiek', label: 'Maatschappijkritiek' },
+      { value: 'diversiteit', label: 'Diversiteit' },
+      { value: 'humor', label: 'Humor' },
+      { value: 'persoonlijk', label: 'Persoonlijk' },
+      { value: 'duurzaamheid', label: 'Duurzaamheid' },
+      { value: 'zakelijk', label: 'Zakelijk' }
+    ];
+    themesContainer.innerHTML = themes.map(t => createCheckbox('theme', t.value, t.label)).join('');
+  }
+
+  // Energy Levels
+  const energyContainer = document.getElementById('artist-edit-energy');
+  if (energyContainer) {
+    const energyLevels = [
+      { value: 'intiem', label: 'Intiem' },
+      { value: 'interactief', label: 'Interactief' },
+      { value: 'energiek', label: 'Energiek' }
+    ];
+    energyContainer.innerHTML = energyLevels.map(e => createCheckbox('energy', e.value, e.label)).join('');
+  }
+
+  // Formats
+  const formatsContainer = document.getElementById('artist-edit-formats');
+  if (formatsContainer) {
+    const formats = [
+      { value: 'workshops', label: 'Workshops' },
+      { value: 'hosting', label: 'Hosting / Presentatie' },
+      { value: 'gedichten-op-maat', label: 'Gedichten op Maat' }
+    ];
+    formatsContainer.innerHTML = formats.map(f => createCheckbox('format', f.value, f.label)).join('');
   }
 }
 
