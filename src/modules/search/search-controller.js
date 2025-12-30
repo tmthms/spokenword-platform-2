@@ -25,6 +25,19 @@ export function setupArtistSearch() {
     return;
   }
 
+  // Desktop genre collapse/expand toggle
+  const genreToggle = document.getElementById('desktop-genre-toggle');
+  const genreCheckboxes = document.getElementById('desktop-genre-checkboxes');
+  const genreChevron = document.getElementById('desktop-genre-chevron');
+
+  if (genreToggle && genreCheckboxes && genreChevron) {
+    genreToggle.addEventListener('click', () => {
+      const isHidden = genreCheckboxes.style.display === 'none';
+      genreCheckboxes.style.display = isHidden ? 'flex' : 'none';
+      genreChevron.style.transform = isHidden ? 'rotate(180deg)' : 'rotate(0deg)';
+    });
+  }
+
   // Setup mobile pill filters
   setupMobileFilterPills();
 

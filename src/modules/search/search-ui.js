@@ -112,16 +112,7 @@ export function renderArtistSearch() {
 
           <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 4px 20px rgba(128, 90, 213, 0.08); border: 1px solid rgba(128, 90, 213, 0.1);">
 
-            <h3 style="font-size: 16px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Genre</h3>
-
-            <!-- Genre Checkboxes -->
-            <div id="desktop-genre-checkboxes" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
-              <p style="color: #9ca3af; font-size: 14px;">Laden...</p>
-            </div>
-
-            <hr style="border: none; border-top: 1px solid #e9e3f5; margin: 20px 0;">
-
-            <!-- Keywords -->
+            <!-- Keywords (moved to top) -->
             <div style="margin-bottom: 16px;">
               <label style="font-size: 14px; font-weight: 600; color: #1a1a2e; display: block; margin-bottom: 8px;">Keywords</label>
               <input id="desktop-input-keywords" type="text" placeholder="bijv. slam, poetry, rap..."
@@ -137,10 +128,28 @@ export function renderArtistSearch() {
             </div>
 
             <!-- Location Search -->
-            <div>
+            <div style="margin-bottom: 20px;">
               <input id="desktop-input-location" type="text" placeholder="Locatie..."
                      style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #e9e3f5; font-size: 14px; outline: none; box-sizing: border-box;">
             </div>
+
+            <hr style="border: none; border-top: 1px solid #e9e3f5; margin: 20px 0;">
+
+            <!-- Genre Section (collapsible, at bottom) -->
+            <div id="desktop-genre-section">
+              <button id="desktop-genre-toggle" type="button" style="width: 100%; display: flex; justify-content: space-between; align-items: center; background: none; border: none; cursor: pointer; padding: 0; margin-bottom: 0;">
+                <h3 style="font-size: 16px; font-weight: 700; color: #1a1a2e; margin: 0;">Genre</h3>
+                <svg id="desktop-genre-chevron" width="20" height="20" fill="none" stroke="#6b7280" viewBox="0 0 24 24" style="transition: transform 0.2s;">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </button>
+
+              <!-- Genre Checkboxes (hidden by default) -->
+              <div id="desktop-genre-checkboxes" style="display: none; flex-direction: column; gap: 12px; margin-top: 16px; max-height: 300px; overflow-y: auto;">
+                <p style="color: #9ca3af; font-size: 14px;">Laden...</p>
+              </div>
+            </div>
+
           </div>
         </aside>
 
