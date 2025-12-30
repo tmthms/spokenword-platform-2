@@ -248,7 +248,7 @@ export function renderProfileEditor() {
             </div>
 
             <!-- TAB 2: Bio & Media -->
-            <div class="tab-panel lg:hidden" data-tab-content="media">
+            <div class="tab-panel" data-tab-content="media">
               <!-- MOBILE: Accordion Header -->
               <button type="button" class="accordion-header lg:hidden w-full flex items-center justify-between p-4 bg-gray-50 border-b border-gray-200" data-accordion="media">
                 <span class="font-semibold text-gray-900">2. Biography & Media</span>
@@ -257,7 +257,7 @@ export function renderProfileEditor() {
                 </svg>
               </button>
               <!-- Content (hidden by default on mobile) -->
-              <div id="tab-media" class="accordion-content p-6 space-y-6 hidden lg:block">
+              <div id="tab-media" class="accordion-content p-6 space-y-6 hidden lg:hidden">
 
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Bio / Background Info *</label>
@@ -292,7 +292,7 @@ export function renderProfileEditor() {
             </div>
 
             <!-- TAB 3: Contact & Socials -->
-            <div class="tab-panel lg:hidden" data-tab-content="contact">
+            <div class="tab-panel" data-tab-content="contact">
               <!-- MOBILE: Accordion Header -->
               <button type="button" class="accordion-header lg:hidden w-full flex items-center justify-between p-4 bg-gray-50 border-b border-gray-200" data-accordion="contact">
                 <span class="font-semibold text-gray-900">3. Contact & Socials</span>
@@ -301,7 +301,7 @@ export function renderProfileEditor() {
                 </svg>
               </button>
               <!-- Content (hidden by default on mobile) -->
-              <div id="tab-contact" class="accordion-content p-6 space-y-6 hidden lg:block">
+              <div id="tab-contact" class="accordion-content p-6 space-y-6 hidden lg:hidden">
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -373,12 +373,9 @@ function initEditorTabs() {
 
   tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
-      // Alleen op desktop
-      if (window.innerWidth < 1024) return;
-
       const targetTab = btn.dataset.tab;
 
-      // Update buttons
+      // Update button styling
       tabBtns.forEach(b => {
         const isActive = b.dataset.tab === targetTab;
         b.classList.toggle('text-indigo-600', isActive);
@@ -388,14 +385,15 @@ function initEditorTabs() {
         b.classList.toggle('border-transparent', !isActive);
       });
 
-      // Update panels - toon alleen actieve tab content
+      // Show/hide content panels
       document.querySelectorAll('.accordion-content').forEach(content => {
-        const panelTab = content.id.replace('tab-', '');
+        const panelId = content.id; // tab-basics, tab-media, tab-contact
+        const panelTab = panelId.replace('tab-', '');
+
         if (panelTab === targetTab) {
-          content.classList.remove('hidden');
+          content.classList.remove('hidden', 'lg:hidden');
         } else {
           content.classList.add('hidden');
-          content.classList.add('lg:block');
         }
       });
     });
@@ -407,27 +405,23 @@ function initMobileAccordions() {
 
   headers.forEach(header => {
     header.addEventListener('click', () => {
+      // Alleen op mobile
+      if (window.innerWidth >= 1024) return;
+
       const targetId = header.dataset.accordion;
       const content = document.getElementById(`tab-${targetId}`);
       const chevron = header.querySelector('.accordion-chevron');
       const isOpen = !content.classList.contains('hidden');
 
-      // Op mobile: toggle alleen deze sectie (niet anderen sluiten)
-      if (window.innerWidth < 1024) {
-        if (isOpen) {
-          // Sluit
-          content.classList.add('hidden');
-          chevron.classList.remove('rotate-180');
-        } else {
-          // Open
-          content.classList.remove('hidden');
-          chevron.classList.add('rotate-180');
-
-          // Smooth scroll naar header
-          setTimeout(() => {
-            header.scrollIntoView({ behavior: 'smooth', block: 'start' });
-          }, 100);
-        }
+      if (isOpen) {
+        content.classList.add('hidden');
+        chevron.classList.remove('rotate-180');
+      } else {
+        content.classList.remove('hidden', 'lg:hidden');
+        chevron.classList.add('rotate-180');
+        setTimeout(() => {
+          header.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 100);
       }
     });
   });
