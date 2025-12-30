@@ -574,6 +574,7 @@ function renderEditorCheckboxes() {
   const formatsContainer = document.getElementById('artist-edit-formats');
   if (formatsContainer) {
     const formats = [
+      { value: 'podiumperformance', label: 'Podiumperformance' },
       { value: 'workshops', label: 'Workshops' },
       { value: 'hosting', label: 'Hosting / Presentatie' },
       { value: 'gedichten-op-maat', label: 'Gedichten op Maat' }
