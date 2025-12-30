@@ -509,8 +509,21 @@ export function showSearchOnly() {
 
   console.log('[UI] Showing search-only view');
 
+  // Ensure navigation is visible FIRST
+  setNavigationVisibility(true);
+  import('../modules/navigation/navigation.js').then(navModule => {
+    navModule.renderDesktopNav();
+    navModule.renderMobileNav();
+    if (window.lucide) {
+      setTimeout(() => lucide.createIcons(), 50);
+    }
+  });
+
   // Render the dashboard container structure
-  showPage('dashboard-view');
+  showPage('dashboard-view', false);
+
+  // Update URL
+  window.history.pushState({ view: 'search' }, '', '#search');
 
   // Get containers
   const artistDashboard = document.getElementById('artist-dashboard');
@@ -564,14 +577,6 @@ export function showSearchOnly() {
     });
 
   });
-
-  // Update URL
-  window.history.pushState({ view: 'search' }, '', '#search');
-
-  // Re-initialize icons
-  if (window.lucide) {
-    setTimeout(() => lucide.createIcons(), 100);
-  }
 }
 
 /**
@@ -589,8 +594,21 @@ export function showProgrammerProfile() {
 
   console.log('[UI] Showing programmer profile view');
 
+  // Ensure navigation is visible FIRST
+  setNavigationVisibility(true);
+  import('../modules/navigation/navigation.js').then(navModule => {
+    navModule.renderDesktopNav();
+    navModule.renderMobileNav();
+    if (window.lucide) {
+      setTimeout(() => lucide.createIcons(), 50);
+    }
+  });
+
   // Render the dashboard container structure
-  showPage('dashboard-view');
+  showPage('dashboard-view', false);
+
+  // Set correct hash
+  window.history.pushState({ view: 'profile' }, '', '#profile');
 
   // Get containers
   const artistDashboard = document.getElementById('artist-dashboard');
@@ -631,14 +649,6 @@ export function showProgrammerProfile() {
       searchSection.style.display = 'none';
     }
   });
-
-  // Update URL
-  window.history.pushState({ view: 'profile' }, '', '#profile');
-
-  // Re-initialize icons
-  if (window.lucide) {
-    setTimeout(() => lucide.createIcons(), 100);
-  }
 }
 
 /**
@@ -1312,6 +1322,16 @@ export function showSearch() {
     showDashboard();
     return;
   }
+
+  // Ensure navigation is visible FIRST
+  setNavigationVisibility(true);
+  import('../modules/navigation/navigation.js').then(navModule => {
+    navModule.renderDesktopNav();
+    navModule.renderMobileNav();
+    if (window.lucide) {
+      setTimeout(() => lucide.createIcons(), 50);
+    }
+  });
 
   // Render dashboard zonder hash update
   showPage('dashboard-view', false);
