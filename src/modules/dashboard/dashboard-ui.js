@@ -145,258 +145,288 @@ export function renderArtistDashboard() {
  */
 export function renderProfileEditor() {
   const container = document.getElementById('artist-profile-editor');
-
-  if (!container) {
-    console.warn("Profile editor container not found");
-    return;
-  }
+  if (!container) return;
 
   container.innerHTML = `
-    <div class="bg-white p-10 rounded-3xl shadow-lg border border-gray-100">
-      <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
+    <div class="bg-white rounded-3xl shadow-lg border border-gray-100 overflow-hidden">
+
+      <!-- Header -->
+      <div class="flex items-center justify-between p-6 border-b border-gray-100">
         <div>
-          <h4 class="text-3xl font-bold text-gray-900 tracking-tight">Edit Your Profile</h4>
-          <p class="text-sm text-gray-500 mt-2">Update your information below. Fields marked with * are required.</p>
+          <h2 class="text-2xl font-bold text-gray-900">Edit Artist Profile</h2>
+          <p class="text-sm text-gray-500 mt-1">Update your information below.</p>
         </div>
-        <button id="cancel-edit-profile-btn" class="text-gray-600 hover:text-gray-900 font-semibold transition-colors px-4 py-2 rounded-xl hover:bg-gray-50">
+        <button id="cancel-edit-profile-btn" class="text-gray-600 hover:text-gray-900 font-medium px-4 py-2 rounded-xl hover:bg-gray-50">
           Cancel
         </button>
       </div>
 
-      <form id="artist-profile-form" class="space-y-10">
+      <!-- Main Content: 2-column on desktop -->
+      <div class="flex flex-col lg:flex-row">
 
-        <!-- Profile Picture -->
-        <div class="border-b border-gray-100 pb-8">
-          <h5 class="text-xl font-bold text-gray-900 mb-6">Profile Picture</h5>
-          <div class="flex items-center gap-8">
-            <img id="artist-profile-pic-preview" src="https://placehold.co/100x100/e0e7ff/6366f1?text=Your+Photo" alt="Profile preview" class="w-28 h-28 rounded-3xl object-cover shadow-md border border-gray-100">
-            <div class="flex flex-col gap-3">
-              <label for="artist-edit-profile-pic" class="cursor-pointer bg-gray-900 text-white py-3 px-6 rounded-2xl text-sm font-semibold hover:bg-gray-800 transition-all inline-block text-center shadow-sm hover:shadow">
-                Upload New Photo
-                <input id="artist-edit-profile-pic" type="file" accept="image/*" class="sr-only">
-              </label>
-              <p class="text-xs text-gray-500 leading-relaxed">JPG, PNG or GIF. Max 5MB.</p>
-            </div>
+        <!-- LEFT COLUMN: Profile Photo -->
+        <div class="lg:w-72 lg:border-r border-gray-100 p-6 lg:sticky lg:top-0 lg:self-start bg-gray-50 lg:bg-white">
+          <div class="text-center">
+            <img id="artist-profile-pic-preview"
+                 src="https://placehold.co/150x150/e0e7ff/6366f1?text=A"
+                 alt="Profile"
+                 class="w-32 h-32 lg:w-36 lg:h-36 rounded-full object-cover mx-auto border-4 border-white shadow-lg">
+            <label class="mt-4 inline-block cursor-pointer bg-gray-900 text-white px-4 py-2 rounded-xl text-sm font-medium hover:bg-gray-800">
+              Change Photo
+              <input id="artist-edit-profile-pic" type="file" accept="image/*" class="sr-only">
+            </label>
+            <p class="text-xs text-gray-400 mt-2">JPG, PNG or GIF. Max 5MB.</p>
           </div>
+          <button id="view-public-profile-btn" type="button" class="w-full mt-6 py-3 bg-gray-900 text-white rounded-xl font-semibold hover:bg-gray-800">
+            View Public Profile
+          </button>
         </div>
 
-        <!-- Personal Details -->
-        <div class="border-b border-gray-100 pb-6">
-          <h5 class="text-lg font-bold text-gray-900 mb-4">Personal Details</h5>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label for="artist-edit-firstname" class="block text-sm font-semibold text-gray-700 mb-2">First Name *</label>
-              <input id="artist-edit-firstname" type="text" required class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
-            </div>
-            <div>
-              <label for="artist-edit-lastname" class="block text-sm font-semibold text-gray-700 mb-2">Last Name *</label>
-              <input id="artist-edit-lastname" type="text" required class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
-            </div>
-            <div>
-              <label for="artist-edit-stagename" class="block text-sm font-semibold text-gray-700 mb-2">Stage Name</label>
-              <input id="artist-edit-stagename" type="text" class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
-            </div>
-            <div>
-              <label for="artist-edit-phone" class="block text-sm font-semibold text-gray-700 mb-2">Phone Number *</label>
-              <input id="artist-edit-phone" type="tel" required class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
-            </div>
-            <div>
-              <label for="artist-edit-dob" class="block text-sm font-semibold text-gray-700 mb-2">Date of Birth *</label>
-              <input id="artist-edit-dob" type="date" required class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
-            </div>
-            <div>
-              <label for="artist-edit-gender" class="block text-sm font-semibold text-gray-700 mb-2">Gender *</label>
-              <select id="artist-edit-gender" required class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
-                <option value="">Select...</option>
-                <option value="f">Female</option>
-                <option value="m">Male</option>
-                <option value="x">Other / Prefer not to say</option>
-              </select>
-            </div>
-            <div class="md:col-span-2">
-              <label for="artist-edit-location" class="block text-sm font-semibold text-gray-700 mb-2">Location (City, Country) *</label>
-              <input id="artist-edit-location" type="text" required placeholder="e.g. Amsterdam, Netherlands" class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
-            </div>
-          </div>
-        </div>
+        <!-- RIGHT COLUMN: Tabbed Content -->
+        <div class="flex-1 min-w-0">
 
-        <!-- Professional Details with CHECKBOX GROUPS -->
-        <div class="border-b border-gray-100 pb-6">
-          <h5 class="text-lg font-bold text-gray-900 mb-4">Professional Details</h5>
-
-          <!-- Genres -->
-          <div class="mb-4">
-            <label class="block text-sm font-semibold text-gray-700 mb-3">Genres (select all that apply) *</label>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-              ${renderCheckbox('artist-edit-genres', 'performance-poetry', 'Performance Poetry')}
-              ${renderCheckbox('artist-edit-genres', 'poetry-slam', 'Poetry Slam')}
-              ${renderCheckbox('artist-edit-genres', 'jazz-poetry', 'Jazz Poetry')}
-              ${renderCheckbox('artist-edit-genres', 'rap', 'Rap')}
-              ${renderCheckbox('artist-edit-genres', 'storytelling', 'Storytelling')}
-              ${renderCheckbox('artist-edit-genres', 'comedy', 'Comedy')}
-              ${renderCheckbox('artist-edit-genres', '1-on-1', '1-on-1 Sessions')}
-            </div>
+          <!-- Tab Navigation (desktop only) -->
+          <div id="editor-tabs" class="hidden lg:flex border-b border-gray-200 bg-gray-50">
+            <button type="button" class="tab-btn px-6 py-4 font-semibold border-b-2 text-indigo-600 border-indigo-600 bg-white" data-tab="basics">
+              Basics & Identity
+            </button>
+            <button type="button" class="tab-btn px-6 py-4 font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="media">
+              Bio & Media
+            </button>
+            <button type="button" class="tab-btn px-6 py-4 font-semibold border-b-2 border-transparent text-gray-500 hover:text-gray-700" data-tab="contact">
+              Contact & Socials
+            </button>
           </div>
 
-          <!-- Languages -->
-          <div class="mb-4">
-            <label class="block text-sm font-semibold text-gray-700 mb-3">Languages (select all that apply) *</label>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-              ${renderCheckbox('artist-edit-languages', 'nl', 'NL (Dutch)')}
-              ${renderCheckbox('artist-edit-languages', 'en', 'EN (English)')}
-              ${renderCheckbox('artist-edit-languages', 'fr', 'FR (French)')}
-            </div>
-          </div>
+          <!-- Form -->
+          <form id="artist-profile-form">
 
-          <!-- Payment Methods -->
-          <div class="mb-4">
-            <label class="block text-sm font-semibold text-gray-700 mb-3">Payment Methods (select all that apply) *</label>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-              ${renderCheckbox('artist-edit-payment', 'invoice', 'Invoice')}
-              ${renderCheckbox('artist-edit-payment', 'payrolling', 'Payrolling')}
-              ${renderCheckbox('artist-edit-payment', 'sbk', 'Other (SBK)')}
-              ${renderCheckbox('artist-edit-payment', 'volunteer-fee', 'Volunteer Fee')}
-              ${renderCheckbox('artist-edit-payment', 'other', 'Other')}
-            </div>
-          </div>
+            <!-- TAB 1: Basics & Identity -->
+            <div id="tab-basics" class="tab-panel p-6 space-y-6">
+              <h3 class="text-lg font-bold text-gray-900 border-b border-gray-100 pb-3 lg:hidden">Basics & Identity</h3>
 
-          <!-- Bio & Pitch -->
-          <div class="grid grid-cols-1 gap-4">
-            <div>
-              <label for="artist-edit-bio" class="block text-sm font-semibold text-gray-700 mb-2">Bio / Background Info *</label>
-              <textarea id="artist-edit-bio" rows="4" required class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"></textarea>
-            </div>
-            <div>
-              <label for="artist-edit-pitch" class="block text-sm font-semibold text-gray-700 mb-2">Pitch (a short summary for programmers) *</label>
-              <textarea id="artist-edit-pitch" rows="2" required class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"></textarea>
-            </div>
-          </div>
-        </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Display Name (Stage Name) *</label>
+                  <input id="artist-edit-stagename" type="text" required
+                         class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Location (City, Country) *</label>
+                  <input id="artist-edit-location" type="text" required
+                         class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                </div>
+              </div>
 
-        <!-- Media & Portfolio -->
-        <div class="border-b border-gray-100 pb-6">
-          <h5 class="text-lg font-bold text-gray-900 mb-4">Media & Portfolio</h5>
-          <div class="space-y-4">
-            <div>
-              <label for="artist-edit-video" class="block text-sm font-semibold text-gray-700 mb-2">YouTube/Vimeo Link</label>
-              <input id="artist-edit-video" type="url" placeholder="https://youtube.com/watch?v=..." class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
-            </div>
-            <div>
-              <label for="artist-edit-audio" class="block text-sm font-semibold text-gray-700 mb-2">Spotify/SoundCloud Link</label>
-              <input id="artist-edit-audio" type="url" placeholder="https://soundcloud.com/..." class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
-            </div>
-            <div>
-              <label for="artist-edit-text" class="block text-sm font-semibold text-gray-700 mb-2">Text Material (up to 2000 words)</label>
-              <textarea id="artist-edit-text" rows="8" class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all"></textarea>
-            </div>
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-3">Genres *</label>
+                <div id="artist-edit-genres" class="grid grid-cols-2 md:grid-cols-3 gap-2"></div>
+              </div>
 
-            <!-- Document Upload -->
-            <div>
-              <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Document (PDF, DOC, DOCX)</label>
-              <div class="flex items-center gap-4">
-                <label for="artist-edit-document" class="cursor-pointer bg-gray-900 text-white py-2.5 px-4 rounded-xl text-sm font-semibold hover:bg-gray-800 transition-colors">
-                  Choose File
-                  <input id="artist-edit-document" type="file" accept=".pdf,.doc,.docx" class="sr-only">
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-3">Languages *</label>
+                <div id="artist-edit-languages" class="grid grid-cols-2 md:grid-cols-3 gap-2"></div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">
+                  Short Pitch * <span class="font-normal text-gray-400">(max 150 chars)</span>
                 </label>
-                <span id="artist-document-filename" class="text-sm text-gray-500">No file chosen</span>
-              </div>
-              <p class="mt-2 text-xs text-gray-500">Maximum file size: 10MB</p>
-              <div id="artist-current-document" class="mt-2 hidden">
-                <p class="text-sm text-gray-700">Current document: <a id="artist-current-document-link" href="#" target="_blank" class="text-indigo-600 hover:text-indigo-800 underline">View</a></p>
+                <textarea id="artist-edit-pitch" maxlength="150" rows="3" required
+                          class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"></textarea>
+                <p class="text-xs text-gray-400 mt-1 text-right"><span id="pitch-char-count">0</span>/150</p>
               </div>
             </div>
-          </div>
+
+            <!-- TAB 2: Bio & Media -->
+            <div id="tab-media" class="tab-panel p-6 space-y-6 hidden lg:hidden" data-tab-content="media">
+              <h3 class="text-lg font-bold text-gray-900 border-b border-gray-100 pb-3 lg:hidden">Biography & Media</h3>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Bio / Background Info *</label>
+                <textarea id="artist-edit-bio" rows="5" required
+                          class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"></textarea>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">YouTube/Vimeo Link</label>
+                <input id="artist-edit-video" type="url"
+                       class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Spotify/SoundCloud Link</label>
+                <input id="artist-edit-audio" type="url"
+                       class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Text Material <span class="font-normal text-gray-400">(up to 2000 words)</span></label>
+                <textarea id="artist-edit-text" rows="5"
+                          class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"></textarea>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Upload Document (PDF, DOC, DOCX)</label>
+                <input id="artist-edit-document" type="file" accept=".pdf,.doc,.docx"
+                       class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:font-medium">
+              </div>
+            </div>
+
+            <!-- TAB 3: Contact & Socials -->
+            <div id="tab-contact" class="tab-panel p-6 space-y-6 hidden lg:hidden" data-tab-content="contact">
+              <h3 class="text-lg font-bold text-gray-900 border-b border-gray-100 pb-3 lg:hidden">Contact & Socials</h3>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Phone Number *</label>
+                  <input id="artist-edit-phone" type="tel" required
+                         class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                </div>
+                <div>
+                  <label class="block text-sm font-semibold text-gray-700 mb-2">Website</label>
+                  <input id="artist-edit-website" type="url"
+                         class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-3">Payment Methods *</label>
+                <div id="artist-edit-payment" class="grid grid-cols-2 gap-2"></div>
+              </div>
+
+              <div class="pt-4 border-t border-gray-100">
+                <label class="block text-sm font-semibold text-gray-700 mb-3">Notification Settings</label>
+                <div class="space-y-3">
+                  <label class="flex items-center gap-3 cursor-pointer">
+                    <input id="artist-edit-notify-email" type="checkbox" class="w-5 h-5 rounded text-indigo-600 border-gray-300">
+                    <span class="text-sm text-gray-700">Receive email notifications</span>
+                  </label>
+                  <label class="flex items-center gap-3 cursor-pointer">
+                    <input id="artist-edit-notify-sms" type="checkbox" class="w-5 h-5 rounded text-indigo-600 border-gray-300">
+                    <span class="text-sm text-gray-700">Receive SMS notifications</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Hidden fields -->
+            <input type="hidden" id="artist-edit-firstname">
+            <input type="hidden" id="artist-edit-lastname">
+            <input type="hidden" id="artist-edit-dob">
+            <input type="hidden" id="artist-edit-gender">
+
+          </form>
         </div>
+      </div>
 
-        <!-- Gallery & Videos -->
-        <div class="border-b border-gray-100 pb-6">
-          <h5 class="text-lg font-bold text-gray-900 mb-4">Gallery & Videos</h5>
-
-          <!-- Photo Upload -->
-          <div class="mb-6">
-            <div class="flex items-center justify-between mb-3">
-              <label class="block text-sm font-semibold text-gray-700">Gallery Photos</label>
-              <button type="button" id="add-gallery-photo-btn"
-                      class="bg-indigo-600 text-white py-2 px-4 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors">
-                + Add Photo
-              </button>
-              <input type="file" id="gallery-photo-input" accept="image/*" multiple class="sr-only">
-            </div>
-
-            <!-- Upload Progress -->
-            <div id="upload-progress" class="hidden items-center gap-2 mb-3">
-              <div class="w-5 h-5 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
-              <span class="text-sm text-gray-600">Uploading...</span>
-            </div>
-
-            <!-- Photos Grid -->
-            <div id="gallery-photos-grid" class="grid grid-cols-3 gap-3">
-              <p class="text-sm text-gray-500 col-span-3">No photos added yet.</p>
-            </div>
-          </div>
-
-          <!-- YouTube Videos -->
-          <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-3">YouTube Videos</label>
-
-            <!-- Add Video Input -->
-            <div class="flex gap-2 mb-4">
-              <input type="text" id="youtube-url-input" placeholder="https://www.youtube.com/watch?v=..."
-                     class="flex-1 px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all">
-              <button type="button" id="add-youtube-btn"
-                      class="bg-indigo-600 text-white py-3 px-5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-colors">
-                Add Video
-              </button>
-            </div>
-
-            <!-- Videos Grid -->
-            <div id="youtube-videos-grid" class="space-y-4">
-              <p class="text-sm text-gray-500">No videos added yet.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Notification Settings -->
-        <div class="border-b border-gray-100 pb-6">
-          <h5 class="text-lg font-bold text-gray-900 mb-4">Notification Settings</h5>
-          <div class="space-y-3">
-            <label class="flex items-center gap-3 cursor-pointer group">
-              <input id="artist-edit-notify-email" type="checkbox" class="w-5 h-5 text-indigo-600 bg-gray-50 border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 transition-all">
-              <span class="text-sm text-gray-700 group-hover:text-gray-900">Receive email notifications</span>
-            </label>
-            <label class="flex items-center gap-3 cursor-pointer group">
-              <input id="artist-edit-notify-sms" type="checkbox" class="w-5 h-5 text-indigo-600 bg-gray-50 border-gray-300 rounded focus:ring-2 focus:ring-indigo-500 transition-all">
-              <span class="text-sm text-gray-700 group-hover:text-gray-900">Receive SMS notifications (for direct messages from programmers only)</span>
-            </label>
-          </div>
-        </div>
-
-        <!-- Save Button -->
-        <div class="space-y-4 pt-4">
-          <button type="submit" class="w-full bg-indigo-600 text-white px-6 py-5 rounded-2xl font-bold text-lg hover:bg-indigo-700 transition-all shadow-md hover:shadow-lg">
+      <!-- Sticky Footer -->
+      <div class="sticky bottom-0 bg-white border-t border-gray-200 p-4 shadow-lg">
+        <div class="flex items-center justify-end gap-4 max-w-4xl mx-auto">
+          <p id="artist-profile-error" class="text-red-500 text-sm mr-auto hidden"></p>
+          <p id="artist-profile-success" class="text-green-600 text-sm mr-auto hidden"></p>
+          <button type="submit" form="artist-profile-form" id="save-artist-profile-btn"
+                  class="px-8 py-3 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700">
             Save All Changes
           </button>
-          <p id="artist-profile-success" class="text-green-600 text-sm text-center"></p>
-          <p id="artist-profile-error" class="text-red-600 text-sm text-center"></p>
         </div>
-      </form>
+      </div>
     </div>
   `;
 
-  console.log("Profile editor rendered");
+  // Initialize
+  initEditorTabs();
+  renderEditorCheckboxes();
+  initPitchCounter();
 }
 
-/**
- * Helper: Render checkbox input
- */
-function renderCheckbox(name, value, label) {
+function initEditorTabs() {
+  const tabBtns = document.querySelectorAll('#editor-tabs .tab-btn');
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetTab = btn.dataset.tab;
+
+      // Update buttons
+      tabBtns.forEach(b => {
+        const isActive = b.dataset.tab === targetTab;
+        b.classList.toggle('text-indigo-600', isActive);
+        b.classList.toggle('border-indigo-600', isActive);
+        b.classList.toggle('bg-white', isActive);
+        b.classList.toggle('text-gray-500', !isActive);
+        b.classList.toggle('border-transparent', !isActive);
+      });
+
+      // Update panels (desktop only)
+      document.querySelectorAll('.tab-panel').forEach(panel => {
+        const panelTab = panel.id.replace('tab-', '');
+        panel.classList.toggle('hidden', panelTab !== targetTab);
+        panel.classList.toggle('lg:hidden', panelTab !== targetTab);
+      });
+    });
+  });
+}
+
+function renderEditorCheckboxes() {
+  // Genres
+  const genresContainer = document.getElementById('artist-edit-genres');
+  if (genresContainer) {
+    const genres = [
+      { value: 'performance-poetry', label: 'Performance Poetry' },
+      { value: 'poetry-slam', label: 'Poetry Slam' },
+      { value: 'jazz-poetry', label: 'Jazz Poetry' },
+      { value: 'rap', label: 'Rap' },
+      { value: 'storytelling', label: 'Storytelling' },
+      { value: 'comedy', label: 'Comedy' },
+      { value: '1-on-1', label: '1-on-1 Sessions' }
+    ];
+    genresContainer.innerHTML = genres.map(g => createCheckbox('genre', g.value, g.label)).join('');
+  }
+
+  // Languages
+  const langsContainer = document.getElementById('artist-edit-languages');
+  if (langsContainer) {
+    const langs = [
+      { value: 'nl', label: 'NL (Dutch)' },
+      { value: 'en', label: 'EN (English)' },
+      { value: 'fr', label: 'FR (French)' }
+    ];
+    langsContainer.innerHTML = langs.map(l => createCheckbox('language', l.value, l.label)).join('');
+  }
+
+  // Payment
+  const paymentContainer = document.getElementById('artist-edit-payment');
+  if (paymentContainer) {
+    const payments = [
+      { value: 'invoice', label: 'Invoice' },
+      { value: 'payrolling', label: 'Payrolling' },
+      { value: 'sbk', label: 'Other (SBK)' },
+      { value: 'volunteer', label: 'Volunteer Fee' },
+      { value: 'other', label: 'Other' }
+    ];
+    paymentContainer.innerHTML = payments.map(p => createCheckbox('payment', p.value, p.label)).join('');
+  }
+}
+
+function createCheckbox(name, value, label) {
   return `
-    <label class="flex items-center gap-2 p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors group">
-      <input type="checkbox" name="${name}" value="${value}" class="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-      <span class="text-sm text-gray-700 group-hover:text-gray-900">${label}</span>
+    <label class="flex items-center gap-2 p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 border border-gray-200">
+      <input type="checkbox" name="${name}" value="${value}" class="w-4 h-4 rounded text-indigo-600 border-gray-300">
+      <span class="text-sm text-gray-700">${label}</span>
     </label>
   `;
 }
+
+function initPitchCounter() {
+  const pitch = document.getElementById('artist-edit-pitch');
+  const counter = document.getElementById('pitch-char-count');
+  if (pitch && counter) {
+    const update = () => { counter.textContent = pitch.value.length; };
+    pitch.addEventListener('input', update);
+    update();
+  }
+}
+
 
 /**
  * Display artist profile overview
@@ -494,28 +524,42 @@ export function populateProfileEditor(currentUserData) {
 
   console.log("Populating profile editor with:", currentUserData);
 
-  // Personal Details
-  document.getElementById('artist-edit-firstname').value = currentUserData.firstName || '';
-  document.getElementById('artist-edit-lastname').value = currentUserData.lastName || '';
+  // Personal Details (visible fields)
   document.getElementById('artist-edit-stagename').value = currentUserData.stageName || '';
   document.getElementById('artist-edit-phone').value = currentUserData.phone || '';
-  document.getElementById('artist-edit-dob').value = currentUserData.dob || '';
-  document.getElementById('artist-edit-gender').value = currentUserData.gender || '';
   document.getElementById('artist-edit-location').value = currentUserData.location || '';
 
-  // Professional Details (checkboxes)
-  setCheckboxValues('artist-edit-genres', currentUserData.genres || []);
-  setCheckboxValues('artist-edit-languages', currentUserData.languages || []);
-  setCheckboxValues('artist-edit-payment', currentUserData.paymentMethods || []);
+  // Hidden fields (for backward compatibility)
+  document.getElementById('artist-edit-firstname').value = currentUserData.firstName || '';
+  document.getElementById('artist-edit-lastname').value = currentUserData.lastName || '';
+  document.getElementById('artist-edit-dob').value = currentUserData.dob || '';
+  document.getElementById('artist-edit-gender').value = currentUserData.gender || '';
+
+  // Professional Details (checkboxes with new names)
+  setCheckboxValues('genre', currentUserData.genres || []);
+  setCheckboxValues('language', currentUserData.languages || []);
+  setCheckboxValues('payment', currentUserData.paymentMethods || []);
 
   // Bio & Pitch
   document.getElementById('artist-edit-bio').value = currentUserData.bio || '';
   document.getElementById('artist-edit-pitch').value = currentUserData.pitch || '';
 
+  // Update pitch counter
+  const pitchCounter = document.getElementById('pitch-char-count');
+  if (pitchCounter) {
+    pitchCounter.textContent = (currentUserData.pitch || '').length;
+  }
+
   // Media
   document.getElementById('artist-edit-video').value = currentUserData.videoUrl || '';
   document.getElementById('artist-edit-audio').value = currentUserData.audioUrl || '';
   document.getElementById('artist-edit-text').value = currentUserData.textContent || '';
+
+  // Website (new field)
+  const websiteInput = document.getElementById('artist-edit-website');
+  if (websiteInput) {
+    websiteInput.value = currentUserData.website || '';
+  }
 
   // Notification Settings
   document.getElementById('artist-edit-notify-email').checked = currentUserData.notifyEmail !== false;
@@ -526,17 +570,7 @@ export function populateProfileEditor(currentUserData) {
   if (currentUserData.profilePicUrl) {
     previewImg.src = currentUserData.profilePicUrl;
   } else {
-    previewImg.src = `https://placehold.co/100x100/e0e7ff/6366f1?text=${encodeURIComponent((currentUserData.stageName || currentUserData.firstName || 'A').charAt(0))}`;
-  }
-
-  // Document
-  const currentDocDiv = document.getElementById('artist-current-document');
-  const currentDocLink = document.getElementById('artist-current-document-link');
-  if (currentUserData.documentUrl) {
-    currentDocDiv.classList.remove('hidden');
-    currentDocLink.href = currentUserData.documentUrl;
-  } else {
-    currentDocDiv.classList.add('hidden');
+    previewImg.src = `https://placehold.co/150x150/e0e7ff/6366f1?text=${encodeURIComponent((currentUserData.stageName || currentUserData.firstName || 'A').charAt(0))}`;
   }
 }
 
