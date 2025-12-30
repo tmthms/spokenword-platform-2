@@ -426,8 +426,8 @@ export function showDashboard() {
       programmerDashboard.classList.add('hidden');
     }
 
-    // Setup dashboard (handles rendering + initialization internally)
-    setupArtistDashboard();
+    // Show artist own profile view (programmer-style layout)
+    showArtistOwnProfile();
   } else if (role === 'programmer') {
     // Get the dynamically rendered containers
     const artistDashboard = document.getElementById('artist-dashboard');
@@ -1385,10 +1385,53 @@ export function showProfile() {
       module.setupProgrammerDashboard();
       module.showProfileOnlyView();
     });
+  } else if (currentUserData.role === 'artist') {
+    // Show artist own profile
+    showArtistOwnProfile();
   }
 
   updateMobileNavActive('profile');
 
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 100);
+  }
+}
+
+/**
+ * Shows the artist's own profile in programmer-view style
+ */
+export async function showArtistOwnProfile() {
+  const currentUserData = getStore('currentUserData');
+
+  if (!currentUserData) {
+    console.warn("Geen gebruikersdata gevonden");
+    return;
+  }
+
+  console.log('[UI] Showing artist own profile view');
+
+  // Render de dashboard container structuur
+  showPage('dashboard-view', false);
+
+  // Get containers
+  const artistDashboard = document.getElementById('artist-dashboard');
+  const programmerDashboard = document.getElementById('programmer-dashboard');
+
+  // Show artist dashboard, hide programmer
+  if (artistDashboard) {
+    artistDashboard.style.display = 'block';
+    artistDashboard.classList.remove('hidden');
+  }
+  if (programmerDashboard) {
+    programmerDashboard.style.display = 'none';
+    programmerDashboard.classList.add('hidden');
+  }
+
+  // Import and render artist own profile view
+  const { renderArtistOwnProfile } = await import('../modules/artist/artist-own-profile.js');
+  renderArtistOwnProfile(currentUserData);
+
+  // Re-initialize Lucide icons
   if (window.lucide) {
     setTimeout(() => lucide.createIcons(), 100);
   }
