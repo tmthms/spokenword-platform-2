@@ -5,6 +5,7 @@
  */
 
 import { calculateAge } from './dashboard-service.js';
+import { getStore } from '../../utils/store.js';
 
 /**
  * Renders the artist dashboard HTML structure
@@ -366,6 +367,12 @@ export function renderProfileEditor() {
   initMobileAccordions();
   renderEditorCheckboxes();
   initPitchCounter();
+
+  // Populate with current data
+  const currentUserData = getStore('currentUserData');
+  if (currentUserData) {
+    populateProfileEditor(currentUserData);
+  }
 }
 
 function initEditorTabs() {
@@ -576,72 +583,70 @@ export function displayProfileOverview(currentUserData) {
 /**
  * Populate the profile editor with current data
  */
-export function populateProfileEditor(currentUserData) {
-  if (!currentUserData) {
-    console.warn("No artist data found to populate editor");
-    return;
+export function populateProfileEditor(data) {
+  if (!data) return;
+
+  // === TAB 1: Basics & Identity ===
+  setValue('artist-edit-stagename', data.stageName || '');
+  setValue('artist-edit-location', data.location || '');
+  setValue('artist-edit-pitch', data.pitch || '');
+  checkValues('genre', data.genres || []);
+  checkValues('language', data.languages || []);
+  updatePitchCount();
+
+  // === TAB 2: Bio & Media ===
+  setValue('artist-edit-bio', data.bio || '');
+  setValue('artist-edit-video', data.videoUrl || '');
+  setValue('artist-edit-audio', data.audioUrl || '');
+  setValue('artist-edit-text', data.textContent || '');
+
+  // === TAB 3: Contact & Socials ===
+  setValue('artist-edit-phone', data.phone || '');
+  setValue('artist-edit-website', data.website || '');
+  checkValues('payment', data.paymentMethods || []);
+  setChecked('artist-edit-notify-email', data.notifyEmail !== false);
+  setChecked('artist-edit-notify-sms', data.notifySms === true);
+
+  // === Hidden fields ===
+  setValue('artist-edit-firstname', data.firstName || '');
+  setValue('artist-edit-lastname', data.lastName || '');
+  setValue('artist-edit-dob', data.dob || '');
+  setValue('artist-edit-gender', data.gender || '');
+
+  // === Profile Picture ===
+  const picPreview = document.getElementById('artist-profile-pic-preview');
+  if (picPreview) {
+    picPreview.src = data.profilePicUrl ||
+      `https://placehold.co/150x150/e0e7ff/6366f1?text=${encodeURIComponent((data.stageName || 'A').charAt(0))}`;
   }
 
-  console.log("Populating profile editor with:", currentUserData);
-
-  // Personal Details (visible fields)
-  document.getElementById('artist-edit-stagename').value = currentUserData.stageName || '';
-  document.getElementById('artist-edit-phone').value = currentUserData.phone || '';
-  document.getElementById('artist-edit-location').value = currentUserData.location || '';
-
-  // Hidden fields (for backward compatibility)
-  document.getElementById('artist-edit-firstname').value = currentUserData.firstName || '';
-  document.getElementById('artist-edit-lastname').value = currentUserData.lastName || '';
-  document.getElementById('artist-edit-dob').value = currentUserData.dob || '';
-  document.getElementById('artist-edit-gender').value = currentUserData.gender || '';
-
-  // Professional Details (checkboxes with new names)
-  setCheckboxValues('genre', currentUserData.genres || []);
-  setCheckboxValues('language', currentUserData.languages || []);
-  setCheckboxValues('payment', currentUserData.paymentMethods || []);
-
-  // Bio & Pitch
-  document.getElementById('artist-edit-bio').value = currentUserData.bio || '';
-  document.getElementById('artist-edit-pitch').value = currentUserData.pitch || '';
-
-  // Update pitch counter
-  const pitchCounter = document.getElementById('pitch-char-count');
-  if (pitchCounter) {
-    pitchCounter.textContent = (currentUserData.pitch || '').length;
-  }
-
-  // Media
-  document.getElementById('artist-edit-video').value = currentUserData.videoUrl || '';
-  document.getElementById('artist-edit-audio').value = currentUserData.audioUrl || '';
-  document.getElementById('artist-edit-text').value = currentUserData.textContent || '';
-
-  // Website (new field)
-  const websiteInput = document.getElementById('artist-edit-website');
-  if (websiteInput) {
-    websiteInput.value = currentUserData.website || '';
-  }
-
-  // Notification Settings
-  document.getElementById('artist-edit-notify-email').checked = currentUserData.notifyEmail !== false;
-  document.getElementById('artist-edit-notify-sms').checked = currentUserData.notifySms || false;
-
-  // Profile Picture
-  const previewImg = document.getElementById('artist-profile-pic-preview');
-  if (currentUserData.profilePicUrl) {
-    previewImg.src = currentUserData.profilePicUrl;
-  } else {
-    previewImg.src = `https://placehold.co/150x150/e0e7ff/6366f1?text=${encodeURIComponent((currentUserData.stageName || currentUserData.firstName || 'A').charAt(0))}`;
-  }
+  console.log('[EDITOR] Form populated with user data');
 }
 
-/**
- * Helper: Set checkbox values
- */
-function setCheckboxValues(name, values) {
-  const checkboxes = document.querySelectorAll(`input[name="${name}"]`);
-  checkboxes.forEach(checkbox => {
-    checkbox.checked = values.includes(checkbox.value);
+// === Helper Functions ===
+
+function setValue(id, value) {
+  const el = document.getElementById(id);
+  if (el) el.value = value;
+}
+
+function setChecked(id, checked) {
+  const el = document.getElementById(id);
+  if (el) el.checked = checked;
+}
+
+function checkValues(name, values) {
+  document.querySelectorAll(`input[name="${name}"]`).forEach(cb => {
+    cb.checked = values.includes(cb.value);
   });
+}
+
+function updatePitchCount() {
+  const pitch = document.getElementById('artist-edit-pitch');
+  const counter = document.getElementById('pitch-char-count');
+  if (pitch && counter) {
+    counter.textContent = pitch.value.length;
+  }
 }
 
 /**
