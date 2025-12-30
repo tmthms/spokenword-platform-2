@@ -180,8 +180,14 @@ export function setNavigationVisibility(isAuthenticated) {
     if (desktopContainer) desktopContainer.classList.remove('hidden');
     if (mobileContainer) mobileContainer.classList.remove('hidden');
   } else {
-    // Hide navigation
-    if (desktopContainer) desktopContainer.classList.add('hidden');
-    if (mobileContainer) mobileContainer.classList.add('hidden');
+    // Hide navigation AND clear contents
+    if (desktopContainer) {
+      desktopContainer.classList.add('hidden');
+      desktopContainer.innerHTML = ''; // Clear nav HTML
+    }
+    if (mobileContainer) {
+      mobileContainer.classList.add('hidden');
+      mobileContainer.innerHTML = ''; // Clear nav HTML
+    }
   }
 }

@@ -255,6 +255,8 @@ export function monitorAuthState() {
       // Stop badge listener
       stopBadgeListener();
       setStore('currentUser', null);
+      setStore('currentUserData', null);
+      setStore('userRole', null);
       updateNav(null);
       // Toon de homepagina en verberg de lader
       showPage('home-view');
