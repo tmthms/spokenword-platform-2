@@ -849,13 +849,13 @@ export function renderDashboard() {
                 overflow: hidden;
               ">
                 <!-- Chat Header -->
-                <div style="padding: 20px 24px; border-bottom: 1px solid #e9e3f5; flex-shrink: 0;">
+                <div style="padding: 20px 24px; border-bottom: 1px solid #e9e3f5; flex: 0 0 auto;">
                   <h2 id="chat-header-name" style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin: 0;">Chat met Artist</h2>
                 </div>
 
                 <!-- Chat Messages - THIS IS THE SCROLLABLE PART -->
                 <div id="profile-chat-messages" style="
-                  flex: 1 1 auto;
+                  flex: 1 1 0;
                   overflow-y: auto;
                   overflow-x: hidden;
                   padding: 20px 24px;
@@ -871,7 +871,7 @@ export function renderDashboard() {
                 </div>
 
                 <!-- Chat Input -->
-                <div style="padding: 16px 24px; border-top: 1px solid #e9e3f5; flex-shrink: 0; background: white;">
+                <div style="padding: 16px 24px; border-top: 1px solid #e9e3f5; flex: 0 0 auto; background: white;">
                   <form id="profile-chat-form" style="display: flex; gap: 12px; margin: 0;">
                     <input type="text" id="profile-chat-input" placeholder="Type je bericht..."
                            style="flex: 1; padding: 12px 16px; border: 1px solid #e9e3f5; border-radius: 24px; font-size: 14px; outline: none;">
