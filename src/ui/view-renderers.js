@@ -450,10 +450,10 @@ export function renderMessages() {
     <div id="messages-view" style="min-height: 100vh; background: #F8F9FA;">
 
       <!-- DESKTOP: Two columns -->
-      <div id="desktop-messages-layout" style="height: 100vh; display: none;">
+      <div id="desktop-messages-layout" style="height: calc(100vh - 80px); display: none;">
 
         <!-- Left: Conversation list -->
-        <div style="width: 380px; background: white; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column;">
+        <div style="width: 380px; background: white; border-right: 1px solid #e5e7eb; display: flex; flex-direction: column; height: 100%;">
           <div style="padding: 24px 20px; border-bottom: 1px solid #e5e7eb;">
             <h2 style="font-size: 26px; font-weight: 700; margin: 0 0 16px;">Berichten</h2>
             <input id="desktop-search" type="text" placeholder="Zoek in berichten..."
@@ -465,7 +465,7 @@ export function renderMessages() {
         </div>
 
         <!-- Right: Chat area -->
-        <div style="flex: 1; display: flex; flex-direction: column; height: 100vh; overflow: hidden;">
+        <div style="flex: 1; display: flex; flex-direction: column; height: 100%; overflow: hidden;">
           <div id="chat-placeholder" style="flex: 1; display: flex; align-items: center; justify-content: center; color: #9ca3af;">
             <p>Selecteer een gesprek</p>
           </div>
