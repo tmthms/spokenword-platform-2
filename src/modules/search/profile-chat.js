@@ -66,13 +66,6 @@ export async function initProfileChat(artist) {
       console.log('[PROFILE CHAT] Found existing conversation:', currentConversationId);
       // Start realtime listener
       startMessagesListener(existingConv.id);
-      // Scroll to bottom after loading
-      const container = document.getElementById('profile-chat-messages');
-      if (container) {
-        requestAnimationFrame(() => {
-          container.scrollTop = container.scrollHeight;
-        });
-      }
     } else {
       // Geen bestaande conversatie
       console.log('[PROFILE CHAT] No existing conversation found');
@@ -152,49 +145,49 @@ function renderMessages(messages) {
   const container = document.getElementById('profile-chat-messages');
   const emptyState = document.getElementById('chat-empty-state');
 
-  if (!container) return;
-
-  if (messages.length === 0) {
-    if (emptyState) emptyState.style.display = 'flex';
+  if (!container) {
+    console.error('[CHAT] Messages container not found');
     return;
   }
 
-  if (emptyState) emptyState.style.display = 'none';
+  // Hide empty state if we have messages
+  if (emptyState) {
+    emptyState.style.display = messages.length === 0 ? 'flex' : 'none';
+  }
+
+  if (messages.length === 0) return;
 
   const currentUser = getStore('currentUser');
-  const currentUserData = getStore('currentUserData');
   const currentUserId = currentUser?.uid;
 
-  // Clear container but keep empty state
-  const existingMessages = container.querySelectorAll('.chat-message');
-  existingMessages.forEach(el => el.remove());
+  // Remove old message elements (but keep empty state)
+  container.querySelectorAll('.chat-message').forEach(el => el.remove());
 
+  // Add messages
   messages.forEach(msg => {
     const isOwn = msg.senderId === currentUserId;
     const messageEl = document.createElement('div');
     messageEl.className = 'chat-message';
     messageEl.style.cssText = `display: flex; flex-direction: column; align-items: ${isOwn ? 'flex-end' : 'flex-start'};`;
 
-    const time = msg.createdAt?.toDate?.()
-      ? formatTime(msg.createdAt.toDate())
-      : 'Nu';
-
-    const senderName = isOwn ? 'Jij' : (msg.senderName?.split(' ')[0] || 'Artist');
+    const timestamp = msg.createdAt?.toDate?.() || new Date();
+    const dateStr = timestamp.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
+    const senderName = isOwn ? 'Jij' : (msg.senderName || currentArtist?.stageName || 'Artist');
 
     messageEl.innerHTML = `
       <div style="max-width: 85%; padding: 10px 14px; border-radius: ${isOwn ? '16px 16px 4px 16px' : '16px 16px 16px 4px'}; background: ${isOwn ? 'linear-gradient(135deg, #805ad5 0%, #6b46c1 100%)' : '#f3f4f6'}; color: ${isOwn ? 'white' : '#1a1a2e'};">
         <p style="font-size: 14px; line-height: 1.5; margin: 0; word-wrap: break-word;">${escapeHtml(msg.text || msg.content || '')}</p>
       </div>
-      <span style="font-size: 10px; color: #9ca3af; margin-top: 4px; padding: 0 4px;">${senderName} • ${time}</span>
+      <span style="font-size: 10px; color: #9ca3af; margin-top: 4px; padding: 0 4px;">${senderName} • ${dateStr}</span>
     `;
 
     container.appendChild(messageEl);
   });
 
-  // AUTO-SCROLL TO BOTTOM
-  requestAnimationFrame(() => {
-    container.scrollTop = container.scrollHeight;
-  });
+  // Scroll to bottom
+  container.scrollTop = container.scrollHeight;
+
+  console.log('[CHAT] Rendered', messages.length, 'messages, scrolled to bottom');
 }
 
 /**
@@ -243,14 +236,6 @@ export async function sendProfileChatMessage(messageText) {
     await addMessage(currentConversationId, currentUser.uid, currentUserData, messageText.trim());
 
     console.log('[PROFILE CHAT] Message sent to conversation:', currentConversationId);
-
-    // Scroll to bottom after sending
-    const container = document.getElementById('profile-chat-messages');
-    if (container) {
-      setTimeout(() => {
-        container.scrollTop = container.scrollHeight;
-      }, 100);
-    }
 
   } catch (err) {
     console.error('[PROFILE CHAT] Error sending message:', err);
