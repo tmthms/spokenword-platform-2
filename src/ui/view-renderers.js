@@ -834,11 +834,11 @@ export function renderDashboard() {
               </main>
 
               <!-- RIGHT COLUMN: Chat Panel -->
-              <aside style="background: white; border-radius: 20px; box-shadow: 0 4px 20px rgba(128,90,213,0.08); border: 1px solid rgba(128,90,213,0.1); display: flex; flex-direction: column; height: calc(100vh - 150px); position: sticky; top: 100px;">
+              <aside style="background: white; border-radius: 20px; box-shadow: 0 4px 20px rgba(128,90,213,0.08); border: 1px solid rgba(128,90,213,0.1); display: flex; flex-direction: column; height: calc(100vh - 150px); max-height: calc(100vh - 150px); position: sticky; top: 100px; overflow: hidden;">
                 <div style="padding: 20px 24px; border-bottom: 1px solid #e9e3f5;">
                   <h2 id="chat-header-name" style="font-size: 18px; font-weight: 700; color: #1a1a2e;">Chat met Artist</h2>
                 </div>
-                <div id="profile-chat-messages" style="flex: 1; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px;">
+                <div id="profile-chat-messages" style="flex: 1; min-height: 0; overflow-y: auto; padding: 20px 24px; display: flex; flex-direction: column; gap: 16px;">
                   <div id="chat-empty-state" style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #9ca3af;">
                     <svg width="48" height="48" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="margin-bottom: 12px; opacity: 0.5;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
                     <p style="font-size: 14px;">Start een gesprek</p>

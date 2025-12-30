@@ -66,6 +66,13 @@ export async function initProfileChat(artist) {
       console.log('[PROFILE CHAT] Found existing conversation:', currentConversationId);
       // Start realtime listener
       startMessagesListener(existingConv.id);
+      // Scroll to bottom after loading
+      const container = document.getElementById('profile-chat-messages');
+      if (container) {
+        requestAnimationFrame(() => {
+          container.scrollTop = container.scrollHeight;
+        });
+      }
     } else {
       // Geen bestaande conversatie
       console.log('[PROFILE CHAT] No existing conversation found');
@@ -184,8 +191,10 @@ function renderMessages(messages) {
     container.appendChild(messageEl);
   });
 
-  // Scroll naar beneden
-  container.scrollTop = container.scrollHeight;
+  // AUTO-SCROLL TO BOTTOM
+  requestAnimationFrame(() => {
+    container.scrollTop = container.scrollHeight;
+  });
 }
 
 /**
@@ -234,6 +243,14 @@ export async function sendProfileChatMessage(messageText) {
     await addMessage(currentConversationId, currentUser.uid, currentUserData, messageText.trim());
 
     console.log('[PROFILE CHAT] Message sent to conversation:', currentConversationId);
+
+    // Scroll to bottom after sending
+    const container = document.getElementById('profile-chat-messages');
+    if (container) {
+      setTimeout(() => {
+        container.scrollTop = container.scrollHeight;
+      }, 100);
+    }
 
   } catch (err) {
     console.error('[PROFILE CHAT] Error sending message:', err);
