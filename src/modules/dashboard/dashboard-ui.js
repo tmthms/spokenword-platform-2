@@ -239,7 +239,7 @@ export function renderProfileEditor() {
             </div>
 
             <!-- TAB 2: Bio & Media -->
-            <div id="tab-media" class="tab-panel p-6 space-y-6 hidden lg:hidden" data-tab-content="media">
+            <div id="tab-media" class="tab-panel p-6 space-y-6 lg:hidden" data-tab-content="media">
               <h3 class="text-lg font-bold text-gray-900 border-b border-gray-100 pb-3 lg:hidden">Biography & Media</h3>
 
               <div>
@@ -274,7 +274,7 @@ export function renderProfileEditor() {
             </div>
 
             <!-- TAB 3: Contact & Socials -->
-            <div id="tab-contact" class="tab-panel p-6 space-y-6 hidden lg:hidden" data-tab-content="contact">
+            <div id="tab-contact" class="tab-panel p-6 space-y-6 lg:hidden" data-tab-content="contact">
               <h3 class="text-lg font-bold text-gray-900 border-b border-gray-100 pb-3 lg:hidden">Contact & Socials</h3>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
