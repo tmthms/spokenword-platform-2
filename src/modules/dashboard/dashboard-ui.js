@@ -202,8 +202,16 @@ export function renderProfileEditor() {
           <form id="artist-profile-form">
 
             <!-- TAB 1: Basics & Identity -->
-            <div id="tab-basics" class="tab-panel p-6 space-y-6">
-              <h3 class="text-lg font-bold text-gray-900 border-b border-gray-100 pb-3 lg:hidden">Basics & Identity</h3>
+            <div class="tab-panel" data-tab-content="basics">
+              <!-- MOBILE: Accordion Header -->
+              <button type="button" class="accordion-header lg:hidden w-full flex items-center justify-between p-4 bg-gray-50 border-b border-gray-200" data-accordion="basics">
+                <span class="font-semibold text-gray-900">1. Basics & Identity</span>
+                <svg class="accordion-chevron w-5 h-5 text-gray-500 transition-transform rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </button>
+              <!-- Content -->
+              <div id="tab-basics" class="accordion-content p-6 space-y-6">
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -236,11 +244,20 @@ export function renderProfileEditor() {
                           class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent resize-none"></textarea>
                 <p class="text-xs text-gray-400 mt-1 text-right"><span id="pitch-char-count">0</span>/150</p>
               </div>
+              </div>
             </div>
 
             <!-- TAB 2: Bio & Media -->
-            <div id="tab-media" class="tab-panel p-6 space-y-6 lg:hidden" data-tab-content="media">
-              <h3 class="text-lg font-bold text-gray-900 border-b border-gray-100 pb-3 lg:hidden">Biography & Media</h3>
+            <div class="tab-panel lg:hidden" data-tab-content="media">
+              <!-- MOBILE: Accordion Header -->
+              <button type="button" class="accordion-header lg:hidden w-full flex items-center justify-between p-4 bg-gray-50 border-b border-gray-200" data-accordion="media">
+                <span class="font-semibold text-gray-900">2. Biography & Media</span>
+                <svg class="accordion-chevron w-5 h-5 text-gray-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </button>
+              <!-- Content (hidden by default on mobile) -->
+              <div id="tab-media" class="accordion-content p-6 space-y-6 hidden lg:block">
 
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-2">Bio / Background Info *</label>
@@ -271,11 +288,20 @@ export function renderProfileEditor() {
                 <input id="artist-edit-document" type="file" accept=".pdf,.doc,.docx"
                        class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-indigo-50 file:text-indigo-700 file:font-medium">
               </div>
+              </div>
             </div>
 
             <!-- TAB 3: Contact & Socials -->
-            <div id="tab-contact" class="tab-panel p-6 space-y-6 lg:hidden" data-tab-content="contact">
-              <h3 class="text-lg font-bold text-gray-900 border-b border-gray-100 pb-3 lg:hidden">Contact & Socials</h3>
+            <div class="tab-panel lg:hidden" data-tab-content="contact">
+              <!-- MOBILE: Accordion Header -->
+              <button type="button" class="accordion-header lg:hidden w-full flex items-center justify-between p-4 bg-gray-50 border-b border-gray-200" data-accordion="contact">
+                <span class="font-semibold text-gray-900">3. Contact & Socials</span>
+                <svg class="accordion-chevron w-5 h-5 text-gray-500 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </button>
+              <!-- Content (hidden by default on mobile) -->
+              <div id="tab-contact" class="accordion-content p-6 space-y-6 hidden lg:block">
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -308,6 +334,7 @@ export function renderProfileEditor() {
                   </label>
                 </div>
               </div>
+              </div>
             </div>
 
             <!-- Hidden fields -->
@@ -336,6 +363,7 @@ export function renderProfileEditor() {
 
   // Initialize
   initEditorTabs();
+  initMobileAccordions();
   renderEditorCheckboxes();
   initPitchCounter();
 }
@@ -345,6 +373,9 @@ function initEditorTabs() {
 
   tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
+      // Alleen op desktop
+      if (window.innerWidth < 1024) return;
+
       const targetTab = btn.dataset.tab;
 
       // Update buttons
@@ -357,12 +388,47 @@ function initEditorTabs() {
         b.classList.toggle('border-transparent', !isActive);
       });
 
-      // Update panels (desktop only)
-      document.querySelectorAll('.tab-panel').forEach(panel => {
-        const panelTab = panel.id.replace('tab-', '');
-        panel.classList.toggle('hidden', panelTab !== targetTab);
-        panel.classList.toggle('lg:hidden', panelTab !== targetTab);
+      // Update panels - toon alleen actieve tab content
+      document.querySelectorAll('.accordion-content').forEach(content => {
+        const panelTab = content.id.replace('tab-', '');
+        if (panelTab === targetTab) {
+          content.classList.remove('hidden');
+        } else {
+          content.classList.add('hidden');
+          content.classList.add('lg:block');
+        }
       });
+    });
+  });
+}
+
+function initMobileAccordions() {
+  const headers = document.querySelectorAll('.accordion-header');
+
+  headers.forEach(header => {
+    header.addEventListener('click', () => {
+      const targetId = header.dataset.accordion;
+      const content = document.getElementById(`tab-${targetId}`);
+      const chevron = header.querySelector('.accordion-chevron');
+      const isOpen = !content.classList.contains('hidden');
+
+      // Op mobile: toggle alleen deze sectie (niet anderen sluiten)
+      if (window.innerWidth < 1024) {
+        if (isOpen) {
+          // Sluit
+          content.classList.add('hidden');
+          chevron.classList.remove('rotate-180');
+        } else {
+          // Open
+          content.classList.remove('hidden');
+          chevron.classList.add('rotate-180');
+
+          // Smooth scroll naar header
+          setTimeout(() => {
+            header.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }, 100);
+        }
+      }
     });
   });
 }
