@@ -507,60 +507,64 @@ function initMobileAccordions() {
 }
 
 function renderEditorCheckboxes() {
-  // Genres
+  // Genres - Updated list based on wireframe
   const genresContainer = document.getElementById('artist-edit-genres');
   if (genresContainer) {
     const genres = [
       { value: 'performance-poetry', label: 'Performance Poetry' },
-      { value: 'poetry-slam', label: 'Poetry Slam' },
-      { value: 'jazz-poetry', label: 'Jazz Poetry' },
-      { value: 'rap', label: 'Rap' },
+      { value: 'slam-poetry', label: 'Slam Poetry' },
+      { value: 'hip-hop-poetry', label: 'Hip Hop Poetry' },
       { value: 'storytelling', label: 'Storytelling' },
-      { value: 'comedy', label: 'Comedy' },
-      { value: '1-on-1', label: '1-on-1 Sessions' }
+      { value: 'experimental', label: 'Experimental' },
+      { value: 'musical-poetry', label: 'Musical Poetry' },
+      { value: 'lyrical', label: 'Lyrical' },
+      { value: 'political-poetry', label: 'Political Poetry' }
     ];
     genresContainer.innerHTML = genres.map(g => createChip('genre', g.value, g.label)).join('');
   }
 
-  // Languages
+  // Languages - Updated list based on wireframe
   const langsContainer = document.getElementById('artist-edit-languages');
   if (langsContainer) {
     const langs = [
-      { value: 'nl', label: 'NL (Dutch)' },
-      { value: 'en', label: 'EN (English)' },
-      { value: 'fr', label: 'FR (French)' }
+      { value: 'nl', label: 'Dutch (NL)' },
+      { value: 'en', label: 'English (EN)' },
+      { value: 'fr', label: 'French (FR)' },
+      { value: 'de', label: 'German (DE)' },
+      { value: 'es', label: 'Spanish (ES)' }
     ];
     langsContainer.innerHTML = langs.map(l => createChip('language', l.value, l.label)).join('');
   }
 
-  // Payment
+  // Payment Methods
   const paymentContainer = document.getElementById('artist-edit-payment');
   if (paymentContainer) {
     const payments = [
-      { value: 'invoice', label: 'Invoice' },
+      { value: 'invoice', label: 'Factuur' },
       { value: 'payrolling', label: 'Payrolling' },
-      { value: 'sbk', label: 'Other (SBK)' },
-      { value: 'volunteer', label: 'Volunteer Fee' },
-      { value: 'other', label: 'Other' }
+      { value: 'sbk', label: 'SBK' },
+      { value: 'volunteer', label: 'Vrijwilligersvergoeding' },
+      { value: 'other', label: 'Anders' }
     ];
     paymentContainer.innerHTML = payments.map(p => createChip('payment', p.value, p.label)).join('');
   }
 
-  // Themes
+  // Themes - New field based on wireframe
   const themesContainer = document.getElementById('artist-edit-themes');
   if (themesContainer) {
     const themes = [
-      { value: 'maatschappijkritiek', label: 'Maatschappijkritiek' },
-      { value: 'diversiteit', label: 'Diversiteit' },
-      { value: 'humor', label: 'Humor' },
-      { value: 'persoonlijk', label: 'Persoonlijk' },
-      { value: 'duurzaamheid', label: 'Duurzaamheid' },
-      { value: 'zakelijk', label: 'Zakelijk' }
+      { value: 'identity', label: 'Identity' },
+      { value: 'social-justice', label: 'Social Justice' },
+      { value: 'mental-health', label: 'Mental Health' },
+      { value: 'love-relationships', label: 'Love/Relationships' },
+      { value: 'politics', label: 'Politics' },
+      { value: 'climate-change', label: 'Climate Change' },
+      { value: 'coming-of-age', label: 'Coming of Age' }
     ];
     themesContainer.innerHTML = themes.map(t => createChip('theme', t.value, t.label)).join('');
   }
 
-  // Energy Levels
+  // Energy Levels (Vibe) - New field based on wireframe
   const energyContainer = document.getElementById('artist-edit-energy');
   if (energyContainer) {
     const energyLevels = [
@@ -571,7 +575,7 @@ function renderEditorCheckboxes() {
     energyContainer.innerHTML = energyLevels.map(e => createChip('energy', e.value, e.label)).join('');
   }
 
-  // Formats
+  // Formats - New field
   const formatsContainer = document.getElementById('artist-edit-formats');
   if (formatsContainer) {
     const formats = [
