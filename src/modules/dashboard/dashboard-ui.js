@@ -771,7 +771,18 @@ function setChecked(id, checked) {
 
 function checkValues(name, values) {
   document.querySelectorAll(`input[name="${name}"]`).forEach(cb => {
-    cb.checked = values.includes(cb.value);
+    const isChecked = values.includes(cb.value);
+    cb.checked = isChecked;
+
+    // Update chip styling for browsers without :has() support
+    const label = cb.closest('.chip-label');
+    if (label) {
+      if (isChecked) {
+        label.classList.add('chip-selected');
+      } else {
+        label.classList.remove('chip-selected');
+      }
+    }
   });
 }
 
