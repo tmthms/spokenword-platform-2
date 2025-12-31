@@ -229,12 +229,12 @@ export function renderProfileEditor() {
 
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-3">Genres *</label>
-                <div id="artist-edit-genres" class="grid grid-cols-2 md:grid-cols-3 gap-2"></div>
+                <div id="artist-edit-genres" class="flex flex-wrap gap-2"></div>
               </div>
 
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-3">Languages *</label>
-                <div id="artist-edit-languages" class="grid grid-cols-2 md:grid-cols-3 gap-2"></div>
+                <div id="artist-edit-languages" class="flex flex-wrap gap-2"></div>
               </div>
 
               <!-- Themes -->
@@ -242,7 +242,7 @@ export function renderProfileEditor() {
                 <label class="block text-sm font-semibold text-gray-700 mb-3">
                   Thema's <span class="text-gray-400 font-normal">(selecteer meerdere)</span>
                 </label>
-                <div id="artist-edit-themes" class="grid grid-cols-2 gap-2"></div>
+                <div id="artist-edit-themes" class="flex flex-wrap gap-2"></div>
               </div>
 
               <!-- Energy Levels -->
@@ -250,7 +250,7 @@ export function renderProfileEditor() {
                 <label class="block text-sm font-semibold text-gray-700 mb-3">
                   Energieniveau <span class="text-gray-400 font-normal">(selecteer meerdere)</span>
                 </label>
-                <div id="artist-edit-energy" class="grid grid-cols-3 gap-2"></div>
+                <div id="artist-edit-energy" class="flex flex-wrap gap-2"></div>
               </div>
 
               <!-- Formats -->
@@ -258,7 +258,7 @@ export function renderProfileEditor() {
                 <label class="block text-sm font-semibold text-gray-700 mb-3">
                   Diensten / Format <span class="text-gray-400 font-normal">(selecteer meerdere)</span>
                 </label>
-                <div id="artist-edit-formats" class="grid grid-cols-1 sm:grid-cols-3 gap-2"></div>
+                <div id="artist-edit-formats" class="flex flex-wrap gap-2"></div>
               </div>
 
               <div>
@@ -379,7 +379,7 @@ export function renderProfileEditor() {
 
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-3">Payment Methods *</label>
-                <div id="artist-edit-payment" class="grid grid-cols-2 gap-2"></div>
+                <div id="artist-edit-payment" class="flex flex-wrap gap-2"></div>
               </div>
 
               <div class="pt-4 border-t border-gray-100">
@@ -720,6 +720,9 @@ export function populateProfileEditor(data) {
   setValue('artist-edit-pitch', data.pitch || '');
   checkValues('genre', data.genres || []);
   checkValues('language', data.languages || []);
+  checkValues('theme', data.themes || []);
+  checkValues('energy', data.energy || []);
+  checkValues('format', data.formats || []);
   updatePitchCount();
 
   // === TAB 2: Bio & Media ===
@@ -1221,6 +1224,9 @@ async function handleProfileSubmit(e) {
       pitch: document.getElementById('artist-edit-pitch')?.value.trim() || '',
       genres: getCheckedValues('genre'),
       languages: getCheckedValues('language'),
+      themes: getCheckedValues('theme'),
+      energy: getCheckedValues('energy'),
+      formats: getCheckedValues('format'),
 
       // Tab 2: Bio & Media
       bio: document.getElementById('artist-edit-bio')?.value.trim() || '',
