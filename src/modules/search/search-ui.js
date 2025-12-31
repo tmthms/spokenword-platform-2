@@ -48,10 +48,6 @@ export function renderArtistSearch() {
                   style="flex-shrink: 0; padding: 10px 18px; background: white; border: 1px solid #e5e7eb; border-radius: 24px; font-size: 14px; font-weight: 500; color: #4a4a68; cursor: pointer;">
             Locatie
           </button>
-          <button data-action="toggle-filter" data-target="genre" id="btn-filter-genre"
-                  style="flex-shrink: 0; padding: 10px 18px; background: white; border: 1px solid #e5e7eb; border-radius: 24px; font-size: 14px; font-weight: 500; color: #4a4a68; cursor: pointer;">
-            Genre
-          </button>
           <button data-action="toggle-filter" data-target="keywords" id="btn-filter-keywords"
                   style="flex-shrink: 0; padding: 10px 18px; background: white; border: 1px solid #e5e7eb; border-radius: 24px; font-size: 14px; font-weight: 500; color: #4a4a68; cursor: pointer;">
             Keywords
@@ -77,13 +73,50 @@ export function renderArtistSearch() {
           </div>
         </div>
 
-        <div id="filter-genre" style="display: none; background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(128,90,213,0.1);">
-          <div id="mobile-genre-checkboxes" style="display: flex; flex-direction: column; gap: 8px; max-height: 200px; overflow-y: auto; margin-bottom: 12px;">
-            <p style="color: #9ca3af; font-size: 14px;">Laden...</p>
-          </div>
-          <div style="display: flex; justify-content: flex-end;">
-            <button data-action="apply-filter" data-target="genre"
-                    style="width: 44px; height: 44px; background: #805ad5; color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 18px;">✓</button>
+        <!-- GENRE FILTER (COLLAPSIBLE) -->
+        <div class="filter-section" style="background: white; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+          <button data-action="toggle-filter" data-target="genre"
+                  style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 16px; background: none; border: none; cursor: pointer;">
+            <span style="font-size: 16px; font-weight: 600; color: #1a1a2e;">Genre</span>
+            <svg id="chevron-genre" style="width: 20px; height: 20px; color: #9ca3af; transition: transform 0.2s;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div id="filter-genre" style="display: none; padding: 0 16px 16px 16px;">
+            <div id="mobile-genre-checkboxes" style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
+                <input type="checkbox" name="mobile-genre" value="performance-poetry" class="chip-input sr-only">
+                <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Performance Poetry</span>
+              </label>
+              <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
+                <input type="checkbox" name="mobile-genre" value="slam-poetry" class="chip-input sr-only">
+                <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Slam Poetry</span>
+              </label>
+              <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
+                <input type="checkbox" name="mobile-genre" value="hip-hop-poetry" class="chip-input sr-only">
+                <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Hip Hop Poetry</span>
+              </label>
+              <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
+                <input type="checkbox" name="mobile-genre" value="storytelling" class="chip-input sr-only">
+                <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Storytelling</span>
+              </label>
+              <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
+                <input type="checkbox" name="mobile-genre" value="experimental" class="chip-input sr-only">
+                <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Experimental</span>
+              </label>
+              <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
+                <input type="checkbox" name="mobile-genre" value="musical-poetry" class="chip-input sr-only">
+                <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Musical Poetry</span>
+              </label>
+              <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
+                <input type="checkbox" name="mobile-genre" value="lyrical" class="chip-input sr-only">
+                <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Lyrical</span>
+              </label>
+              <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
+                <input type="checkbox" name="mobile-genre" value="political-poetry" class="chip-input sr-only">
+                <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Political Poetry</span>
+              </label>
+            </div>
           </div>
         </div>
 
@@ -353,7 +386,7 @@ async function populateGenreFilters() {
 
     const sorted = Array.from(genres).sort();
 
-    // Desktop genre checkboxes
+    // Desktop genre checkboxes only (mobile now has static chips)
     const desktopGenres = document.getElementById('desktop-genre-checkboxes');
     if (desktopGenres) {
       desktopGenres.innerHTML = sorted.map(g => `
@@ -365,19 +398,7 @@ async function populateGenreFilters() {
       `).join('');
     }
 
-    // Mobile genre checkboxes
-    const mobileGenres = document.getElementById('mobile-genre-checkboxes');
-    if (mobileGenres) {
-      mobileGenres.innerHTML = sorted.map(g => `
-        <label style="display: flex; align-items: center; gap: 10px; padding: 10px; background: #f9fafb; border-radius: 10px; cursor: pointer;">
-          <input type="checkbox" name="mobile-genre" value="${g}"
-                 style="width: 20px; height: 20px; accent-color: #805ad5; cursor: pointer;">
-          <span style="font-size: 14px; color: #1a1a2e;">${g}</span>
-        </label>
-      `).join('');
-    }
-
-    console.log('[FILTERS] Populated', sorted.length, 'genres');
+    console.log('[FILTERS] Populated', sorted.length, 'desktop genres');
   } catch (err) {
     console.error('[FILTERS] Error:', err);
   }
@@ -437,16 +458,29 @@ function setupSearchInteractions() {
     if (toggleBtn) {
       const target = toggleBtn.dataset.target;
       const panel = document.getElementById(`filter-${target}`);
+      const chevron = document.getElementById(`chevron-${target}`);
 
-      // Close all panels
-      document.querySelectorAll('[id^="filter-"]').forEach(p => {
-        if (p.id.startsWith('filter-') && p.style.display === 'none') return;
-        if (p.id !== `filter-${target}`) p.style.display = 'none';
-      });
+      // For collapsible panels (genre, themes, vibe, formats), toggle chevron rotation
+      if (chevron) {
+        const isOpen = panel && panel.style.display !== 'none';
+        if (isOpen) {
+          panel.style.display = 'none';
+          chevron.style.transform = 'rotate(0deg)';
+        } else {
+          if (panel) panel.style.display = 'block';
+          chevron.style.transform = 'rotate(180deg)';
+        }
+      } else {
+        // For simple panels (name, location, keywords), close all and toggle this one
+        document.querySelectorAll('[id^="filter-"]').forEach(p => {
+          if (p.id.startsWith('filter-') && p.style.display === 'none') return;
+          if (p.id !== `filter-${target}`) p.style.display = 'none';
+        });
 
-      // Toggle this panel
-      if (panel) {
-        panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        // Toggle this panel
+        if (panel) {
+          panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
       }
       return;
     }
@@ -505,7 +539,25 @@ function setupSearchInteractions() {
 
   // Desktop: Checkbox changes - immediate
   root.addEventListener('change', (e) => {
-    if (e.target.matches('[name="desktop-genre"], [name="mobile-genre"]')) {
+    // Handle chip selection visual feedback
+    if (e.target.matches('.chip-input')) {
+      const label = e.target.closest('.chip-label');
+      if (label) {
+        if (e.target.checked) {
+          label.style.borderColor = '#805ad5';
+          label.style.background = '#f3e8ff';
+          const chipText = label.querySelector('.chip-text');
+          if (chipText) chipText.style.color = '#805ad5';
+        } else {
+          label.style.borderColor = '#d1d5db';
+          label.style.background = 'white';
+          const chipText = label.querySelector('.chip-text');
+          if (chipText) chipText.style.color = '#374151';
+        }
+      }
+      // Trigger search update
+      loadArtists();
+    } else if (e.target.matches('[name="desktop-genre"], [name="mobile-genre"]')) {
       loadArtists();
     }
   });
@@ -546,15 +598,30 @@ async function loadArtists() {
       cb.value.trim().toLowerCase().replace(/\s+/g, '-')
     );
 
+    const themeCheckboxes = document.querySelectorAll('input[name="mobile-theme"]:checked');
+    const themeFilters = Array.from(themeCheckboxes).map(cb =>
+      cb.value.trim().toLowerCase().replace(/\s+/g, '-')
+    );
+
+    const vibeCheckboxes = document.querySelectorAll('input[name="mobile-energy"]:checked');
+    const vibeFilters = Array.from(vibeCheckboxes).map(cb =>
+      cb.value.trim().toLowerCase()
+    );
+
+    const formatCheckboxes = document.querySelectorAll('input[name="mobile-format"]:checked');
+    const formatFilters = Array.from(formatCheckboxes).map(cb =>
+      cb.value.trim().toLowerCase().replace(/\s+/g, '-')
+    );
+
     const keywordsFilter = (
       document.getElementById('desktop-input-keywords')?.value ||
       document.getElementById('mobile-input-keywords')?.value || ''
     ).toLowerCase().trim();
 
-    console.log('[SEARCH UI] Filters collected:', { nameFilter, locationFilter, genreFilters, keywordsFilter });
+    console.log('[SEARCH UI] Filters collected:', { nameFilter, locationFilter, genreFilters, themeFilters, vibeFilters, formatFilters, keywordsFilter });
 
     // Load and filter
-    const artists = await loadArtistsData({ nameFilter, locationFilter, genreFilters, keywordsFilter });
+    const artists = await loadArtistsData({ nameFilter, locationFilter, genreFilters, themeFilters, vibeFilters, formatFilters, keywordsFilter });
 
     // Update counts
     const countText = `${artists.length} gevonden`;
