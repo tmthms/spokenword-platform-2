@@ -284,6 +284,85 @@ export function renderArtistSearch() {
               </div>
             </div>
 
+            <hr style="border: none; border-top: 1px solid #e9e3f5; margin: 20px 0;">
+
+            <!-- Desktop Themes Filter -->
+            <div style="margin-bottom: 20px;">
+              <h4 style="font-size: 13px; font-weight: 600; color: #4a4a68; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Themes</h4>
+              <div id="desktop-theme-checkboxes" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
+                  <input type="checkbox" name="desktop-theme" value="identity" class="chip-input sr-only">
+                  <span class="chip-text" style="color: #4a4a68;">Identity</span>
+                </label>
+                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
+                  <input type="checkbox" name="desktop-theme" value="social-justice" class="chip-input sr-only">
+                  <span class="chip-text" style="color: #4a4a68;">Social Justice</span>
+                </label>
+                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
+                  <input type="checkbox" name="desktop-theme" value="mental-health" class="chip-input sr-only">
+                  <span class="chip-text" style="color: #4a4a68;">Mental Health</span>
+                </label>
+                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
+                  <input type="checkbox" name="desktop-theme" value="love-relationships" class="chip-input sr-only">
+                  <span class="chip-text" style="color: #4a4a68;">Love/Relationships</span>
+                </label>
+                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
+                  <input type="checkbox" name="desktop-theme" value="politics" class="chip-input sr-only">
+                  <span class="chip-text" style="color: #4a4a68;">Politics</span>
+                </label>
+                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
+                  <input type="checkbox" name="desktop-theme" value="climate-change" class="chip-input sr-only">
+                  <span class="chip-text" style="color: #4a4a68;">Climate Change</span>
+                </label>
+                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
+                  <input type="checkbox" name="desktop-theme" value="coming-of-age" class="chip-input sr-only">
+                  <span class="chip-text" style="color: #4a4a68;">Coming of Age</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Desktop Vibe Filter -->
+            <div style="margin-bottom: 20px;">
+              <h4 style="font-size: 13px; font-weight: 600; color: #4a4a68; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Vibe</h4>
+              <div id="desktop-vibe-checkboxes" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
+                  <input type="checkbox" name="desktop-energy" value="intiem" class="chip-input sr-only">
+                  <span class="chip-text" style="color: #4a4a68;">Intiem</span>
+                </label>
+                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
+                  <input type="checkbox" name="desktop-energy" value="interactief" class="chip-input sr-only">
+                  <span class="chip-text" style="color: #4a4a68;">Interactief</span>
+                </label>
+                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
+                  <input type="checkbox" name="desktop-energy" value="energiek" class="chip-input sr-only">
+                  <span class="chip-text" style="color: #4a4a68;">Energiek</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Desktop Formats Filter -->
+            <div style="margin-bottom: 20px;">
+              <h4 style="font-size: 13px; font-weight: 600; color: #4a4a68; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Diensten</h4>
+              <div id="desktop-format-checkboxes" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
+                  <input type="checkbox" name="desktop-format" value="podiumperformance" class="chip-input sr-only">
+                  <span class="chip-text" style="color: #4a4a68;">Podiumperformance</span>
+                </label>
+                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
+                  <input type="checkbox" name="desktop-format" value="workshops" class="chip-input sr-only">
+                  <span class="chip-text" style="color: #4a4a68;">Workshops</span>
+                </label>
+                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
+                  <input type="checkbox" name="desktop-format" value="hosting" class="chip-input sr-only">
+                  <span class="chip-text" style="color: #4a4a68;">Hosting / Presentatie</span>
+                </label>
+                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
+                  <input type="checkbox" name="desktop-format" value="gedichten-op-maat" class="chip-input sr-only">
+                  <span class="chip-text" style="color: #4a4a68;">Gedichten op Maat</span>
+                </label>
+              </div>
+            </div>
+
           </div>
         </aside>
 
@@ -544,13 +623,13 @@ function setupSearchInteractions() {
       const label = e.target.closest('.chip-label');
       if (label) {
         if (e.target.checked) {
-          label.style.borderColor = '#805ad5';
-          label.style.background = '#f3e8ff';
+          label.style.backgroundColor = '#7c3aed';
+          label.style.borderColor = '#7c3aed';
           const chipText = label.querySelector('.chip-text');
-          if (chipText) chipText.style.color = '#805ad5';
+          if (chipText) chipText.style.color = 'white';
         } else {
+          label.style.backgroundColor = 'white';
           label.style.borderColor = '#d1d5db';
-          label.style.background = 'white';
           const chipText = label.querySelector('.chip-text');
           if (chipText) chipText.style.color = '#374151';
         }
@@ -598,17 +677,17 @@ async function loadArtists() {
       cb.value.trim().toLowerCase().replace(/\s+/g, '-')
     );
 
-    const themeCheckboxes = document.querySelectorAll('input[name="mobile-theme"]:checked');
+    const themeCheckboxes = document.querySelectorAll('input[name="mobile-theme"]:checked, input[name="desktop-theme"]:checked');
     const themeFilters = Array.from(themeCheckboxes).map(cb =>
       cb.value.trim().toLowerCase().replace(/\s+/g, '-')
     );
 
-    const vibeCheckboxes = document.querySelectorAll('input[name="mobile-energy"]:checked');
+    const vibeCheckboxes = document.querySelectorAll('input[name="mobile-energy"]:checked, input[name="desktop-energy"]:checked');
     const vibeFilters = Array.from(vibeCheckboxes).map(cb =>
       cb.value.trim().toLowerCase()
     );
 
-    const formatCheckboxes = document.querySelectorAll('input[name="mobile-format"]:checked');
+    const formatCheckboxes = document.querySelectorAll('input[name="mobile-format"]:checked, input[name="desktop-format"]:checked');
     const formatFilters = Array.from(formatCheckboxes).map(cb =>
       cb.value.trim().toLowerCase().replace(/\s+/g, '-')
     );
