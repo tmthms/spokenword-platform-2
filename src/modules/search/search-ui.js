@@ -271,101 +271,157 @@ export function renderArtistSearch() {
                      style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #e9e3f5; font-size: 14px; outline: none; box-sizing: border-box;">
             </div>
 
-            <hr style="border: none; border-top: 1px solid #e9e3f5; margin: 20px 0;">
+            <!-- ===== DESKTOP COLLAPSIBLE FILTERS ===== -->
 
-            <!-- Genre Section (collapsible, at bottom) -->
-            <div id="desktop-genre-section">
-              <button id="desktop-genre-toggle" type="button" style="width: 100%; display: flex; justify-content: space-between; align-items: center; background: none; border: none; cursor: pointer; padding: 0; margin-bottom: 0;">
-                <h3 style="font-size: 16px; font-weight: 700; color: #1a1a2e; margin: 0;">Genre</h3>
-                <svg id="desktop-genre-chevron" width="20" height="20" fill="none" stroke="#6b7280" viewBox="0 0 24 24" style="transition: transform 0.2s;">
+            <!-- GENRE FILTER -->
+            <div style="background: white; border-radius: 12px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+              <button data-action="toggle-filter" data-target="desktop-genre"
+                      style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: none; border: none; cursor: pointer;">
+                <span style="font-size: 14px; font-weight: 600; color: #1a1a2e;">Genre</span>
+                <svg id="chevron-desktop-genre" style="width: 18px; height: 18px; color: #9ca3af; transition: transform 0.2s;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
               </button>
-
-              <!-- Genre Checkboxes (hidden by default) -->
-              <div id="desktop-genre-checkboxes" style="display: none; flex-direction: column; gap: 12px; margin-top: 16px; max-height: 300px; overflow-y: auto;">
-                <p style="color: #9ca3af; font-size: 14px;">Laden...</p>
+              <div id="filter-desktop-genre" style="display: none; padding: 0 16px 16px 16px;">
+                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-genre" value="performance-poetry" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Performance Poetry</span>
+                  </label>
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-genre" value="slam-poetry" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Slam Poetry</span>
+                  </label>
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-genre" value="hip-hop-poetry" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Hip Hop Poetry</span>
+                  </label>
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-genre" value="storytelling" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Storytelling</span>
+                  </label>
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-genre" value="experimental" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Experimental</span>
+                  </label>
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-genre" value="musical-poetry" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Musical Poetry</span>
+                  </label>
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-genre" value="lyrical" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Lyrical</span>
+                  </label>
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-genre" value="political-poetry" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Political Poetry</span>
+                  </label>
+                </div>
               </div>
             </div>
 
-            <hr style="border: none; border-top: 1px solid #e9e3f5; margin: 20px 0;">
-
-            <!-- Desktop Themes Filter -->
-            <div style="margin-bottom: 20px;">
-              <h4 style="font-size: 13px; font-weight: 600; color: #4a4a68; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Themes</h4>
-              <div id="desktop-theme-checkboxes" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
-                  <input type="checkbox" name="desktop-theme" value="identity" class="chip-input sr-only">
-                  <span class="chip-text" style="color: #4a4a68;">Identity</span>
-                </label>
-                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
-                  <input type="checkbox" name="desktop-theme" value="social-justice" class="chip-input sr-only">
-                  <span class="chip-text" style="color: #4a4a68;">Social Justice</span>
-                </label>
-                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
-                  <input type="checkbox" name="desktop-theme" value="mental-health" class="chip-input sr-only">
-                  <span class="chip-text" style="color: #4a4a68;">Mental Health</span>
-                </label>
-                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
-                  <input type="checkbox" name="desktop-theme" value="love-relationships" class="chip-input sr-only">
-                  <span class="chip-text" style="color: #4a4a68;">Love/Relationships</span>
-                </label>
-                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
-                  <input type="checkbox" name="desktop-theme" value="politics" class="chip-input sr-only">
-                  <span class="chip-text" style="color: #4a4a68;">Politics</span>
-                </label>
-                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
-                  <input type="checkbox" name="desktop-theme" value="climate-change" class="chip-input sr-only">
-                  <span class="chip-text" style="color: #4a4a68;">Climate Change</span>
-                </label>
-                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
-                  <input type="checkbox" name="desktop-theme" value="coming-of-age" class="chip-input sr-only">
-                  <span class="chip-text" style="color: #4a4a68;">Coming of Age</span>
-                </label>
+            <!-- THEMES FILTER -->
+            <div style="background: white; border-radius: 12px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+              <button data-action="toggle-filter" data-target="desktop-themes"
+                      style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: none; border: none; cursor: pointer;">
+                <span style="font-size: 14px; font-weight: 600; color: #1a1a2e;">Themes</span>
+                <svg id="chevron-desktop-themes" style="width: 18px; height: 18px; color: #9ca3af; transition: transform 0.2s;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </button>
+              <div id="filter-desktop-themes" style="display: none; padding: 0 16px 16px 16px;">
+                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-theme" value="identity" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Identity</span>
+                  </label>
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-theme" value="social-justice" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Social Justice</span>
+                  </label>
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-theme" value="mental-health" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Mental Health</span>
+                  </label>
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-theme" value="love-relationships" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Love/Relationships</span>
+                  </label>
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-theme" value="politics" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Politics</span>
+                  </label>
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-theme" value="climate-change" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Climate Change</span>
+                  </label>
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-theme" value="coming-of-age" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Coming of Age</span>
+                  </label>
+                </div>
               </div>
             </div>
 
-            <!-- Desktop Vibe Filter -->
-            <div style="margin-bottom: 20px;">
-              <h4 style="font-size: 13px; font-weight: 600; color: #4a4a68; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Vibe</h4>
-              <div id="desktop-vibe-checkboxes" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
-                  <input type="checkbox" name="desktop-energy" value="intiem" class="chip-input sr-only">
-                  <span class="chip-text" style="color: #4a4a68;">Intiem</span>
-                </label>
-                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
-                  <input type="checkbox" name="desktop-energy" value="interactief" class="chip-input sr-only">
-                  <span class="chip-text" style="color: #4a4a68;">Interactief</span>
-                </label>
-                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
-                  <input type="checkbox" name="desktop-energy" value="energiek" class="chip-input sr-only">
-                  <span class="chip-text" style="color: #4a4a68;">Energiek</span>
-                </label>
+            <!-- VIBE FILTER -->
+            <div style="background: white; border-radius: 12px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+              <button data-action="toggle-filter" data-target="desktop-vibe"
+                      style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: none; border: none; cursor: pointer;">
+                <span style="font-size: 14px; font-weight: 600; color: #1a1a2e;">Vibe</span>
+                <svg id="chevron-desktop-vibe" style="width: 18px; height: 18px; color: #9ca3af; transition: transform 0.2s;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </button>
+              <div id="filter-desktop-vibe" style="display: none; padding: 0 16px 16px 16px;">
+                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-energy" value="intiem" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Intiem</span>
+                  </label>
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-energy" value="interactief" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Interactief</span>
+                  </label>
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-energy" value="energiek" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Energiek</span>
+                  </label>
+                </div>
               </div>
             </div>
 
-            <!-- Desktop Formats Filter -->
-            <div style="margin-bottom: 20px;">
-              <h4 style="font-size: 13px; font-weight: 600; color: #4a4a68; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Diensten</h4>
-              <div id="desktop-format-checkboxes" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
-                  <input type="checkbox" name="desktop-format" value="podiumperformance" class="chip-input sr-only">
-                  <span class="chip-text" style="color: #4a4a68;">Podiumperformance</span>
-                </label>
-                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
-                  <input type="checkbox" name="desktop-format" value="workshops" class="chip-input sr-only">
-                  <span class="chip-text" style="color: #4a4a68;">Workshops</span>
-                </label>
-                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
-                  <input type="checkbox" name="desktop-format" value="hosting" class="chip-input sr-only">
-                  <span class="chip-text" style="color: #4a4a68;">Hosting / Presentatie</span>
-                </label>
-                <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; font-size: 13px;">
-                  <input type="checkbox" name="desktop-format" value="gedichten-op-maat" class="chip-input sr-only">
-                  <span class="chip-text" style="color: #4a4a68;">Gedichten op Maat</span>
-                </label>
+            <!-- FORMATS FILTER -->
+            <div style="background: white; border-radius: 12px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+              <button data-action="toggle-filter" data-target="desktop-formats"
+                      style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: none; border: none; cursor: pointer;">
+                <span style="font-size: 14px; font-weight: 600; color: #1a1a2e;">Diensten</span>
+                <svg id="chevron-desktop-formats" style="width: 18px; height: 18px; color: #9ca3af; transition: transform 0.2s;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </button>
+              <div id="filter-desktop-formats" style="display: none; padding: 0 16px 16px 16px;">
+                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-format" value="podiumperformance" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Podiumperformance</span>
+                  </label>
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-format" value="workshops" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Workshops</span>
+                  </label>
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-format" value="hosting" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Hosting / Presentatie</span>
+                  </label>
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-format" value="gedichten-op-maat" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Gedichten op Maat</span>
+                  </label>
+                </div>
               </div>
             </div>
+
+            <!-- ===== END DESKTOP FILTERS ===== -->
 
           </div>
         </aside>
