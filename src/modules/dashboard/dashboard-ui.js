@@ -248,7 +248,7 @@ export function renderProfileEditor() {
               <!-- Energy Levels -->
               <div>
                 <label class="block text-sm font-semibold text-gray-700 mb-3">
-                  Energieniveau <span class="text-gray-400 font-normal">(selecteer meerdere)</span>
+                  Vibe <span class="text-gray-400 font-normal">(selecteer meerdere)</span>
                 </label>
                 <div id="artist-edit-energy" class="flex flex-wrap gap-2"></div>
               </div>
