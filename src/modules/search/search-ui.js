@@ -73,8 +73,10 @@ export function renderArtistSearch() {
           </div>
         </div>
 
-        <!-- GENRE FILTER (COLLAPSIBLE) -->
-        <div class="filter-section" style="background: white; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+        <!-- ===== COLLAPSIBLE FILTER PANELS ===== -->
+
+        <!-- GENRE FILTER -->
+        <div class="filter-section" style="background: white; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden;">
           <button data-action="toggle-filter" data-target="genre"
                   style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 16px; background: none; border: none; cursor: pointer;">
             <span style="font-size: 16px; font-weight: 600; color: #1a1a2e;">Genre</span>
@@ -83,37 +85,37 @@ export function renderArtistSearch() {
             </svg>
           </button>
           <div id="filter-genre" style="display: none; padding: 0 16px 16px 16px;">
-            <div id="mobile-genre-checkboxes" style="display: flex; flex-wrap: wrap; gap: 8px;">
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
               <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
-                <input type="checkbox" name="mobile-genre" value="performance-poetry" class="chip-input sr-only">
+                <input type="checkbox" name="mobile-genre" value="performance-poetry" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
                 <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Performance Poetry</span>
               </label>
               <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
-                <input type="checkbox" name="mobile-genre" value="slam-poetry" class="chip-input sr-only">
+                <input type="checkbox" name="mobile-genre" value="slam-poetry" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
                 <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Slam Poetry</span>
               </label>
               <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
-                <input type="checkbox" name="mobile-genre" value="hip-hop-poetry" class="chip-input sr-only">
+                <input type="checkbox" name="mobile-genre" value="hip-hop-poetry" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
                 <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Hip Hop Poetry</span>
               </label>
               <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
-                <input type="checkbox" name="mobile-genre" value="storytelling" class="chip-input sr-only">
+                <input type="checkbox" name="mobile-genre" value="storytelling" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
                 <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Storytelling</span>
               </label>
               <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
-                <input type="checkbox" name="mobile-genre" value="experimental" class="chip-input sr-only">
+                <input type="checkbox" name="mobile-genre" value="experimental" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
                 <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Experimental</span>
               </label>
               <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
-                <input type="checkbox" name="mobile-genre" value="musical-poetry" class="chip-input sr-only">
+                <input type="checkbox" name="mobile-genre" value="musical-poetry" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
                 <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Musical Poetry</span>
               </label>
               <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
-                <input type="checkbox" name="mobile-genre" value="lyrical" class="chip-input sr-only">
+                <input type="checkbox" name="mobile-genre" value="lyrical" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
                 <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Lyrical</span>
               </label>
               <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
-                <input type="checkbox" name="mobile-genre" value="political-poetry" class="chip-input sr-only">
+                <input type="checkbox" name="mobile-genre" value="political-poetry" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
                 <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Political Poetry</span>
               </label>
             </div>
@@ -121,7 +123,7 @@ export function renderArtistSearch() {
         </div>
 
         <!-- THEMES FILTER -->
-        <div class="filter-section" style="background: white; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+        <div class="filter-section" style="background: white; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden;">
           <button data-action="toggle-filter" data-target="themes"
                   style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 16px; background: none; border: none; cursor: pointer;">
             <span style="font-size: 16px; font-weight: 600; color: #1a1a2e;">Themes</span>
@@ -130,33 +132,33 @@ export function renderArtistSearch() {
             </svg>
           </button>
           <div id="filter-themes" style="display: none; padding: 0 16px 16px 16px;">
-            <div id="mobile-theme-checkboxes" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
               <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
-                <input type="checkbox" name="mobile-theme" value="identity" class="chip-input sr-only">
+                <input type="checkbox" name="mobile-theme" value="identity" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
                 <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Identity</span>
               </label>
               <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
-                <input type="checkbox" name="mobile-theme" value="social-justice" class="chip-input sr-only">
+                <input type="checkbox" name="mobile-theme" value="social-justice" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
                 <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Social Justice</span>
               </label>
               <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
-                <input type="checkbox" name="mobile-theme" value="mental-health" class="chip-input sr-only">
+                <input type="checkbox" name="mobile-theme" value="mental-health" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
                 <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Mental Health</span>
               </label>
               <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
-                <input type="checkbox" name="mobile-theme" value="love-relationships" class="chip-input sr-only">
+                <input type="checkbox" name="mobile-theme" value="love-relationships" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
                 <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Love/Relationships</span>
               </label>
               <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
-                <input type="checkbox" name="mobile-theme" value="politics" class="chip-input sr-only">
+                <input type="checkbox" name="mobile-theme" value="politics" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
                 <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Politics</span>
               </label>
               <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
-                <input type="checkbox" name="mobile-theme" value="climate-change" class="chip-input sr-only">
+                <input type="checkbox" name="mobile-theme" value="climate-change" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
                 <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Climate Change</span>
               </label>
               <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
-                <input type="checkbox" name="mobile-theme" value="coming-of-age" class="chip-input sr-only">
+                <input type="checkbox" name="mobile-theme" value="coming-of-age" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
                 <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Coming of Age</span>
               </label>
             </div>
@@ -164,7 +166,7 @@ export function renderArtistSearch() {
         </div>
 
         <!-- VIBE FILTER -->
-        <div class="filter-section" style="background: white; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+        <div class="filter-section" style="background: white; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden;">
           <button data-action="toggle-filter" data-target="vibe"
                   style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 16px; background: none; border: none; cursor: pointer;">
             <span style="font-size: 16px; font-weight: 600; color: #1a1a2e;">Vibe</span>
@@ -173,17 +175,17 @@ export function renderArtistSearch() {
             </svg>
           </button>
           <div id="filter-vibe" style="display: none; padding: 0 16px 16px 16px;">
-            <div id="mobile-vibe-checkboxes" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
               <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
-                <input type="checkbox" name="mobile-energy" value="intiem" class="chip-input sr-only">
+                <input type="checkbox" name="mobile-energy" value="intiem" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
                 <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Intiem</span>
               </label>
               <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
-                <input type="checkbox" name="mobile-energy" value="interactief" class="chip-input sr-only">
+                <input type="checkbox" name="mobile-energy" value="interactief" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
                 <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Interactief</span>
               </label>
               <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
-                <input type="checkbox" name="mobile-energy" value="energiek" class="chip-input sr-only">
+                <input type="checkbox" name="mobile-energy" value="energiek" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
                 <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Energiek</span>
               </label>
             </div>
@@ -191,7 +193,7 @@ export function renderArtistSearch() {
         </div>
 
         <!-- FORMATS FILTER -->
-        <div class="filter-section" style="background: white; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04);">
+        <div class="filter-section" style="background: white; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden;">
           <button data-action="toggle-filter" data-target="formats"
                   style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 16px; background: none; border: none; cursor: pointer;">
             <span style="font-size: 16px; font-weight: 600; color: #1a1a2e;">Diensten</span>
@@ -200,26 +202,28 @@ export function renderArtistSearch() {
             </svg>
           </button>
           <div id="filter-formats" style="display: none; padding: 0 16px 16px 16px;">
-            <div id="mobile-format-checkboxes" style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px;">
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
               <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
-                <input type="checkbox" name="mobile-format" value="podiumperformance" class="chip-input sr-only">
+                <input type="checkbox" name="mobile-format" value="podiumperformance" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
                 <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Podiumperformance</span>
               </label>
               <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
-                <input type="checkbox" name="mobile-format" value="workshops" class="chip-input sr-only">
+                <input type="checkbox" name="mobile-format" value="workshops" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
                 <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Workshops</span>
               </label>
               <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
-                <input type="checkbox" name="mobile-format" value="hosting" class="chip-input sr-only">
+                <input type="checkbox" name="mobile-format" value="hosting" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
                 <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Hosting / Presentatie</span>
               </label>
               <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
-                <input type="checkbox" name="mobile-format" value="gedichten-op-maat" class="chip-input sr-only">
+                <input type="checkbox" name="mobile-format" value="gedichten-op-maat" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
                 <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Gedichten op Maat</span>
               </label>
             </div>
           </div>
         </div>
+
+        <!-- ===== END COLLAPSIBLE FILTER PANELS ===== -->
 
         <div id="filter-keywords" style="display: none; background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(128,90,213,0.1);">
           <div style="display: flex; gap: 8px;">
@@ -426,7 +430,7 @@ export function renderArtistSearch() {
   `;
 
   // Populate filter checkboxes
-  populateGenreFilters();
+  // populateGenreFilters(); // Nu statisch in HTML
 
   // Setup interactions
   setupSearchInteractions();
@@ -539,27 +543,41 @@ function setupSearchInteractions() {
       const panel = document.getElementById(`filter-${target}`);
       const chevron = document.getElementById(`chevron-${target}`);
 
-      // For collapsible panels (genre, themes, vibe, formats), toggle chevron rotation
-      if (chevron) {
-        const isOpen = panel && panel.style.display !== 'none';
-        if (isOpen) {
-          panel.style.display = 'none';
-          chevron.style.transform = 'rotate(0deg)';
-        } else {
-          if (panel) panel.style.display = 'block';
-          chevron.style.transform = 'rotate(180deg)';
-        }
-      } else {
-        // For simple panels (name, location, keywords), close all and toggle this one
-        document.querySelectorAll('[id^="filter-"]').forEach(p => {
-          if (p.id.startsWith('filter-') && p.style.display === 'none') return;
-          if (p.id !== `filter-${target}`) p.style.display = 'none';
-        });
+      if (panel) {
+        const isOpen = panel.style.display !== 'none';
 
-        // Toggle this panel
-        if (panel) {
-          panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        // Toggle panel
+        panel.style.display = isOpen ? 'none' : 'block';
+
+        // Rotate chevron
+        if (chevron) {
+          chevron.style.transform = isOpen ? 'rotate(0deg)' : 'rotate(180deg)';
         }
+      }
+      return;
+    }
+
+    // Chip click handler
+    const chipLabel = e.target.closest('.chip-label');
+    if (chipLabel) {
+      const checkbox = chipLabel.querySelector('.chip-input');
+      if (checkbox) {
+        // Toggle checkbox
+        checkbox.checked = !checkbox.checked;
+
+        // Update styling
+        if (checkbox.checked) {
+          chipLabel.style.backgroundColor = '#7c3aed';
+          chipLabel.style.borderColor = '#7c3aed';
+          chipLabel.querySelector('.chip-text').style.color = 'white';
+        } else {
+          chipLabel.style.backgroundColor = 'white';
+          chipLabel.style.borderColor = '#d1d5db';
+          chipLabel.querySelector('.chip-text').style.color = '#374151';
+        }
+
+        // Reload artists
+        loadArtists();
       }
       return;
     }
