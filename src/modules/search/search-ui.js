@@ -843,8 +843,8 @@ async function loadArtists() {
       cb.value.trim().toLowerCase().replace(/\s+/g, '-')
     );
 
-    const vibeCheckboxes = document.querySelectorAll('input[name="mobile-energy"]:checked, input[name="desktop-energy"]:checked');
-    const vibeFilters = Array.from(vibeCheckboxes).map(cb =>
+    const energyCheckboxes = document.querySelectorAll('input[name="mobile-energy"]:checked, input[name="desktop-energy"]:checked');
+    const energyFilters = Array.from(energyCheckboxes).map(cb =>
       cb.value.trim().toLowerCase()
     );
 
@@ -858,10 +858,10 @@ async function loadArtists() {
       document.getElementById('mobile-input-keywords')?.value || ''
     ).toLowerCase().trim();
 
-    console.log('[SEARCH UI] Filters collected:', { nameFilter, locationFilter, genreFilters, themeFilters, vibeFilters, formatFilters, keywordsFilter });
+    console.log('[SEARCH UI] Filters collected:', { nameFilter, locationFilter, genreFilters, themeFilters, energyFilters, formatFilters, keywordsFilter });
 
     // Load and filter
-    const artists = await loadArtistsData({ nameFilter, locationFilter, genreFilters, themeFilters, vibeFilters, formatFilters, keywordsFilter });
+    const artists = await loadArtistsData({ nameFilter, locationFilter, genreFilters, themeFilters, energyFilters, formatFilters, keywordsFilter });
 
     // Update counts
     const countText = `${artists.length} gevonden`;

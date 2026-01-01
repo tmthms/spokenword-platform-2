@@ -168,7 +168,9 @@ export async function loadArtistsData(filters = {}) {
       languageFilters = [],
       ageMin = null,
       ageMax = null,
+      themeFilters = [],
       energyFilters = [],
+      formatFilters = [],
       keywordsFilter = ''
     } = filters;
 
@@ -180,7 +182,9 @@ export async function loadArtistsData(filters = {}) {
       genreFilters,
       languageFilters,
       ageRange: ageMin !== null || ageMax !== null ? `${ageMin || 'any'}-${ageMax || 'any'}` : 'not set',
+      themeFilters,
       energyFilters,
+      formatFilters,
       keywordsFilter
     });
 
@@ -329,13 +333,79 @@ export async function loadArtistsData(filters = {}) {
       console.log(`🎂 After age filter: ${artists.length} artists`);
     }
 
-    // Filter by energy level
-    if (energyFilters.length > 0) {
+    // Filter by themes (any match)
+    if (themeFilters.length > 0) {
+      console.log(`🎨 Filtering by themes:`, themeFilters);
+
+      let debugLogged = false;
       artists = artists.filter(artist => {
-        const artistEnergy = (artist.energyLevel || '').toLowerCase();
-        return energyFilters.includes(artistEnergy);
+        const artistThemes = (artist.themes || [])
+          .filter(t => t && typeof t === 'string')
+          .map(t => normalize(t));
+
+        // DEBUG: Log comparison for first artist only once
+        if (!debugLogged) {
+          console.log(`  Sample artist themes (normalized):`, artistThemes);
+          console.log(`  Filter themes (normalized):`, themeFilters);
+          debugLogged = true;
+        }
+
+        // Artist must have at least one of the selected themes
+        const hasMatch = themeFilters.some(theme => artistThemes.includes(theme));
+        return hasMatch;
       });
+
+      console.log(`🎨 After themes filter: ${artists.length} artists`);
+    }
+
+    // Filter by energy levels (any match)
+    if (energyFilters.length > 0) {
+      console.log(`⚡ Filtering by energy:`, energyFilters);
+
+      let debugLogged = false;
+      artists = artists.filter(artist => {
+        const artistEnergy = (artist.energyLevels || [])
+          .filter(e => e && typeof e === 'string')
+          .map(e => e.toLowerCase().trim());
+
+        // DEBUG: Log comparison for first artist only once
+        if (!debugLogged) {
+          console.log(`  Sample artist energy (lowercase):`, artistEnergy);
+          console.log(`  Filter energy (lowercase):`, energyFilters);
+          debugLogged = true;
+        }
+
+        // Artist must have at least one of the selected energy levels
+        const hasMatch = energyFilters.some(energy => artistEnergy.includes(energy));
+        return hasMatch;
+      });
+
       console.log(`⚡ After energy filter: ${artists.length} artists`);
+    }
+
+    // Filter by formats (any match)
+    if (formatFilters.length > 0) {
+      console.log(`🎭 Filtering by formats:`, formatFilters);
+
+      let debugLogged = false;
+      artists = artists.filter(artist => {
+        const artistFormats = (artist.formats || [])
+          .filter(f => f && typeof f === 'string')
+          .map(f => normalize(f));
+
+        // DEBUG: Log comparison for first artist only once
+        if (!debugLogged) {
+          console.log(`  Sample artist formats (normalized):`, artistFormats);
+          console.log(`  Filter formats (normalized):`, formatFilters);
+          debugLogged = true;
+        }
+
+        // Artist must have at least one of the selected formats
+        const hasMatch = formatFilters.some(format => artistFormats.includes(format));
+        return hasMatch;
+      });
+
+      console.log(`🎭 After formats filter: ${artists.length} artists`);
     }
 
     // Filter by keywords (search in bio, pitch, genres, stageName)
