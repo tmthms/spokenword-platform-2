@@ -428,7 +428,12 @@ export function renderArtistSearch() {
 
         <!-- MIDDLE COLUMN: Results Grid (3 cols) -->
         <main style="flex: 1; min-width: 0;">
-          <p id="desktop-results-count" style="color: #9ca3af; font-size: 14px; margin-bottom: 16px;">0 gevonden</p>
+          <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 16px;">
+            <p id="desktop-results-count" style="color: #9ca3af; font-size: 14px; margin: 0;">0 gevonden</p>
+            <div id="desktop-active-filters" style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <!-- Active filter tags worden hier geplaatst -->
+            </div>
+          </div>
           <div id="desktop-search-grid" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
             <!-- Cards here -->
           </div>
@@ -586,6 +591,56 @@ async function populateGenres() {
 }
 
 /**
+ * Render active filter tags on desktop
+ */
+function renderActiveFilters() {
+  const container = document.getElementById('desktop-active-filters');
+  if (!container) return;
+
+  const activeFilters = [];
+
+  // Collect all checked filters
+  const filterTypes = [
+    { name: 'desktop-genre', label: 'Genre' },
+    { name: 'desktop-theme', label: 'Theme' },
+    { name: 'desktop-energy', label: 'Vibe' },
+    { name: 'desktop-format', label: 'Dienst' }
+  ];
+
+  filterTypes.forEach(type => {
+    document.querySelectorAll(`input[name="${type.name}"]:checked`).forEach(checkbox => {
+      activeFilters.push({
+        name: type.name,
+        value: checkbox.value,
+        label: checkbox.closest('.chip-label')?.querySelector('.chip-text')?.textContent || checkbox.value
+      });
+    });
+  });
+
+  // Render tags
+  if (activeFilters.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+
+  container.innerHTML = activeFilters.map(filter => `
+    <button
+      data-action="remove-filter"
+      data-filter-name="${filter.name}"
+      data-filter-value="${filter.value}"
+      style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: #7c3aed; color: white; border: none; border-radius: 9999px; font-size: 12px; font-weight: 500; cursor: pointer; transition: background 0.2s;"
+      onmouseover="this.style.background='#6d28d9'"
+      onmouseout="this.style.background='#7c3aed'"
+    >
+      ${filter.label}
+      <svg style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+      </svg>
+    </button>
+  `).join('');
+}
+
+/**
  * Setup search interactions for responsive layout
  */
 function setupSearchInteractions() {
@@ -634,9 +689,39 @@ function setupSearchInteractions() {
           chipLabel.querySelector('.chip-text').style.color = '#374151';
         }
 
+        // Update active filters display
+        renderActiveFilters();
+
         // Reload artists
         loadArtists();
       }
+      return;
+    }
+
+    // Remove filter tag click
+    const removeFilterBtn = e.target.closest('[data-action="remove-filter"]');
+    if (removeFilterBtn) {
+      const filterName = removeFilterBtn.dataset.filterName;
+      const filterValue = removeFilterBtn.dataset.filterValue;
+
+      // Find and uncheck the corresponding checkbox
+      const checkbox = document.querySelector(`input[name="${filterName}"][value="${filterValue}"]`);
+      if (checkbox) {
+        checkbox.checked = false;
+
+        // Update chip styling
+        const chipLabel = checkbox.closest('.chip-label');
+        if (chipLabel) {
+          chipLabel.style.backgroundColor = 'white';
+          chipLabel.style.borderColor = '#d1d5db';
+          const chipText = chipLabel.querySelector('.chip-text');
+          if (chipText) chipText.style.color = '#374151';
+        }
+      }
+
+      // Re-render active filters and reload artists
+      renderActiveFilters();
+      loadArtists();
       return;
     }
 
