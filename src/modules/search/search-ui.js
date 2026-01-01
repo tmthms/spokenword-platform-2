@@ -456,6 +456,7 @@ function handleSearchResize() {
   if (desktopLayout) desktopLayout.style.display = isDesktop ? 'flex' : 'none';
 }
 
+/*
 async function populateGenreFilters() {
   try {
     const { collection, getDocs } = await import('firebase/firestore');
@@ -486,6 +487,7 @@ async function populateGenreFilters() {
     console.error('[FILTERS] Error:', err);
   }
 }
+*/
 
 /**
  * Populate genre checkboxes in both mobile and desktop
