@@ -180,11 +180,11 @@ export async function loadArtistsData(filters = {}) {
       genderFilter,
       paymentFilters,
       genreFilters,
-      languageFilters,
       ageRange: ageMin !== null || ageMax !== null ? `${ageMin || 'any'}-${ageMax || 'any'}` : 'not set',
       themeFilters,
       energyFilters,
       formatFilters,
+      languageFilters,
       keywordsFilter
     });
 
