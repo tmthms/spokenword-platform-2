@@ -920,7 +920,12 @@ export function renderArtists(artists) {
   const desktopCardHTML = (artist) => {
     const pic = artist.profilePicUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(artist.stageName || 'A')}&background=e0e7ff&color=6366f1&size=150`;
     const name = artist.stageName || `${artist.firstName || ''} ${artist.lastName || ''}`.trim() || 'Unknown';
-    const genre = (artist.genres || [])[0] || '';
+    const genres = artist.genres || [];
+
+    // Render genre badges
+    const genreBadges = genres.length > 0
+      ? genres.map(g => `<span style="display: inline-block; padding: 2px 8px; background: #f3e8ff; color: #7c3aed; border-radius: 10px; font-size: 10px; font-weight: 500;">${g}</span>`).join('')
+      : '';
 
     return `
       <div class="artist-card" data-artist-id="${artist.id}"
@@ -930,8 +935,10 @@ export function renderArtists(artists) {
                style="width: 100%; height: 100%; object-fit: cover;"
                onerror="this.parentElement.innerHTML='<div style=\\'width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:600;color:#805ad5;\\'>${name.charAt(0)}</div>'">
         </div>
-        <h3 style="font-size: 14px; font-weight: 600; color: #1a1a2e; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</h3>
-        ${genre ? `<p style="font-size: 12px; color: #9ca3af;">${genre}</p>` : '<p style="font-size: 12px; color: #9ca3af;">&nbsp;</p>'}
+        <h3 style="font-size: 14px; font-weight: 600; color: #1a1a2e; margin-bottom: 8px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</h3>
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; min-height: 20px;">
+          ${genreBadges || '<span style="color: #d1d5db; font-size: 11px;">-</span>'}
+        </div>
       </div>
     `;
   };
