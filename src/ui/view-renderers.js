@@ -698,6 +698,30 @@ export function renderDashboard() {
                 <div id="mobile-detail-languages" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
               </div>
 
+              <!-- Themes -->
+              <div style="margin-bottom: 20px;">
+                <p style="font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 10px;">Themes</p>
+                <div id="mobile-detail-themes-full" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                  <span style="color: #9ca3af; font-size: 14px;">Geen themes</span>
+                </div>
+              </div>
+
+              <!-- Vibe -->
+              <div style="margin-bottom: 20px;">
+                <p style="font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 10px;">Vibe</p>
+                <div id="mobile-detail-vibe-full" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                  <span style="color: #9ca3af; font-size: 14px;">Geen vibe</span>
+                </div>
+              </div>
+
+              <!-- Diensten -->
+              <div style="margin-bottom: 24px;">
+                <p style="font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 10px;">Diensten</p>
+                <div id="mobile-detail-formats-full" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                  <span style="color: #9ca3af; font-size: 14px;">Geen diensten</span>
+                </div>
+              </div>
+
               <!-- Send Message Button -->
               <button id="mobile-send-message-btn"
                       style="width: 100%; padding: 14px; background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 24px; display: flex; align-items: center; justify-content: center; gap: 8px;">
@@ -787,9 +811,27 @@ export function renderDashboard() {
                       <p style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 8px;">Genres</p>
                       <div id="detail-genres" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
                     </div>
-                    <div>
+                    <div style="margin-bottom: 12px;">
                       <p style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 8px;">Languages</p>
                       <div id="detail-languages" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                      <p style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 8px;">Themes</p>
+                      <div id="detail-themes-full" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <span style="color: #9ca3af; font-size: 14px;">Geen themes</span>
+                      </div>
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                      <p style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 8px;">Vibe</p>
+                      <div id="detail-vibe-full" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <span style="color: #9ca3af; font-size: 14px;">Geen vibe</span>
+                      </div>
+                    </div>
+                    <div>
+                      <p style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 8px;">Diensten</p>
+                      <div id="detail-formats-full" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                        <span style="color: #9ca3af; font-size: 14px;">Geen diensten</span>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -470,6 +470,30 @@ export function renderArtistSearch() {
                 Edit Profile
               </button>
 
+              <!-- Themes -->
+              <div style="margin-bottom: 16px;">
+                <h4 style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 8px;">Themes</h4>
+                <div id="detail-themes" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  <span style="color: #9ca3af; font-size: 12px;">-</span>
+                </div>
+              </div>
+
+              <!-- Vibe -->
+              <div style="margin-bottom: 16px;">
+                <h4 style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 8px;">Vibe</h4>
+                <div id="detail-vibe" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  <span style="color: #9ca3af; font-size: 12px;">-</span>
+                </div>
+              </div>
+
+              <!-- Diensten -->
+              <div style="margin-bottom: 16px;">
+                <h4 style="font-size: 13px; font-weight: 600; color: #6b7280; margin-bottom: 8px;">Diensten</h4>
+                <div id="detail-formats" style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  <span style="color: #9ca3af; font-size: 12px;">-</span>
+                </div>
+              </div>
+
               <!-- Over Mij -->
               <div style="margin-bottom: 20px;">
                 <h4 style="font-size: 15px; font-weight: 700; color: #1a1a2e; margin-bottom: 10px;">Over Mij</h4>
@@ -971,6 +995,33 @@ export function showArtistInDetailPanel(artist) {
 
   if (photo) photo.src = pic;
   if (name) name.textContent = artistName;
+
+  // Render new profile fields
+  const detailThemes = document.getElementById('detail-themes');
+  const detailVibe = document.getElementById('detail-vibe');
+  const detailFormats = document.getElementById('detail-formats');
+
+  if (detailThemes) {
+    const themes = artist.themes || [];
+    detailThemes.innerHTML = themes.length > 0
+      ? themes.map(t => `<span style="padding: 4px 10px; background: #f3e8ff; color: #7c3aed; border-radius: 12px; font-size: 12px; font-weight: 500;">${t}</span>`).join('')
+      : '<span style="color: #9ca3af; font-size: 12px;">-</span>';
+  }
+
+  if (detailVibe) {
+    const vibe = artist.energyLevels || [];
+    detailVibe.innerHTML = vibe.length > 0
+      ? vibe.map(v => `<span style="padding: 4px 10px; background: #fef3c7; color: #d97706; border-radius: 12px; font-size: 12px; font-weight: 500;">${v}</span>`).join('')
+      : '<span style="color: #9ca3af; font-size: 12px;">-</span>';
+  }
+
+  if (detailFormats) {
+    const formats = artist.formats || [];
+    detailFormats.innerHTML = formats.length > 0
+      ? formats.map(f => `<span style="padding: 4px 10px; background: #d1fae5; color: #059669; border-radius: 12px; font-size: 12px; font-weight: 500;">${f}</span>`).join('')
+      : '<span style="color: #9ca3af; font-size: 12px;">-</span>';
+  }
+
   if (bio) bio.textContent = artist.bio || artist.pitch || 'Geen bio beschikbaar.';
   if (work) work.textContent = artist.work || 'Geen werk beschikbaar.';
 
@@ -1038,6 +1089,33 @@ export function populateArtistDetail(artist) {
     detailLanguages.innerHTML = languages.length > 0
       ? languages.map(l => `<span style="padding: 6px 12px; background: #805ad5; color: white; border-radius: 6px; font-size: 12px; font-weight: 600;">${(l || '').substring(0,2).toUpperCase()}</span>`).join('')
       : '<span style="color: #9ca3af; font-size: 13px;">No languages specified</span>';
+  }
+
+  // Themes
+  const detailThemesContainer = document.getElementById('detail-themes-full');
+  if (detailThemesContainer) {
+    const themes = artist.themes || [];
+    detailThemesContainer.innerHTML = themes.length > 0
+      ? themes.map(t => `<span style="padding: 6px 14px; background: #f3e8ff; color: #7c3aed; border-radius: 20px; font-size: 13px; font-weight: 500;">${t}</span>`).join('')
+      : '<span style="color: #9ca3af; font-size: 14px;">Geen themes</span>';
+  }
+
+  // Vibe
+  const detailVibeContainer = document.getElementById('detail-vibe-full');
+  if (detailVibeContainer) {
+    const vibe = artist.energyLevels || [];
+    detailVibeContainer.innerHTML = vibe.length > 0
+      ? vibe.map(v => `<span style="padding: 6px 14px; background: #fef3c7; color: #d97706; border-radius: 20px; font-size: 13px; font-weight: 500;">${v}</span>`).join('')
+      : '<span style="color: #9ca3af; font-size: 14px;">Geen vibe</span>';
+  }
+
+  // Formats
+  const detailFormatsContainer = document.getElementById('detail-formats-full');
+  if (detailFormatsContainer) {
+    const formats = artist.formats || [];
+    detailFormatsContainer.innerHTML = formats.length > 0
+      ? formats.map(f => `<span style="padding: 6px 14px; background: #d1fae5; color: #059669; border-radius: 20px; font-size: 13px; font-weight: 500;">${f}</span>`).join('')
+      : '<span style="color: #9ca3af; font-size: 14px;">Geen diensten</span>';
   }
 
   const detailBio = document.getElementById('detail-bio');
@@ -1145,6 +1223,33 @@ export function populateArtistDetail(artist) {
     mobileLanguages.innerHTML = languages.length > 0
       ? languages.map(l => `<span style="padding: 6px 12px; background: white; border: 1px solid #1a1a2e; border-radius: 20px; font-size: 13px; font-weight: 600; color: #1a1a2e;">${(l || '').substring(0,2).toUpperCase()}</span>`).join('')
       : '<span style="color: #9ca3af; font-size: 14px;">No languages specified</span>';
+  }
+
+  // Mobile Themes
+  const mobileThemesContainer = document.getElementById('mobile-detail-themes-full');
+  if (mobileThemesContainer) {
+    const themes = artist.themes || [];
+    mobileThemesContainer.innerHTML = themes.length > 0
+      ? themes.map(t => `<span style="padding: 8px 16px; background: white; border: 1px solid #7c3aed; border-radius: 20px; font-size: 14px; color: #7c3aed;">${t}</span>`).join('')
+      : '<span style="color: #9ca3af; font-size: 14px;">Geen themes</span>';
+  }
+
+  // Mobile Vibe
+  const mobileVibeContainer = document.getElementById('mobile-detail-vibe-full');
+  if (mobileVibeContainer) {
+    const vibe = artist.energyLevels || [];
+    mobileVibeContainer.innerHTML = vibe.length > 0
+      ? vibe.map(v => `<span style="padding: 8px 16px; background: white; border: 1px solid #d97706; border-radius: 20px; font-size: 14px; color: #d97706;">${v}</span>`).join('')
+      : '<span style="color: #9ca3af; font-size: 14px;">Geen vibe</span>';
+  }
+
+  // Mobile Formats
+  const mobileFormatsContainer = document.getElementById('mobile-detail-formats-full');
+  if (mobileFormatsContainer) {
+    const formats = artist.formats || [];
+    mobileFormatsContainer.innerHTML = formats.length > 0
+      ? formats.map(f => `<span style="padding: 8px 16px; background: white; border: 1px solid #059669; border-radius: 20px; font-size: 14px; color: #059669;">${f}</span>`).join('')
+      : '<span style="color: #9ca3af; font-size: 14px;">Geen diensten</span>';
   }
 
   const mobileBio = document.getElementById('mobile-detail-bio');
