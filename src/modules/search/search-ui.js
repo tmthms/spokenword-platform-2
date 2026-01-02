@@ -1030,7 +1030,7 @@ export function showArtistInDetailPanel(artist) {
   if (detailVibe) {
     const vibe = artist.energyLevels || [];
     detailVibe.innerHTML = vibe.length > 0
-      ? vibe.map(v => `<span style="padding: 4px 10px; background: #fef3c7; color: #d97706; border-radius: 12px; font-size: 12px; font-weight: 500;">${v}</span>`).join('')
+      ? vibe.map(v => `<span style="padding: 4px 10px; background: #fef3c7; color: #d97706; border-radius: 12px; font-size: 12px; font-weight: 500;">${formatGenreName(v)}</span>`).join('')
       : '<span style="color: #9ca3af; font-size: 12px;">-</span>';
   }
 
@@ -1124,7 +1124,7 @@ export function populateArtistDetail(artist) {
   if (detailVibeContainer) {
     const vibe = artist.energyLevels || [];
     detailVibeContainer.innerHTML = vibe.length > 0
-      ? vibe.map(v => `<span style="padding: 6px 14px; background: #fef3c7; color: #d97706; border-radius: 20px; font-size: 13px; font-weight: 500;">${v}</span>`).join('')
+      ? vibe.map(v => `<span style="padding: 6px 14px; background: #fef3c7; color: #d97706; border-radius: 20px; font-size: 13px; font-weight: 500;">${formatGenreName(v)}</span>`).join('')
       : '<span style="color: #9ca3af; font-size: 14px;">Geen vibe</span>';
   }
 
@@ -1258,7 +1258,7 @@ export function populateArtistDetail(artist) {
   if (mobileVibeContainer) {
     const vibe = artist.energyLevels || [];
     mobileVibeContainer.innerHTML = vibe.length > 0
-      ? vibe.map(v => `<span style="padding: 8px 16px; background: white; border: 1px solid #d97706; border-radius: 20px; font-size: 14px; color: #d97706;">${v}</span>`).join('')
+      ? vibe.map(v => `<span style="padding: 8px 16px; background: white; border: 1px solid #d97706; border-radius: 20px; font-size: 14px; color: #d97706;">${formatGenreName(v)}</span>`).join('')
       : '<span style="color: #9ca3af; font-size: 14px;">Geen vibe</span>';
   }
 
