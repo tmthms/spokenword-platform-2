@@ -12,6 +12,18 @@ import { getStore } from '../../utils/store.js';
 import { openMessageModal } from '../messaging/messaging-controller.js';
 
 /**
+ * Format genre name for display
+ * Converts "performance-poetry" to "Performance Poetry"
+ */
+function formatGenreName(genre) {
+  if (!genre) return '';
+  return genre
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
+/**
  * Render the artist search view - Responsive with Tailwind
  * Mobile: Horizontal pills + dropdown panels + 2-col grid
  * Desktop: Sidebar filters + 4-col grid
@@ -924,7 +936,7 @@ export function renderArtists(artists) {
 
     // Render genre badges
     const genreBadges = genres.length > 0
-      ? genres.map(g => `<span style="display: inline-block; padding: 2px 8px; background: #f3e8ff; color: #7c3aed; border-radius: 10px; font-size: 10px; font-weight: 500;">${g}</span>`).join('')
+      ? genres.map(g => `<span style="display: inline-block; padding: 2px 8px; background: #f3e8ff; color: #7c3aed; border-radius: 10px; font-size: 10px; font-weight: 500;">${formatGenreName(g)}</span>`).join('')
       : '';
 
     return `
@@ -1086,7 +1098,7 @@ export function populateArtistDetail(artist) {
   if (detailGenres) {
     const genres = artist.genres || [];
     detailGenres.innerHTML = genres.length > 0
-      ? genres.map(g => `<span style="padding: 6px 14px; background: #f3e8ff; color: #805ad5; border-radius: 20px; font-size: 13px; font-weight: 500;">${g}</span>`).join('')
+      ? genres.map(g => `<span style="padding: 6px 14px; background: #f3e8ff; color: #805ad5; border-radius: 20px; font-size: 13px; font-weight: 500;">${formatGenreName(g)}</span>`).join('')
       : '<span style="color: #9ca3af; font-size: 13px;">No genres specified</span>';
   }
 
@@ -1220,7 +1232,7 @@ export function populateArtistDetail(artist) {
   if (mobileGenres) {
     const genres = artist.genres || [];
     mobileGenres.innerHTML = genres.length > 0
-      ? genres.map(g => `<span style="padding: 8px 16px; background: white; border: 1px solid #1a1a2e; border-radius: 20px; font-size: 14px; color: #1a1a2e;">${g}</span>`).join('')
+      ? genres.map(g => `<span style="padding: 8px 16px; background: white; border: 1px solid #1a1a2e; border-radius: 20px; font-size: 14px; color: #1a1a2e;">${formatGenreName(g)}</span>`).join('')
       : '<span style="color: #9ca3af; font-size: 14px;">No genres specified</span>';
   }
 
