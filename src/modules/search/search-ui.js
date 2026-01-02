@@ -965,6 +965,8 @@ async function loadArtists() {
       document.querySelectorAll('input[name="desktop-language"]:checked, input[name="mobile-language"]:checked')
     ).map(cb => cb.value.toLowerCase().trim());
 
+    console.log('[FILTERS] Languages:', languageFilters);
+
     const keywordsFilter = (
       document.getElementById('desktop-input-keywords')?.value ||
       document.getElementById('mobile-input-keywords')?.value || ''
