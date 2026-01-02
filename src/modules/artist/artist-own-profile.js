@@ -481,6 +481,9 @@ async function handleOwnProfileSubmit(e) {
       // Professional Details
       genres: genres,
       languages: languages,
+      themes: getCheckboxValues('theme'),
+      energyLevels: getCheckboxValues('energy'),
+      formats: getCheckboxValues('format'),
       paymentMethods: paymentMethods,
       bio: document.getElementById('artist-edit-bio').value.trim(),
       pitch: document.getElementById('artist-edit-pitch').value.trim(),

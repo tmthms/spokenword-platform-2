@@ -721,7 +721,7 @@ export function populateProfileEditor(data) {
   checkValues('genre', data.genres || []);
   checkValues('language', data.languages || []);
   checkValues('theme', data.themes || []);
-  checkValues('energy', data.energy || []);
+  checkValues('energy', data.energyLevels || []);
   checkValues('format', data.formats || []);
   updatePitchCount();
 
@@ -1236,7 +1236,7 @@ async function handleProfileSubmit(e) {
       genres: getCheckedValues('genre'),
       languages: getCheckedValues('language'),
       themes: getCheckedValues('theme'),
-      energy: getCheckedValues('energy'),
+      energyLevels: getCheckedValues('energy'),
       formats: getCheckedValues('format'),
 
       // Tab 2: Bio & Media

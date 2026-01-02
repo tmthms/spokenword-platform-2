@@ -361,6 +361,7 @@ export async function loadArtistsData(filters = {}) {
     // Filter by energy levels (any match)
     if (energyFilters.length > 0) {
       console.log(`⚡ Filtering by energy:`, energyFilters);
+      console.log('[DEBUG] Energy filters:', energyFilters);
 
       let debugLogged = false;
       artists = artists.filter(artist => {
@@ -370,6 +371,7 @@ export async function loadArtistsData(filters = {}) {
 
         // DEBUG: Log comparison for first artist only once
         if (!debugLogged) {
+          console.log('[DEBUG] First artist:', artist.stageName, 'energyLevels:', artist.energyLevels, 'normalized:', artistEnergy);
           console.log(`  Sample artist energy (lowercase):`, artistEnergy);
           console.log(`  Filter energy (lowercase):`, energyFilters);
           debugLogged = true;
@@ -377,10 +379,16 @@ export async function loadArtistsData(filters = {}) {
 
         // Artist must have at least one of the selected energy levels
         const hasMatch = energyFilters.some(energy => artistEnergy.includes(energy));
+
+        if (!debugLogged) {
+          console.log('[DEBUG] Match:', hasMatch);
+        }
+
         return hasMatch;
       });
 
       console.log(`⚡ After energy filter: ${artists.length} artists`);
+      console.log('[FILTER] After energy:', artists.length);
     }
 
     // Filter by formats (any match)
