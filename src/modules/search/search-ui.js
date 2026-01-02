@@ -1023,7 +1023,7 @@ export function showArtistInDetailPanel(artist) {
   if (detailThemes) {
     const themes = artist.themes || [];
     detailThemes.innerHTML = themes.length > 0
-      ? themes.map(t => `<span style="padding: 4px 10px; background: #f3e8ff; color: #7c3aed; border-radius: 12px; font-size: 12px; font-weight: 500;">${t}</span>`).join('')
+      ? themes.map(t => `<span style="padding: 4px 10px; background: #f3e8ff; color: #7c3aed; border-radius: 12px; font-size: 12px; font-weight: 500;">${formatGenreName(t)}</span>`).join('')
       : '<span style="color: #9ca3af; font-size: 12px;">-</span>';
   }
 
@@ -1037,7 +1037,7 @@ export function showArtistInDetailPanel(artist) {
   if (detailFormats) {
     const formats = artist.formats || [];
     detailFormats.innerHTML = formats.length > 0
-      ? formats.map(f => `<span style="padding: 4px 10px; background: #d1fae5; color: #059669; border-radius: 12px; font-size: 12px; font-weight: 500;">${f}</span>`).join('')
+      ? formats.map(f => `<span style="padding: 4px 10px; background: #d1fae5; color: #059669; border-radius: 12px; font-size: 12px; font-weight: 500;">${formatGenreName(f)}</span>`).join('')
       : '<span style="color: #9ca3af; font-size: 12px;">-</span>';
   }
 
@@ -1115,7 +1115,7 @@ export function populateArtistDetail(artist) {
   if (detailThemesContainer) {
     const themes = artist.themes || [];
     detailThemesContainer.innerHTML = themes.length > 0
-      ? themes.map(t => `<span style="padding: 6px 14px; background: #f3e8ff; color: #7c3aed; border-radius: 20px; font-size: 13px; font-weight: 500;">${t}</span>`).join('')
+      ? themes.map(t => `<span style="padding: 6px 14px; background: #f3e8ff; color: #7c3aed; border-radius: 20px; font-size: 13px; font-weight: 500;">${formatGenreName(t)}</span>`).join('')
       : '<span style="color: #9ca3af; font-size: 14px;">Geen themes</span>';
   }
 
@@ -1133,7 +1133,7 @@ export function populateArtistDetail(artist) {
   if (detailFormatsContainer) {
     const formats = artist.formats || [];
     detailFormatsContainer.innerHTML = formats.length > 0
-      ? formats.map(f => `<span style="padding: 6px 14px; background: #d1fae5; color: #059669; border-radius: 20px; font-size: 13px; font-weight: 500;">${f}</span>`).join('')
+      ? formats.map(f => `<span style="padding: 6px 14px; background: #d1fae5; color: #059669; border-radius: 20px; font-size: 13px; font-weight: 500;">${formatGenreName(f)}</span>`).join('')
       : '<span style="color: #9ca3af; font-size: 14px;">Geen diensten</span>';
   }
 
@@ -1249,7 +1249,7 @@ export function populateArtistDetail(artist) {
   if (mobileThemesContainer) {
     const themes = artist.themes || [];
     mobileThemesContainer.innerHTML = themes.length > 0
-      ? themes.map(t => `<span style="padding: 8px 16px; background: white; border: 1px solid #7c3aed; border-radius: 20px; font-size: 14px; color: #7c3aed;">${t}</span>`).join('')
+      ? themes.map(t => `<span style="padding: 8px 16px; background: white; border: 1px solid #7c3aed; border-radius: 20px; font-size: 14px; color: #7c3aed;">${formatGenreName(t)}</span>`).join('')
       : '<span style="color: #9ca3af; font-size: 14px;">Geen themes</span>';
   }
 
@@ -1267,7 +1267,7 @@ export function populateArtistDetail(artist) {
   if (mobileFormatsContainer) {
     const formats = artist.formats || [];
     mobileFormatsContainer.innerHTML = formats.length > 0
-      ? formats.map(f => `<span style="padding: 8px 16px; background: white; border: 1px solid #059669; border-radius: 20px; font-size: 14px; color: #059669;">${f}</span>`).join('')
+      ? formats.map(f => `<span style="padding: 8px 16px; background: white; border: 1px solid #059669; border-radius: 20px; font-size: 14px; color: #059669;">${formatGenreName(f)}</span>`).join('')
       : '<span style="color: #9ca3af; font-size: 14px;">Geen diensten</span>';
   }
 
