@@ -235,6 +235,41 @@ export function renderArtistSearch() {
           </div>
         </div>
 
+        <!-- LANGUAGES FILTER -->
+        <div class="filter-section" style="background: white; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden;">
+          <button data-action="toggle-filter" data-target="languages"
+                  style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 16px; background: none; border: none; cursor: pointer;">
+            <span style="font-size: 16px; font-weight: 600; color: #1a1a2e;">Talen</span>
+            <svg id="chevron-languages" style="width: 20px; height: 20px; color: #9ca3af; transition: transform 0.2s;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+          </button>
+          <div id="filter-languages" style="display: none; padding: 0 16px 16px 16px;">
+            <div style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
+                <input type="checkbox" name="mobile-language" value="nl" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Nederlands</span>
+              </label>
+              <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
+                <input type="checkbox" name="mobile-language" value="en" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Engels</span>
+              </label>
+              <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
+                <input type="checkbox" name="mobile-language" value="fr" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Frans</span>
+              </label>
+              <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
+                <input type="checkbox" name="mobile-language" value="de" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Duits</span>
+              </label>
+              <label class="chip-label" style="display: inline-flex; align-items: center; padding: 8px 16px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s;">
+                <input type="checkbox" name="mobile-language" value="es" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                <span class="chip-text" style="font-size: 14px; font-weight: 500; color: #374151;">Spaans</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
         <!-- ===== END COLLAPSIBLE FILTER PANELS ===== -->
 
         <div id="filter-keywords" style="display: none; background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(128,90,213,0.1);">
@@ -428,6 +463,41 @@ export function renderArtistSearch() {
                   <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
                     <input type="checkbox" name="desktop-format" value="gedichten-op-maat" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
                     <span class="chip-text" style="color: #374151;">Gedichten op Maat</span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Desktop Languages Filter -->
+            <div style="background: white; border-radius: 12px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+              <button data-action="toggle-filter" data-target="desktop-languages"
+                      style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: none; border: none; cursor: pointer;">
+                <span style="font-size: 14px; font-weight: 600; color: #1a1a2e;">Talen</span>
+                <svg id="chevron-desktop-languages" style="width: 18px; height: 18px; color: #9ca3af; transition: transform 0.2s;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+              </button>
+              <div id="filter-desktop-languages" style="display: none; padding: 0 16px 16px 16px;">
+                <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-language" value="nl" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Nederlands</span>
+                  </label>
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-language" value="en" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Engels</span>
+                  </label>
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-language" value="fr" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Frans</span>
+                  </label>
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-language" value="de" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Duits</span>
+                  </label>
+                  <label class="chip-label" style="display: inline-flex; align-items: center; padding: 6px 12px; border-radius: 9999px; border: 2px solid #d1d5db; background: white; cursor: pointer; transition: all 0.2s; font-size: 13px;">
+                    <input type="checkbox" name="desktop-language" value="es" class="chip-input" style="position: absolute; opacity: 0; width: 0; height: 0;">
+                    <span class="chip-text" style="color: #374151;">Spaans</span>
                   </label>
                 </div>
               </div>
@@ -640,7 +710,8 @@ function renderActiveFilters() {
     { name: 'desktop-genre', label: 'Genre' },
     { name: 'desktop-theme', label: 'Theme' },
     { name: 'desktop-energy', label: 'Vibe' },
-    { name: 'desktop-format', label: 'Dienst' }
+    { name: 'desktop-format', label: 'Dienst' },
+    { name: 'desktop-language', label: 'Taal' }
   ];
 
   filterTypes.forEach(type => {
@@ -889,15 +960,20 @@ async function loadArtists() {
       cb.value.trim().toLowerCase().replace(/\s+/g, '-')
     );
 
+    // Language filters
+    const languageFilters = Array.from(
+      document.querySelectorAll('input[name="desktop-language"]:checked, input[name="mobile-language"]:checked')
+    ).map(cb => cb.value.toLowerCase().trim());
+
     const keywordsFilter = (
       document.getElementById('desktop-input-keywords')?.value ||
       document.getElementById('mobile-input-keywords')?.value || ''
     ).toLowerCase().trim();
 
-    console.log('[SEARCH UI] Filters collected:', { nameFilter, locationFilter, genreFilters, themeFilters, energyFilters, formatFilters, keywordsFilter });
+    console.log('[SEARCH UI] Filters collected:', { nameFilter, locationFilter, genreFilters, themeFilters, energyFilters, formatFilters, languageFilters, keywordsFilter });
 
     // Load and filter
-    const artists = await loadArtistsData({ nameFilter, locationFilter, genreFilters, themeFilters, energyFilters, formatFilters, keywordsFilter });
+    const artists = await loadArtistsData({ nameFilter, locationFilter, genreFilters, themeFilters, energyFilters, formatFilters, languageFilters, keywordsFilter });
 
     // Update counts
     const countText = `${artists.length} gevonden`;

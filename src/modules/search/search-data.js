@@ -165,12 +165,12 @@ export async function loadArtistsData(filters = {}) {
       genderFilter = '',
       paymentFilters = [],
       genreFilters = [],
-      languageFilters = [],
       ageMin = null,
       ageMax = null,
       themeFilters = [],
       energyFilters = [],
       formatFilters = [],
+      languageFilters = [],
       keywordsFilter = ''
     } = filters;
 
@@ -296,7 +296,7 @@ export async function loadArtistsData(filters = {}) {
     }
 
     // Filter by languages (checkboxes - any match)
-    if (languageFilters.length > 0) {
+    if (languageFilters && languageFilters.length > 0) {
       console.log(`🗣️ Filtering by languages:`, languageFilters);
 
       let debugLogged = false;
@@ -318,6 +318,7 @@ export async function loadArtistsData(filters = {}) {
       });
 
       console.log(`🗣️ After language filter: ${artists.length} artists`);
+      console.log('[FILTER] After languages:', artists.length);
     }
 
     // Filter by age (only if age filters are set)
