@@ -1253,6 +1253,7 @@ export async function showAgendaPage() {
   await initAgendaView();
 
   // Update mobile nav active state
+  const { updateMobileNavActive } = await import('../modules/navigation/navigation.js');
   updateMobileNavActive('agenda');
 
   if (window.lucide) {
