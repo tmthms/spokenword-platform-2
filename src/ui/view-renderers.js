@@ -1156,3 +1156,106 @@ export function renderPublicProfilePage() {
     </div>
   `;
 }
+
+/**
+ * Shows the Gigs page for artists
+ */
+export async function showGigsPage() {
+  const { getStore } = await import('../utils/store.js');
+  const currentUserData = getStore('currentUserData');
+
+  if (!currentUserData || currentUserData.role !== 'artist') {
+    console.warn('[UI] Only artists can access gigs page');
+    return;
+  }
+
+  console.log('[UI] Showing gigs page');
+
+  // Render navigation
+  const navModule = await import('../modules/navigation/navigation.js');
+  navModule.renderDesktopNav();
+  navModule.renderMobileNav();
+
+  // Show dashboard view container
+  const { showPage } = await import('./ui.js');
+  showPage('dashboard-view', false);
+  window.history.pushState({ view: 'gigs' }, '', '#gigs');
+
+  // Get containers
+  const artistDashboard = document.getElementById('artist-dashboard');
+  const programmerDashboard = document.getElementById('programmer-dashboard');
+
+  if (artistDashboard) {
+    artistDashboard.style.display = 'block';
+    artistDashboard.innerHTML = `
+      <div style="max-width: 800px; margin: 0 auto; padding: 20px;">
+        <div id="upcoming-gigs-container">
+          <!-- Calendar module renders here -->
+        </div>
+      </div>
+    `;
+  }
+  if (programmerDashboard) {
+    programmerDashboard.style.display = 'none';
+  }
+
+  // Initialize calendar
+  const { initCalendar } = await import('../modules/calendar/calendar-controller.js');
+  await initCalendar();
+
+  // Update mobile nav active state
+  const { updateMobileNavActive } = await import('../modules/navigation/navigation.js');
+  updateMobileNavActive('gigs');
+
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 100);
+  }
+}
+
+/**
+ * Shows the Agenda page for programmers (all upcoming gigs)
+ */
+export async function showAgendaPage() {
+  const { getStore } = await import('../utils/store.js');
+  const currentUserData = getStore('currentUserData');
+
+  if (!currentUserData || currentUserData.role !== 'programmer') {
+    console.warn('[UI] Only programmers can access agenda page');
+    return;
+  }
+
+  console.log('[UI] Showing agenda page');
+
+  // Render navigation
+  const navModule = await import('../modules/navigation/navigation.js');
+  navModule.renderDesktopNav();
+  navModule.renderMobileNav();
+
+  // Show dashboard view container
+  const { showPage } = await import('./ui.js');
+  showPage('dashboard-view', false);
+  window.history.pushState({ view: 'agenda' }, '', '#agenda');
+
+  // Get containers
+  const artistDashboard = document.getElementById('artist-dashboard');
+  const programmerDashboard = document.getElementById('programmer-dashboard');
+
+  if (artistDashboard) {
+    artistDashboard.style.display = 'none';
+  }
+  if (programmerDashboard) {
+    programmerDashboard.style.display = 'block';
+    // Container will be filled by initAgendaView()
+  }
+
+  // Initialize the new Agenda View
+  const { initAgendaView } = await import('../modules/calendar/calendar-controller.js');
+  await initAgendaView();
+
+  // Update mobile nav active state
+  updateMobileNavActive('agenda');
+
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 100);
+  }
+}

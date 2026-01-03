@@ -27,7 +27,9 @@ import {
   renderMessages as renderMessagesView,
   renderDashboard as renderDashboardView,
   renderAccountSettings,
-  renderEditProfile
+  renderEditProfile,
+  showGigsPage,
+  showAgendaPage
 } from './view-renderers.js'; 
 
 // --- DOM Elementen ---
@@ -1127,6 +1129,12 @@ function setupBottomNavigation() {
       case 'settings':
         showAccountSettings(); // Updates hash internally
         break;
+      case 'gigs':
+        showGigsPage();
+        break;
+      case 'agenda':
+        showAgendaPage();
+        break;
     }
 
     // Re-initialize icons after navigation
@@ -1175,6 +1183,18 @@ function setupDesktopNavigation() {
     // Desktop Messages
     if (e.target.closest('#desktop-nav-messages')) {
       showMessages(); // Updates hash internally
+      return;
+    }
+
+    // Desktop Gigs (for artists)
+    if (e.target.closest('#desktop-nav-gigs')) {
+      showGigsPage();
+      return;
+    }
+
+    // Desktop Agenda (for programmers)
+    if (e.target.closest('#desktop-nav-agenda')) {
+      showAgendaPage();
       return;
     }
 

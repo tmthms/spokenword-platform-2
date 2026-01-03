@@ -67,12 +67,24 @@ service cloud.firestore {
       allow update: if false;
     }
 
-    // 6. Mail collectie (voor email triggers) - blokkeren
+    // 6. Events/Gigs collectie
+    match /events/{eventId} {
+      // Iedereen die ingelogd is kan events lezen (voor community map, zoekresultaten)
+      allow read: if request.auth != null;
+
+      // Alleen de eigenaar (artiest) kan eigen events aanmaken/wijzigen/verwijderen
+      allow create: if request.auth != null
+        && request.resource.data.artistId == request.auth.uid;
+      allow update, delete: if request.auth != null
+        && resource.data.artistId == request.auth.uid;
+    }
+
+    // 7. Mail collectie (voor email triggers) - blokkeren
     match /mail/{docId} {
       allow read, write: if false;
     }
     
-    // 7. Templates collectie - blokkeren
+    // 8. Templates collectie - blokkeren
     match /templates/{docId} {
       allow read, write: if false;
     }

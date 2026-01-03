@@ -29,6 +29,7 @@ export function renderDesktopNav() {
 
   // Only show search for programmers
   const isProgrammer = currentUserData?.role === 'programmer';
+  const isArtist = currentUserData?.role === 'artist';
 
   container.innerHTML = `
     <nav id="desktop-top-nav" class="hidden md:block bg-white border-b border-gray-200 sticky top-0 z-50">
@@ -46,9 +47,15 @@ export function renderDesktopNav() {
             ${isProgrammer ? `<button id="desktop-nav-search" class="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
               Zoeken
             </button>` : ''}
+            ${isProgrammer ? `<button id="desktop-nav-agenda" class="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+              Agenda
+            </button>` : ''}
             <button id="desktop-nav-profile" class="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
               Profiel
             </button>
+            ${isArtist ? `<button id="desktop-nav-gigs" class="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+              Gigs
+            </button>` : ''}
             <button id="desktop-nav-messages" class="relative text-gray-700 hover:text-indigo-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
               Berichten
               <span id="messages-badge-desktop" class="notification-badge hidden">0</span>
@@ -98,12 +105,21 @@ export function renderMobileNav() {
 
   // Only show search for programmers
   const isProgrammer = currentUserData?.role === 'programmer';
+  const isArtist = currentUserData?.role === 'artist';
 
   container.innerHTML = `
     <nav id="bottom-nav" class="bottom-nav">
       ${isProgrammer ? `<button class="bottom-nav-item active" data-nav="search">
         <i data-lucide="search" class="bottom-nav-icon"></i>
         <span class="bottom-nav-label">Zoeken</span>
+      </button>` : ''}
+      ${isProgrammer ? `<button class="bottom-nav-item" data-nav="agenda">
+        <i data-lucide="calendar-days" class="bottom-nav-icon"></i>
+        <span class="bottom-nav-label">Agenda</span>
+      </button>` : ''}
+      ${isArtist ? `<button class="bottom-nav-item" data-nav="gigs">
+        <i data-lucide="calendar" class="bottom-nav-icon"></i>
+        <span class="bottom-nav-label">Gigs</span>
       </button>` : ''}
       <button class="bottom-nav-item" data-nav="messages">
         <i data-lucide="message-circle" class="bottom-nav-icon"></i>

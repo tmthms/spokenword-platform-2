@@ -10,6 +10,8 @@ import { loadRecommendations, openRecommendationModal } from '../recommendations
 import { getStore } from '../../utils/store.js';
 import { showErrorToast } from '../../ui/toast.js';
 import { forceSearchResultsVisible, hideProfileSectionsForSearch } from './search-visibility-fix.js';
+import { loadArtistEventsForProfile } from '../calendar/calendar-controller.js';
+import { renderPublicGigsSection } from '../calendar/calendar-ui.js';
 
 /**
  * Setup artist search functionality (SECURED)
@@ -712,6 +714,9 @@ export async function showArtistDetail(artistId, pushHistory = true) {
     // Load recommendations for this artist
     loadRecommendations(artistId);
 
+    // Load and render artist gigs
+    loadAndRenderArtistGigs(artistId, artist.stageName || artist.firstName);
+
     // Setup "Write Recommendation" button (only for programmers)
     const writeRecommendationBtn = document.getElementById('write-recommendation-btn');
     if (writeRecommendationBtn) {
@@ -772,6 +777,67 @@ function showSearchView() {
   document.getElementById('artist-detail-view').style.display = 'none';
   document.getElementById('programmer-dashboard').style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/**
+ * Load and render artist gigs in the public profile view
+ * @param {string} artistId - Artist UID
+ * @param {string} artistName - Artist name for display
+ */
+async function loadAndRenderArtistGigs(artistId, artistName) {
+  try {
+    // Remove existing gigs sections before loading new ones
+    document.querySelectorAll('#artist-gigs-section, #artist-gigs-section-mobile').forEach(el => el.remove());
+
+    // Load artist events
+    const events = await loadArtistEventsForProfile(artistId);
+
+    if (!events || events.length === 0) {
+      console.log('[GIGS] No events found for artist:', artistId);
+      return;
+    }
+
+    // Find a good place to inject the gigs section (after bio/pitch or recommendations)
+    const detailPitch = document.getElementById('detail-pitch');
+    const mobilePitch = document.getElementById('mobile-detail-pitch');
+    const recommendationsSection = document.getElementById('detail-recommendations');
+
+    const gigsHtml = renderPublicGigsSection(events, artistName);
+
+    // Inject into desktop view (after pitch, before recommendations)
+    if (detailPitch && detailPitch.parentElement) {
+      const gigsContainer = document.createElement('div');
+      gigsContainer.id = 'artist-gigs-section';
+      gigsContainer.className = 'mt-8';
+      gigsContainer.innerHTML = gigsHtml;
+
+      // Insert after the pitch parent container
+      if (recommendationsSection) {
+        recommendationsSection.parentElement.insertBefore(gigsContainer, recommendationsSection);
+      } else {
+        detailPitch.parentElement.appendChild(gigsContainer);
+      }
+    }
+
+    // Inject into mobile view if it exists
+    if (mobilePitch && mobilePitch.parentElement) {
+      const mobileGigsContainer = document.createElement('div');
+      mobileGigsContainer.id = 'mobile-artist-gigs-section';
+      mobileGigsContainer.className = 'mt-8';
+      mobileGigsContainer.innerHTML = gigsHtml;
+      mobilePitch.parentElement.appendChild(mobileGigsContainer);
+    }
+
+    console.log('[GIGS] Rendered', events.length, 'events for artist:', artistId);
+
+    // Re-init Lucide icons
+    if (window.lucide) {
+      setTimeout(() => window.lucide.createIcons(), 100);
+    }
+
+  } catch (error) {
+    console.error('[GIGS] Error loading/rendering artist gigs:', error);
+  }
 }
 
 /**
