@@ -6,7 +6,7 @@
 
 import { loadArtistsData, fetchArtistById, requireAuth, isAuthenticatedUser } from './search-data.js';
 import { renderArtistSearch, renderArtists, populateArtistDetail } from './search-ui.js';
-import { loadRecommendations, openRecommendationModal } from '../recommendations/recommendations.js';
+import { loadRecommendations, openRecommendationModal, openRecommendationsModal } from '../recommendations/recommendations.js';
 import { getStore } from '../../utils/store.js';
 import { showErrorToast } from '../../ui/toast.js';
 import { forceSearchResultsVisible, hideProfileSectionsForSearch } from './search-visibility-fix.js';
@@ -716,6 +716,14 @@ export async function showArtistDetail(artistId, pushHistory = true) {
 
     // Load and render artist gigs
     loadAndRenderArtistGigs(artistId, artist.stageName || artist.firstName);
+
+    // Setup "View All Recommendations" button (opens modal)
+    const viewAllRecommendationsBtn = document.getElementById('view-all-recommendations-btn');
+    if (viewAllRecommendationsBtn) {
+      viewAllRecommendationsBtn.onclick = () => {
+        openRecommendationsModal(artistId, artist);
+      };
+    }
 
     // Setup "Write Recommendation" button (only for programmers)
     const writeRecommendationBtn = document.getElementById('write-recommendation-btn');
