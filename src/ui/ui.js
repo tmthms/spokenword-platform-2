@@ -27,9 +27,7 @@ import {
   renderMessages as renderMessagesView,
   renderDashboard as renderDashboardView,
   renderAccountSettings,
-  renderEditProfile,
-  showGigsPage,
-  showAgendaPage
+  renderEditProfile
 } from './view-renderers.js'; 
 
 // --- DOM Elementen ---
@@ -1097,15 +1095,22 @@ export function initNavigation() {
  * Setup bottom navigation with event delegation
  */
 function setupBottomNavigation() {
-  const bottomNav = document.getElementById('bottom-nav');
-  if (!bottomNav) return;
-
-  // Use event delegation on the bottom nav container
-  bottomNav.addEventListener('click', (e) => {
-    const navItem = e.target.closest('.bottom-nav-item');
+  // Use event delegation on document.body so it works even when bottom-nav is re-rendered
+  document.body.addEventListener('click', (e) => {
+    const navItem = e.target.closest('.bottom-nav-item, [data-nav]');
     if (!navItem) return;
 
+    // Only handle if it's actually in the bottom nav
+    const bottomNav = document.getElementById('bottom-nav');
+    if (!bottomNav || !bottomNav.contains(navItem)) return;
+
     const navAction = navItem.dataset.nav;
+    if (!navAction) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    console.log('[NAV] Mobile nav clicked:', navAction);
 
     // Update active state
     updateBottomNavActive(navAction);
@@ -1130,10 +1135,19 @@ function setupBottomNavigation() {
         showAccountSettings(); // Updates hash internally
         break;
       case 'gigs':
-        showGigsPage();
+        import('../modules/calendar/calendar-views.js').then(module => {
+          module.showGigsPage();
+        });
         break;
       case 'agenda':
-        showAgendaPage();
+        import('../modules/calendar/calendar-views.js').then(module => {
+          module.showAgendaPage();
+        });
+        break;
+      case 'events':
+        import('../modules/calendar/calendar-views.js').then(module => {
+          module.showEventsPage();
+        });
         break;
     }
 
@@ -1188,13 +1202,25 @@ function setupDesktopNavigation() {
 
     // Desktop Gigs (for artists)
     if (e.target.closest('#desktop-nav-gigs')) {
-      showGigsPage();
+      import('../modules/calendar/calendar-views.js').then(module => {
+        module.showGigsPage();
+      });
       return;
     }
 
     // Desktop Agenda (for programmers)
     if (e.target.closest('#desktop-nav-agenda')) {
-      showAgendaPage();
+      import('../modules/calendar/calendar-views.js').then(module => {
+        module.showAgendaPage();
+      });
+      return;
+    }
+
+    // Desktop Events (for artists)
+    if (e.target.closest('#desktop-nav-events')) {
+      import('../modules/calendar/calendar-views.js').then(module => {
+        module.showEventsPage();
+      });
       return;
     }
 

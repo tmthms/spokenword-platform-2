@@ -771,14 +771,38 @@ export function renderDashboard() {
             <!-- ==================== DESKTOP 3-COLUMN LAYOUT ==================== -->
             <div id="desktop-artist-detail" class="hidden lg:grid" style="grid-template-columns: 280px 1fr 320px; gap: 24px; align-items: start;">
 
-              <!-- LEFT COLUMN: Media Gallery -->
-              <aside style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 4px 20px rgba(128,90,213,0.08); border: 1px solid rgba(128,90,213,0.1);">
-                <h2 style="font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 20px;">Media Gallery</h2>
-                <div id="detail-media-gallery" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-                  <div style="aspect-ratio: 1; background: #f3f4f6; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
-                    <span style="color: #9ca3af; font-size: 13px;">Geen media</span>
+              <!-- LEFT COLUMN: Media Gallery + Gigs + Recommendations Preview -->
+              <aside style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 4px 20px rgba(128,90,213,0.08); border: 1px solid rgba(128,90,213,0.1); display: flex; flex-direction: column; gap: 24px;">
+
+                <!-- Media Gallery -->
+                <div>
+                  <h2 style="font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 20px;">Media Gallery</h2>
+                  <div id="detail-media-gallery" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                    <div style="aspect-ratio: 1; background: #f3f4f6; border-radius: 12px; display: flex; align-items: center; justify-content: center;">
+                      <span style="color: #9ca3af; font-size: 13px;">Geen media</span>
+                    </div>
                   </div>
                 </div>
+
+                <!-- Gigs Section -->
+                <div id="detail-gigs-section">
+                  <h2 style="font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Upcoming Gigs</h2>
+                  <div id="detail-gigs-list" style="display: flex; flex-direction: column; gap: 12px;">
+                    <p style="color: #9ca3af; font-size: 14px;">Loading gigs...</p>
+                  </div>
+                </div>
+
+                <!-- Recommendations Preview -->
+                <div id="detail-recommendations-preview">
+                  <h2 style="font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Recommendations</h2>
+                  <div id="detail-recommendations-list" style="display: flex; flex-direction: column; gap: 12px;">
+                    <p style="color: #9ca3af; font-size: 14px;">Loading...</p>
+                  </div>
+                  <button id="view-all-recommendations-btn" style="width: 100%; margin-top: 16px; padding: 12px; background: white; color: #805ad5; border: 2px solid #805ad5; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s;">
+                    View All Recommendations
+                  </button>
+                </div>
+
               </aside>
 
               <!-- MIDDLE COLUMN: Artist Profile -->
@@ -845,7 +869,7 @@ export function renderDashboard() {
                 </div>
 
                 <!-- Contact Information -->
-                <div style="margin-bottom: 24px; padding-bottom: 24px; border-bottom: 1px solid #e9e3f5;">
+                <div id="detail-contact-section">
                   <h3 style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Contact Information</h3>
                   <div style="display: flex; flex-wrap: wrap; gap: 24px;">
                     <div id="detail-email-container" style="display: flex; align-items: center; gap: 10px;">
@@ -857,20 +881,6 @@ export function renderDashboard() {
                       <span id="detail-phone" style="font-size: 14px; color: #4a4a68;">+31 6 12345678</span>
                     </div>
                   </div>
-                </div>
-
-                <!-- Recommendations Section -->
-                <div>
-                  <h3 style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Recommendations</h3>
-                  <div style="display: flex; gap: 12px; margin-bottom: 16px;">
-                    <button id="write-recommendation-btn" style="padding: 10px 20px; background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%); color: white; border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">
-                      Write Recommendation
-                    </button>
-                    <button id="view-recommendations-btn" style="padding: 10px 20px; background: white; color: #1a1a2e; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">
-                      View All Recommendations
-                    </button>
-                  </div>
-                  <div id="detail-recommendations" style="display: flex; flex-direction: column; gap: 12px;"></div>
                 </div>
 
               </main>
@@ -1157,106 +1167,3 @@ export function renderPublicProfilePage() {
   `;
 }
 
-/**
- * Shows the Gigs page for artists
- */
-export async function showGigsPage() {
-  const { getStore } = await import('../utils/store.js');
-  const currentUserData = getStore('currentUserData');
-
-  if (!currentUserData || currentUserData.role !== 'artist') {
-    console.warn('[UI] Only artists can access gigs page');
-    return;
-  }
-
-  console.log('[UI] Showing gigs page');
-
-  // Render navigation
-  const navModule = await import('../modules/navigation/navigation.js');
-  navModule.renderDesktopNav();
-  navModule.renderMobileNav();
-
-  // Show dashboard view container
-  const { showPage } = await import('./ui.js');
-  showPage('dashboard-view', false);
-  window.history.pushState({ view: 'gigs' }, '', '#gigs');
-
-  // Get containers
-  const artistDashboard = document.getElementById('artist-dashboard');
-  const programmerDashboard = document.getElementById('programmer-dashboard');
-
-  if (artistDashboard) {
-    artistDashboard.style.display = 'block';
-    artistDashboard.innerHTML = `
-      <div style="max-width: 800px; margin: 0 auto; padding: 20px;">
-        <div id="upcoming-gigs-container">
-          <!-- Calendar module renders here -->
-        </div>
-      </div>
-    `;
-  }
-  if (programmerDashboard) {
-    programmerDashboard.style.display = 'none';
-  }
-
-  // Initialize calendar
-  const { initCalendar } = await import('../modules/calendar/calendar-controller.js');
-  await initCalendar();
-
-  // Update mobile nav active state
-  const { updateMobileNavActive } = await import('../modules/navigation/navigation.js');
-  updateMobileNavActive('gigs');
-
-  if (window.lucide) {
-    setTimeout(() => lucide.createIcons(), 100);
-  }
-}
-
-/**
- * Shows the Agenda page for programmers (all upcoming gigs)
- */
-export async function showAgendaPage() {
-  const { getStore } = await import('../utils/store.js');
-  const currentUserData = getStore('currentUserData');
-
-  if (!currentUserData || currentUserData.role !== 'programmer') {
-    console.warn('[UI] Only programmers can access agenda page');
-    return;
-  }
-
-  console.log('[UI] Showing agenda page');
-
-  // Render navigation
-  const navModule = await import('../modules/navigation/navigation.js');
-  navModule.renderDesktopNav();
-  navModule.renderMobileNav();
-
-  // Show dashboard view container
-  const { showPage } = await import('./ui.js');
-  showPage('dashboard-view', false);
-  window.history.pushState({ view: 'agenda' }, '', '#agenda');
-
-  // Get containers
-  const artistDashboard = document.getElementById('artist-dashboard');
-  const programmerDashboard = document.getElementById('programmer-dashboard');
-
-  if (artistDashboard) {
-    artistDashboard.style.display = 'none';
-  }
-  if (programmerDashboard) {
-    programmerDashboard.style.display = 'block';
-    // Container will be filled by initAgendaView()
-  }
-
-  // Initialize the new Agenda View
-  const { initAgendaView } = await import('../modules/calendar/calendar-controller.js');
-  await initAgendaView();
-
-  // Update mobile nav active state
-  const { updateMobileNavActive } = await import('../modules/navigation/navigation.js');
-  updateMobileNavActive('agenda');
-
-  if (window.lucide) {
-    setTimeout(() => lucide.createIcons(), 100);
-  }
-}

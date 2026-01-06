@@ -56,6 +56,9 @@ export function renderDesktopNav() {
             ${isArtist ? `<button id="desktop-nav-gigs" class="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
               Gigs
             </button>` : ''}
+            ${isArtist ? `<button id="desktop-nav-events" class="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+              Evenementen
+            </button>` : ''}
             <button id="desktop-nav-messages" class="relative text-gray-700 hover:text-indigo-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
               Berichten
               <span id="messages-badge-desktop" class="notification-badge hidden">0</span>
@@ -120,6 +123,10 @@ export function renderMobileNav() {
       ${isArtist ? `<button class="bottom-nav-item" data-nav="gigs">
         <i data-lucide="calendar" class="bottom-nav-icon"></i>
         <span class="bottom-nav-label">Gigs</span>
+      </button>` : ''}
+      ${isArtist ? `<button class="bottom-nav-item" data-nav="events">
+        <i data-lucide="calendar-days" class="bottom-nav-icon"></i>
+        <span class="bottom-nav-label">Events</span>
       </button>` : ''}
       <button class="bottom-nav-item" data-nav="messages">
         <i data-lucide="message-circle" class="bottom-nav-icon"></i>

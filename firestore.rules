@@ -69,13 +69,20 @@ service cloud.firestore {
 
     // 6. Events/Gigs collectie
     match /events/{eventId} {
-      // Iedereen die ingelogd is kan events lezen (voor community map, zoekresultaten)
+      // Iedereen die ingelogd is kan events lezen
       allow read: if request.auth != null;
 
-      // Alleen de eigenaar (artiest) kan eigen events aanmaken/wijzigen/verwijderen
+      // Alleen de eigenaar (artiest) kan events aanmaken
       allow create: if request.auth != null
         && request.resource.data.artistId == request.auth.uid;
-      allow update, delete: if request.auth != null
+
+      // Eigenaar mag alles updaten, anderen alleen attendees
+      allow update: if request.auth != null
+        && (resource.data.artistId == request.auth.uid
+            || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['attendees', 'attendeeCount'])));
+
+      // Alleen eigenaar mag verwijderen
+      allow delete: if request.auth != null
         && resource.data.artistId == request.auth.uid;
     }
 

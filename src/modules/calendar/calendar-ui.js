@@ -7,6 +7,18 @@
 import { EVENT_TYPE_LABELS, formatEventDate, formatShortDate } from './calendar-service.js';
 
 /**
+ * Format date as YYYY-MM-DD using local timezone (not UTC)
+ * @param {Date} date - Date object
+ * @returns {string} Date string in YYYY-MM-DD format
+ */
+function formatDateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
  * Render de "Upcoming Gigs" widget voor het artist dashboard
  * @param {Array} events - Array van event objecten
  * @param {boolean} isOwnProfile - Is dit het eigen profiel van de artiest?
@@ -31,6 +43,13 @@ export function renderUpcomingGigsWidget(events = [], isOwnProfile = true) {
       </div>
 
       ${hasEvents ? renderGigsList(events, isOwnProfile) : renderEmptyGigsState(isOwnProfile)}
+
+      <!-- Tour Poster Generator -->
+      ${isOwnProfile ? `
+        <div id="poster-generator-container" class="mt-6 pt-6 border-t border-gray-100">
+          <!-- Poster button renders here -->
+        </div>
+      ` : ''}
     </div>
   `;
 }
@@ -362,7 +381,7 @@ export function renderDateTape(selectedDate, eventCounts = {}, daysToShow = 14) 
     const date = new Date(startDate);
     date.setDate(date.getDate() + i);
 
-    const dateString = date.toISOString().split('T')[0];
+    const dateString = formatDateKey(date);
     const isSelected = date.getTime() === selected.getTime();
     const isToday = date.getTime() === today.getTime();
     const eventCount = eventCounts[dateString] || 0;
@@ -398,6 +417,55 @@ export function renderDateTape(selectedDate, eventCounts = {}, daysToShow = 14) 
       </div>
     </div>
   `;
+}
+
+/**
+ * Render alleen de dagen voor de Date Tape
+ * @param {Date} selectedDate - Geselecteerde datum
+ * @param {Object} eventCounts - Object met datums als keys en counts als values
+ * @returns {string} HTML string van dagen
+ */
+export function renderDateTapeDays(selectedDate, eventCounts = {}) {
+  const days = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Genereer 14 dagen: 3 voor, geselecteerd, 10 na
+  const startDate = new Date(selectedDate);
+  startDate.setDate(startDate.getDate() - 3);
+
+  for (let i = 0; i < 14; i++) {
+    const date = new Date(startDate);
+    date.setDate(startDate.getDate() + i);
+
+    const dateStr = formatDateKey(date);
+    const isSelected = date.toDateString() === selectedDate.toDateString();
+    const isToday = date.toDateString() === today.toDateString();
+    const eventCount = eventCounts[dateStr] || 0;
+
+    const dayName = date.toLocaleDateString('nl-BE', { weekday: 'short' }).substring(0, 2);
+    const dayNum = date.getDate();
+
+    days.push(`
+      <button
+        class="date-tape-day flex-shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-xl transition-all ${
+          isSelected
+            ? 'bg-indigo-600 text-white shadow-md'
+            : 'bg-white border border-gray-200 text-gray-700 hover:border-indigo-300 hover:bg-indigo-50'
+        }"
+        data-date="${dateStr}"
+      >
+        <span class="text-xs font-medium uppercase ${isSelected ? 'text-indigo-200' : 'text-gray-500'}">${dayName}</span>
+        <span class="text-lg font-bold">${dayNum}</span>
+        <div class="flex gap-0.5 mt-0.5">
+          ${isToday ? `<span class="w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-red-500'}"></span>` : ''}
+          ${eventCount > 0 ? `<span class="w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-indigo-200' : 'bg-indigo-500'}"></span>` : ''}
+        </div>
+      </button>
+    `);
+  }
+
+  return days.join('');
 }
 
 /**
@@ -480,7 +548,7 @@ export function renderClusterCard(event, currentUserId = null) {
           </a>
         ` : ''}
         <button
-          class="attend-event-btn flex-1 px-5 py-3 font-semibold rounded-xl transition-all ${
+          class="attend-event-btn px-5 py-2.5 font-semibold rounded-xl transition-all ${
             isAttending
               ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm'
               : 'bg-indigo-50 border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-600 hover:text-white'
@@ -497,15 +565,19 @@ export function renderClusterCard(event, currentUserId = null) {
 /**
  * c) Render Solo Gig Card - Enkele artiest optreden
  * @param {object} event - Event object
+ * @param {string} currentUserId - UID van de huidige user
  * @returns {string} HTML string
  */
-export function renderSoloGigCard(event) {
+export function renderSoloGigCard(event, currentUserId = null) {
   const date = event.date ? new Date(event.date) : null;
   const dayNum = date ? date.getDate() : '--';
   const monthShort = date ? date.toLocaleDateString('nl-BE', { month: 'short' }).toUpperCase() : '';
 
   const typeLabel = EVENT_TYPE_LABELS[event.type] || event.type;
   const typeBadgeColor = getTypeBadgeColor(event.type, false);
+
+  const attendeeCount = event.attendeeCount || 0;
+  const isAttending = currentUserId && (event.attendees || []).includes(currentUserId);
 
   return `
     <div class="solo-gig-card bg-white border border-gray-200 rounded-2xl p-4 hover:shadow-md transition-all cursor-pointer" data-event-id="${event.id}">
@@ -543,16 +615,133 @@ export function renderSoloGigCard(event) {
           <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
         </div>
       </div>
+
+      <!-- Attend Button -->
+      <div class="mt-4 pt-4 border-t border-gray-100 flex justify-end">
+        <button
+          class="attend-event-btn px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+            isAttending
+              ? 'bg-indigo-600 text-white'
+              : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
+          }"
+          data-event-id="${event.id}"
+        >
+          ${isAttending ? '✓ ' : '👋 '}Ik ga ook${attendeeCount > 0 ? ` (${attendeeCount})` : ''}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Render maandkalender grid
+ * @param {Date} selectedDate - Geselecteerde datum
+ * @param {Object} eventCounts - Object met datums en event counts
+ * @returns {string} HTML string
+ */
+export function renderMonthCalendar(selectedDate, eventCounts = {}) {
+  const year = selectedDate.getFullYear();
+  const month = selectedDate.getMonth();
+
+  // Maand en jaar header
+  const monthName = selectedDate.toLocaleDateString('nl-BE', { month: 'long', year: 'numeric' });
+  const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+
+  // Eerste dag van de maand en aantal dagen
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const daysInMonth = lastDay.getDate();
+
+  // Dag van de week waarop maand begint (0 = zondag, 1 = maandag, etc.)
+  // Converteer naar maandag = 0
+  let startDay = firstDay.getDay() - 1;
+  if (startDay < 0) startDay = 6;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Bouw kalender grid
+  let daysHtml = '';
+
+  // Lege cellen voor dagen voor de eerste
+  for (let i = 0; i < startDay; i++) {
+    daysHtml += '<div class="w-8 h-8"></div>';
+  }
+
+  // Dagen van de maand
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(year, month, day);
+    const dateStr = formatDateKey(date);
+    const isSelected = date.toDateString() === selectedDate.toDateString();
+    const isToday = date.toDateString() === today.toDateString();
+    const hasEvents = eventCounts[dateStr] > 0;
+
+    let classes = 'w-8 h-8 flex items-center justify-center text-sm rounded-lg cursor-pointer transition-colors relative';
+
+    if (isSelected) {
+      classes += ' bg-indigo-600 text-white font-semibold';
+    } else if (isToday) {
+      classes += ' bg-indigo-100 text-indigo-700 font-semibold';
+    } else {
+      classes += ' text-gray-700 hover:bg-gray-100';
+    }
+
+    daysHtml += `
+      <button class="calendar-day ${classes}" data-date="${dateStr}">
+        ${day}
+        ${hasEvents ? `<span class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-indigo-500'}"></span>` : ''}
+      </button>
+    `;
+  }
+
+  return `
+    <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm mb-4">
+      <!-- Month Navigation -->
+      <div class="flex items-center justify-between mb-4">
+        <button id="month-prev" class="p-1 rounded-lg hover:bg-gray-100 transition-colors">
+          <i data-lucide="chevron-left" class="w-5 h-5 text-gray-600"></i>
+        </button>
+        <span class="font-semibold text-gray-900">${capitalizedMonth}</span>
+        <button id="month-next" class="p-1 rounded-lg hover:bg-gray-100 transition-colors">
+          <i data-lucide="chevron-right" class="w-5 h-5 text-gray-600"></i>
+        </button>
+      </div>
+
+      <!-- Weekday Headers -->
+      <div class="grid grid-cols-7 gap-1 mb-2">
+        <div class="w-8 h-6 flex items-center justify-center text-xs font-medium text-gray-500">Ma</div>
+        <div class="w-8 h-6 flex items-center justify-center text-xs font-medium text-gray-500">Di</div>
+        <div class="w-8 h-6 flex items-center justify-center text-xs font-medium text-gray-500">Wo</div>
+        <div class="w-8 h-6 flex items-center justify-center text-xs font-medium text-gray-500">Do</div>
+        <div class="w-8 h-6 flex items-center justify-center text-xs font-medium text-gray-500">Vr</div>
+        <div class="w-8 h-6 flex items-center justify-center text-xs font-medium text-gray-500">Za</div>
+        <div class="w-8 h-6 flex items-center justify-center text-xs font-medium text-gray-500">Zo</div>
+      </div>
+
+      <!-- Days Grid -->
+      <div class="grid grid-cols-7 gap-1">
+        ${daysHtml}
+      </div>
     </div>
   `;
 }
 
 /**
  * d) Render Agenda Filters (desktop sidebar)
- * @param {Object} activeFilters - Actieve filters { types: [], regions: [] }
+ * @param {Object} activeFilters - Actieve filters { types: [], region: 'all' }
+ * @param {Date} selectedDate - Geselecteerde datum voor month calendar
+ * @param {Object} eventCounts - Event counts per datum
  * @returns {string} HTML string
  */
-export function renderAgendaFilters(activeFilters = { types: [], regions: [] }) {
+export function renderAgendaFilters(activeFilters = { types: [], region: 'all' }, selectedDate = new Date(), eventCounts = {}) {
+  // Ensure filters have default values
+  const filters = {
+    types: activeFilters?.types || [],
+    region: activeFilters?.region || 'all'
+  };
+
+  const monthCalendarHtml = renderMonthCalendar(selectedDate, eventCounts);
+
   const eventTypes = [
     { value: 'slam-finale', label: 'Slam Finales' },
     { value: 'slam', label: 'Slams & Battles' },
@@ -571,6 +760,7 @@ export function renderAgendaFilters(activeFilters = { types: [], regions: [] }) 
   ];
 
   return `
+    ${monthCalendarHtml}
     <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
       <h3 class="text-lg font-bold text-gray-900 mb-4">Filters</h3>
 
@@ -584,7 +774,7 @@ export function renderAgendaFilters(activeFilters = { types: [], regions: [] }) 
                 type="checkbox"
                 name="event-type"
                 value="${type.value}"
-                ${activeFilters.types.includes(type.value) ? 'checked' : ''}
+                ${filters.types.includes(type.value) ? 'checked' : ''}
                 class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-0"
               >
               <span class="text-sm text-gray-700 group-hover:text-gray-900 transition-colors">${type.label}</span>
@@ -601,7 +791,7 @@ export function renderAgendaFilters(activeFilters = { types: [], regions: [] }) 
           class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2.5 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
         >
           ${regions.map(region => `
-            <option value="${region.value}" ${activeFilters.regions.includes(region.value) ? 'selected' : ''}>
+            <option value="${region.value}" ${filters.region === region.value ? 'selected' : ''}>
               ${region.label}
             </option>
           `).join('')}
@@ -612,6 +802,105 @@ export function renderAgendaFilters(activeFilters = { types: [], regions: [] }) 
       <button id="clear-filters-btn" class="mt-4 w-full px-4 py-2 text-sm text-gray-500 hover:text-gray-900 transition-colors">
         Filters wissen
       </button>
+    </div>
+  `;
+}
+
+/**
+ * Render attendee notificaties voor artiest's gigs pagina
+ * @param {Array} notifications - Array van event notifications met attendee profiles
+ * @returns {string} HTML string
+ */
+export function renderAttendeeNotifications(notifications = []) {
+  if (!notifications || notifications.length === 0) {
+    return '';
+  }
+
+  const totalAttendees = notifications.reduce((sum, n) => sum + n.attendeeCount, 0);
+
+  return `
+    <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 mb-6">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+          <i data-lucide="users" class="w-5 h-5 text-indigo-600"></i>
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-900">${totalAttendees} ${totalAttendees === 1 ? 'persoon komt' : 'mensen komen'} naar je shows!</h3>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        ${notifications.map(n => renderNotificationItem(n)).join('')}
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Render een enkele notificatie item met expandable attendees
+ */
+function renderNotificationItem(notification) {
+  const dateStr = notification.date
+    ? notification.date.toLocaleDateString('nl-BE', { day: 'numeric', month: 'short' })
+    : 'TBA';
+
+  const attendeeAvatars = (notification.profiles || []).slice(0, 5).map(profile => {
+    if (profile.profilePicUrl) {
+      return `<img src="${profile.profilePicUrl}" alt="${profile.name}" class="w-8 h-8 rounded-full border-2 border-white object-cover" title="${profile.name}">`;
+    }
+    return `<div class="w-8 h-8 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center" title="${profile.name}">
+      <span class="text-xs font-medium text-gray-600">${profile.name.charAt(0).toUpperCase()}</span>
+    </div>`;
+  }).join('');
+
+  const extraCount = notification.attendeeCount - 5;
+  const extraBadge = extraCount > 0
+    ? `<div class="w-8 h-8 rounded-full border-2 border-white bg-indigo-100 flex items-center justify-center">
+        <span class="text-xs font-medium text-indigo-600">+${extraCount}</span>
+      </div>`
+    : '';
+
+  return `
+    <div class="bg-white rounded-xl p-3 shadow-sm">
+      <div class="flex items-center justify-between mb-2">
+        <div>
+          <span class="font-medium text-gray-900">${notification.venue}</span>
+          <span class="text-sm text-gray-500 ml-2">${dateStr}</span>
+        </div>
+        <span class="text-sm font-semibold text-indigo-600">${notification.attendeeCount} 👋</span>
+      </div>
+
+      <!-- Attendee Avatars -->
+      <div class="flex items-center">
+        <div class="flex -space-x-2">
+          ${attendeeAvatars}
+          ${extraBadge}
+        </div>
+        ${notification.profiles && notification.profiles.length > 0 ? `
+          <button class="toggle-attendees-btn ml-3 text-xs text-indigo-600 hover:text-indigo-800 font-medium" data-event-id="${notification.eventId}">
+            Bekijk namen
+          </button>
+        ` : ''}
+      </div>
+
+      <!-- Expanded names (hidden by default) -->
+      <div id="attendees-list-${notification.eventId}" class="hidden mt-3 pt-3 border-t border-gray-100">
+        <p class="text-xs text-gray-500 mb-2">Wie komen er:</p>
+        <div class="space-y-1">
+          ${(notification.profiles || []).map(p => `
+            <div class="flex items-center gap-2">
+              ${p.profilePicUrl
+                ? `<img src="${p.profilePicUrl}" class="w-6 h-6 rounded-full object-cover">`
+                : `<div class="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
+                    <span class="text-xs text-gray-600">${p.name.charAt(0)}</span>
+                  </div>`
+              }
+              <span class="text-sm text-gray-700">${p.name}</span>
+              <span class="text-xs text-gray-400">${p.role === 'programmer' ? '(Programmeur)' : p.role === 'artist' ? '(Artiest)' : ''}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
     </div>
   `;
 }

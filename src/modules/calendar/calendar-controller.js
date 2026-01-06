@@ -20,18 +20,23 @@ import {
   renderUpcomingGigsWidget,
   renderGigModal,
   renderDeleteConfirmModal,
-  renderDateTape,
   renderClusterCard,
   renderSoloGigCard,
   renderAgendaFilters,
-  renderAgendaLayout
+  renderAgendaLayout,
+  renderMonthCalendar
 } from './calendar-ui.js';
 
 let currentEvents = [];
+let currentPosterCanvas = null;
+let currentPosterTheme = 'indigo';
+let currentPosterArtistData = null;
+let currentPosterEvents = null;
 
 // Agenda state
 let agendaState = {
   selectedDate: new Date(),
+  filterMode: 'month', // 'day' of 'month'
   events: [],
   filteredEvents: [],
   filters: {
@@ -77,25 +82,64 @@ export async function loadAndRenderEvents() {
 
   try {
     currentEvents = await getArtistEvents(currentUser.uid, { upcomingOnly: true, limitCount: 10 });
-    renderGigsWidget();
+    await renderGigsWidget();
   } catch (error) {
     console.error('[CALENDAR] Error loading events:', error);
     currentEvents = [];
-    renderGigsWidget();
+    await renderGigsWidget();
   }
 }
 
 /**
  * Render de gigs widget in het dashboard
  */
-function renderGigsWidget() {
+async function renderGigsWidget() {
   const container = document.getElementById('upcoming-gigs-container');
   if (!container) {
     console.warn('[CALENDAR] Gigs container not found');
     return;
   }
 
+  const currentUser = getStore('currentUser');
+
+  // Load and render attendee notifications for artist
+  if (currentUser) {
+    const { getAttendeeNotifications, getAttendeeProfiles } = await import('./calendar-service.js');
+    const notifications = await getAttendeeNotifications(currentUser.uid);
+
+    // Haal profielen op voor elke notificatie
+    for (const notification of notifications) {
+      notification.profiles = await getAttendeeProfiles(notification.attendees);
+    }
+
+    if (notifications.length > 0) {
+      const { renderAttendeeNotifications } = await import('./calendar-ui.js');
+
+      // Remove existing notifications first
+      const existingNotifications = document.getElementById('attendee-notifications-container');
+      if (existingNotifications) {
+        existingNotifications.remove();
+      }
+
+      const notificationsHtml = renderAttendeeNotifications(notifications);
+
+      // Insert before the gigs container
+      container.insertAdjacentHTML('beforebegin', `
+        <div id="attendee-notifications-container">
+          ${notificationsHtml}
+        </div>
+      `);
+    }
+  }
+
   container.innerHTML = renderUpcomingGigsWidget(currentEvents, true);
+
+  // Render poster button
+  const posterContainer = document.getElementById('poster-generator-container');
+  if (posterContainer) {
+    const { renderPosterButton } = await import('./poster-generator.js');
+    posterContainer.innerHTML = renderPosterButton(currentEvents.length);
+  }
 
   // Re-initialize Lucide icons
   if (window.lucide) {
@@ -169,6 +213,59 @@ async function handleCalendarClick(e) {
     e.preventDefault();
     closeGigModal();
     closeDeleteModal();
+    return;
+  }
+
+  // Generate Poster button
+  if (target.closest('#generate-poster-btn')) {
+    e.preventDefault();
+    await openPosterGenerator();
+    return;
+  }
+
+  // Close poster modal
+  if (target.closest('#close-poster-modal') || target.closest('#close-poster-modal-btn')) {
+    e.preventDefault();
+    closePosterModal();
+    return;
+  }
+
+  // Download poster
+  if (target.closest('#download-poster-btn')) {
+    e.preventDefault();
+    await downloadCurrentPoster();
+    return;
+  }
+
+  // Click op backdrop sluit modal
+  if (target.id === 'poster-modal') {
+    e.preventDefault();
+    closePosterModal();
+    return;
+  }
+
+  // Theme select button
+  if (target.closest('.theme-select-btn')) {
+    e.preventDefault();
+    const btn = target.closest('.theme-select-btn');
+    const themeKey = btn.dataset.theme;
+    if (themeKey) {
+      await switchPosterTheme(themeKey);
+    }
+    return;
+  }
+
+  // Toggle attendees list
+  if (target.closest('.toggle-attendees-btn')) {
+    e.preventDefault();
+    const btn = target.closest('.toggle-attendees-btn');
+    const eventId = btn.dataset.eventId;
+    const listEl = document.getElementById(`attendees-list-${eventId}`);
+
+    if (listEl) {
+      listEl.classList.toggle('hidden');
+      btn.textContent = listEl.classList.contains('hidden') ? 'Bekijk namen' : 'Verberg namen';
+    }
     return;
   }
 }
@@ -422,6 +519,113 @@ function getEventsForSelectedDate(events) {
 }
 
 /**
+ * Filter events op basis van filter mode (dag of maand)
+ */
+function getFilteredEventsByDateMode(events) {
+  const selected = agendaState.selectedDate;
+
+  if (agendaState.filterMode === 'day') {
+    // Filter op exacte datum
+    return events.filter(e => {
+      if (!e.date) return false;
+      const eventDate = new Date(e.date);
+      return eventDate.toDateString() === selected.toDateString();
+    });
+  } else {
+    // Filter op maand
+    return events.filter(e => {
+      if (!e.date) return false;
+      const eventDate = new Date(e.date);
+      return eventDate.getMonth() === selected.getMonth()
+        && eventDate.getFullYear() === selected.getFullYear();
+    });
+  }
+}
+
+/**
+ * Render mobile calendar days
+ */
+async function renderMobileCalendarDays() {
+  const container = document.getElementById('mobile-calendar-days');
+  const monthLabel = document.getElementById('mobile-month-label');
+
+  if (!container) return;
+
+  const selectedDate = agendaState.selectedDate;
+  const year = selectedDate.getFullYear();
+  const month = selectedDate.getMonth();
+
+  // Update month label
+  if (monthLabel) {
+    const monthNames = ['Januari', 'Februari', 'Maart', 'April', 'Mei', 'Juni',
+                        'Juli', 'Augustus', 'September', 'Oktober', 'November', 'December'];
+    monthLabel.textContent = `${monthNames[month]} ${year}`;
+  }
+
+  // Get event counts for this month
+  const startOfMonth = new Date(year, month, 1);
+  const endOfMonth = new Date(year, month + 1, 0);
+
+  let eventCounts = {};
+  try {
+    eventCounts = await getEventCountsPerDate(startOfMonth, endOfMonth);
+  } catch (error) {
+    console.warn('[CALENDAR] Could not fetch event counts:', error);
+  }
+
+  // Calculate days
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const daysInMonth = lastDay.getDate();
+
+  let startDay = firstDay.getDay() - 1;
+  if (startDay < 0) startDay = 6;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  let html = '';
+
+  // Empty cells for previous month
+  for (let i = 0; i < startDay; i++) {
+    html += '<div class="w-8 h-8"></div>';
+  }
+
+  // Days of current month
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(year, month, day);
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const isSelected = date.toDateString() === selectedDate.toDateString();
+    const isToday = date.toDateString() === today.toDateString();
+    const hasEvents = eventCounts[dateStr] > 0;
+
+    let classes = 'w-8 h-8 flex flex-col items-center justify-center text-sm rounded-lg cursor-pointer transition-colors relative';
+
+    if (isSelected) {
+      classes += ' bg-indigo-600 text-white font-semibold';
+    } else if (isToday) {
+      classes += ' bg-indigo-100 text-indigo-700 font-semibold';
+    } else {
+      classes += ' text-gray-700 hover:bg-gray-100';
+    }
+
+    // Event dot
+    const dotHtml = hasEvents
+      ? `<span class="absolute bottom-0.5 w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-indigo-500'}"></span>`
+      : '';
+
+    html += `
+      <button class="mobile-calendar-day ${classes}" data-date="${dateStr}">
+        <span>${day}</span>
+        ${dotHtml}
+      </button>
+    `;
+  }
+
+  container.innerHTML = html;
+}
+
+/**
  * Setup event listeners voor Agenda pagina
  */
 function setupAgendaEventListeners() {
@@ -435,14 +639,82 @@ function setupAgendaEventListeners() {
 async function handleAgendaClick(e) {
   const target = e.target;
 
-  // Date Tape dag selectie
-  if (target.closest('.date-tape-day')) {
+  // Mobile calendar day click
+  if (target.closest('.mobile-calendar-day')) {
     e.preventDefault();
-    const dayEl = target.closest('.date-tape-day');
+    const dayEl = target.closest('.mobile-calendar-day');
     const dateStr = dayEl.dataset.date;
     if (dateStr) {
-      await selectDate(new Date(dateStr));
+      // Parse as local date, not UTC
+      const [year, month, day] = dateStr.split('-').map(Number);
+      await selectDate(new Date(year, month - 1, day));
     }
+    return;
+  }
+
+  // Mobile month navigation
+  if (target.closest('#mobile-month-prev')) {
+    e.preventDefault();
+    const newDate = new Date(agendaState.selectedDate);
+    newDate.setMonth(newDate.getMonth() - 1);
+    agendaState.selectedDate = newDate;
+    await renderAgendaContent();
+    return;
+  }
+
+  if (target.closest('#mobile-month-next')) {
+    e.preventDefault();
+    const newDate = new Date(agendaState.selectedDate);
+    newDate.setMonth(newDate.getMonth() + 1);
+    agendaState.selectedDate = newDate;
+    await renderAgendaContent();
+    return;
+  }
+
+  // Month calendar day click (desktop)
+  if (target.closest('.calendar-day')) {
+    e.preventDefault();
+    const dayEl = target.closest('.calendar-day');
+    const dateStr = dayEl.dataset.date;
+    if (dateStr) {
+      // Parse as local date, not UTC
+      const [year, month, day] = dateStr.split('-').map(Number);
+      await selectDate(new Date(year, month - 1, day));
+    }
+    return;
+  }
+
+  // Month navigation
+  if (target.closest('#month-prev')) {
+    e.preventDefault();
+    const newDate = new Date(agendaState.selectedDate);
+    newDate.setMonth(newDate.getMonth() - 1);
+    agendaState.selectedDate = newDate;
+    await renderAgendaContent();
+    return;
+  }
+
+  if (target.closest('#month-next')) {
+    e.preventDefault();
+    const newDate = new Date(agendaState.selectedDate);
+    newDate.setMonth(newDate.getMonth() + 1);
+    agendaState.selectedDate = newDate;
+    await renderAgendaContent();
+    return;
+  }
+
+  // Filter mode toggle
+  if (target.closest('#filter-mode-day')) {
+    e.preventDefault();
+    agendaState.filterMode = 'day';
+    await renderAgendaContent();
+    return;
+  }
+
+  if (target.closest('#filter-mode-month')) {
+    e.preventDefault();
+    agendaState.filterMode = 'month';
+    await renderAgendaContent();
     return;
   }
 
@@ -469,10 +741,17 @@ async function handleAgendaClick(e) {
     return;
   }
 
-  // View mode toggle (list/map)
-  if (target.closest('#toggle-map-view')) {
+  // View mode toggle - List
+  if (target.closest('#view-mode-list')) {
     e.preventDefault();
-    toggleViewMode();
+    setViewMode('list');
+    return;
+  }
+
+  // View mode toggle - Map
+  if (target.closest('#view-mode-map')) {
+    e.preventDefault();
+    setViewMode('map');
     return;
   }
 
@@ -559,20 +838,79 @@ async function toggleEventAttendance(eventId) {
 }
 
 /**
- * Toggle view mode (list/map)
+ * Switch tussen lijst en kaart weergave
+ * @param {string} mode - 'list' of 'map'
  */
-function toggleViewMode() {
-  agendaState.viewMode = agendaState.viewMode === 'list' ? 'map' : 'list';
-  console.log('[CALENDAR] View mode:', agendaState.viewMode);
-  renderAgendaContent();
+async function setViewMode(mode) {
+  agendaState.viewMode = mode;
+
+  const listContainer = document.getElementById('agenda-events-list');
+  const mapContainer = document.getElementById('agenda-map-container');
+  const listBtn = document.getElementById('view-mode-list');
+  const mapBtn = document.getElementById('view-mode-map');
+
+  if (mode === 'list') {
+    // Show list, hide map
+    if (listContainer) listContainer.classList.remove('hidden');
+    if (mapContainer) mapContainer.classList.add('hidden');
+
+    // Update button styles
+    if (listBtn) {
+      listBtn.classList.remove('bg-gray-100', 'text-gray-700');
+      listBtn.classList.add('bg-indigo-600', 'text-white');
+    }
+    if (mapBtn) {
+      mapBtn.classList.remove('bg-indigo-600', 'text-white');
+      mapBtn.classList.add('bg-gray-100', 'text-gray-700');
+    }
+
+  } else {
+    // Show map, hide list
+    if (listContainer) listContainer.classList.add('hidden');
+    if (mapContainer) mapContainer.classList.remove('hidden');
+
+    // Update button styles
+    if (mapBtn) {
+      mapBtn.classList.remove('bg-gray-100', 'text-gray-700');
+      mapBtn.classList.add('bg-indigo-600', 'text-white');
+    }
+    if (listBtn) {
+      listBtn.classList.remove('bg-indigo-600', 'text-white');
+      listBtn.classList.add('bg-gray-100', 'text-gray-700');
+    }
+
+    // Initialize map if needed
+    const { initMap, updateMapMarkers } = await import('./calendar-map.js');
+
+    if (!document.getElementById('community-map')._leaflet_id) {
+      initMap('community-map');
+    }
+
+    // Update markers with current filtered events
+    const filteredEvents = applyFilters(agendaState.events);
+    updateMapMarkers(filteredEvents, (city, cityEvents) => {
+      console.log('[MAP] City clicked:', city, cityEvents.length, 'events');
+      // Optioneel: filter events op deze stad
+    });
+  }
+
+  // Re-init Lucide icons
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 50);
+  }
+
+  console.log('[CALENDAR] View mode:', mode);
 }
 
 /**
  * Render/update de Agenda content (events lijst)
  */
 async function renderAgendaContent() {
-  const container = document.getElementById('agenda-content');
-  if (!container) return;
+  const container = document.getElementById('agenda-events-list');
+  if (!container) {
+    console.warn('[CALENDAR] agenda-events-list container not found');
+    return;
+  }
 
   // Haal event counts voor date tape
   const startDate = new Date(agendaState.selectedDate);
@@ -584,18 +922,39 @@ async function renderAgendaContent() {
 
   // Filter events
   const filteredEvents = applyFilters(agendaState.events);
-  const eventsForDate = getEventsForSelectedDate(filteredEvents);
+  // Apply date/month filtering
+  const eventsForDate = getFilteredEventsByDateMode(filteredEvents);
 
-  // Render Date Tape
-  const dateTapeContainer = document.getElementById('date-tape-container');
-  if (dateTapeContainer) {
-    dateTapeContainer.innerHTML = renderDateTape(agendaState.selectedDate, eventCounts);
-  }
-
-  // Render Filters (desktop)
+  // Render Filters (desktop) with month calendar
   const filtersContainer = document.getElementById('agenda-filters-container');
   if (filtersContainer) {
-    filtersContainer.innerHTML = renderAgendaFilters(agendaState.filters);
+    filtersContainer.innerHTML = renderAgendaFilters(agendaState.filters, agendaState.selectedDate, eventCounts);
+  }
+
+  // Render Mobile Calendar
+  renderMobileCalendarDays();
+
+  // Render Filter Mode Toggle
+  const filterModeContainer = document.getElementById('filter-mode-container');
+  if (filterModeContainer) {
+    filterModeContainer.innerHTML = `
+      <div class="flex gap-2">
+        <button id="filter-mode-day" class="px-4 py-2 text-sm rounded-lg transition-colors font-medium ${
+          agendaState.filterMode === 'day'
+            ? 'bg-indigo-600 text-white shadow-sm'
+            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+        }">
+          Dag
+        </button>
+        <button id="filter-mode-month" class="px-4 py-2 text-sm rounded-lg transition-colors font-medium ${
+          agendaState.filterMode === 'month'
+            ? 'bg-indigo-600 text-white shadow-sm'
+            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+        }">
+          Maand
+        </button>
+      </div>
+    `;
   }
 
   // Render Events
@@ -619,9 +978,15 @@ async function renderAgendaContent() {
         if (event.isClusterEvent && event.participants?.length > 0) {
           return renderClusterCard(event, currentUserId);
         }
-        return renderSoloGigCard(event);
+        return renderSoloGigCard(event, currentUserId);
       }).join('');
     }
+  }
+
+  // Update map markers if map is visible
+  if (agendaState.viewMode === 'map') {
+    const { updateMapMarkers } = await import('./calendar-map.js');
+    updateMapMarkers(eventsForDate);
   }
 
   // Re-init Lucide icons
@@ -645,15 +1010,6 @@ export async function initAgendaView() {
 
     console.log(`[CALENDAR] Loaded ${agendaState.events.length} events`);
 
-    // Detect mobile
-    const isMobile = window.innerWidth < 1024;
-
-    // Render layout
-    const container = document.getElementById('programmer-dashboard');
-    if (container) {
-      container.innerHTML = renderAgendaLayout(isMobile);
-    }
-
     // Setup event listeners
     setupAgendaEventListeners();
 
@@ -672,8 +1028,15 @@ export async function initAgendaView() {
  */
 export function cleanupAgendaView() {
   document.body.removeEventListener('click', handleAgendaClick);
+
+  // Cleanup map
+  import('./calendar-map.js').then(({ destroyMap }) => {
+    destroyMap();
+  });
+
   agendaState = {
     selectedDate: new Date(),
+    filterMode: 'month',
     events: [],
     filteredEvents: [],
     filters: { types: [], region: 'all' },
@@ -681,4 +1044,120 @@ export function cleanupAgendaView() {
     isLoading: false
   };
   console.log('[CALENDAR] Agenda view cleaned up');
+}
+
+/**
+ * Open de poster generator
+ */
+async function openPosterGenerator() {
+  const currentUserData = getStore('currentUserData');
+
+  if (!currentUserData || currentEvents.length < 3) {
+    console.warn('[POSTER] Not enough events or no user data');
+    return;
+  }
+
+  console.log('[POSTER] Generating poster...');
+
+  try {
+    const { generatePosterCanvas, renderPosterModal } = await import('./poster-generator.js');
+
+    // Store data voor regeneratie bij thema wissel
+    currentPosterArtistData = currentUserData;
+    currentPosterEvents = currentEvents;
+    currentPosterTheme = 'indigo';
+
+    // Genereer canvas
+    currentPosterCanvas = await generatePosterCanvas(currentUserData, currentEvents, currentPosterTheme);
+
+    // Render modal
+    const modalHtml = renderPosterModal(currentPosterCanvas, currentPosterTheme);
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    // Re-init Lucide icons
+    if (window.lucide) {
+      setTimeout(() => lucide.createIcons(), 50);
+    }
+
+    console.log('[POSTER] Modal opened');
+
+  } catch (error) {
+    console.error('[POSTER] Error generating poster:', error);
+    alert('Er ging iets mis bij het genereren van de poster.');
+  }
+}
+
+/**
+ * Wissel poster thema
+ */
+async function switchPosterTheme(themeKey) {
+  if (!currentPosterArtistData || !currentPosterEvents) {
+    console.warn('[POSTER] No data to regenerate poster');
+    return;
+  }
+
+  console.log('[POSTER] Switching theme to:', themeKey);
+  currentPosterTheme = themeKey;
+
+  try {
+    const { generatePosterCanvas } = await import('./poster-generator.js');
+
+    // Regenereer canvas met nieuw thema
+    currentPosterCanvas = await generatePosterCanvas(
+      currentPosterArtistData,
+      currentPosterEvents,
+      themeKey
+    );
+
+    // Update preview image
+    const previewImg = document.getElementById('poster-preview-img');
+    if (previewImg) {
+      previewImg.src = currentPosterCanvas.toDataURL('image/png');
+    }
+
+    // Update active state op theme buttons
+    document.querySelectorAll('.theme-select-btn').forEach(btn => {
+      const isActive = btn.dataset.theme === themeKey;
+      btn.classList.toggle('border-indigo-600', isActive);
+      btn.classList.toggle('ring-2', isActive);
+      btn.classList.toggle('ring-indigo-300', isActive);
+      btn.classList.toggle('border-gray-200', !isActive);
+    });
+
+  } catch (error) {
+    console.error('[POSTER] Error switching theme:', error);
+  }
+}
+
+/**
+ * Sluit de poster modal
+ */
+function closePosterModal() {
+  const modal = document.getElementById('poster-modal');
+  if (modal) {
+    modal.remove();
+  }
+  currentPosterCanvas = null;
+  currentPosterArtistData = null;
+  currentPosterEvents = null;
+  currentPosterTheme = 'indigo';
+}
+
+/**
+ * Download de huidige poster
+ */
+async function downloadCurrentPoster() {
+  if (!currentPosterCanvas) {
+    console.warn('[POSTER] No canvas to download');
+    return;
+  }
+
+  const currentUserData = getStore('currentUserData');
+  const artistName = currentUserData?.stageName || 'artist';
+  const filename = `${artistName.toLowerCase().replace(/\s+/g, '-')}-tour-poster.png`;
+
+  const { downloadPoster } = await import('./poster-generator.js');
+  downloadPoster(currentPosterCanvas, filename);
+
+  console.log('[POSTER] Downloaded:', filename);
 }

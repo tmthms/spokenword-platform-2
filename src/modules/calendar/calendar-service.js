@@ -161,7 +161,10 @@ export async function getAllUpcomingEvents(options = {}) {
   try {
     const { limitCount = 50, daysAhead = 90 } = options;
 
+    // Start van vandaag (00:00:00) om events van vandaag ook op te halen
     const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
     const futureDate = new Date();
     futureDate.setDate(futureDate.getDate() + daysAhead);
 
@@ -493,8 +496,14 @@ export async function getEventCountsPerDate(startDate, endDate) {
     events.forEach(event => {
       if (!event.date) return;
 
-      const dateString = event.date.toISOString().split('T')[0];
-      counts[dateString] = (counts[dateString] || 0) + 1;
+      // Use local date formatting instead of UTC
+      const eventDate = event.date instanceof Date ? event.date : event.date.toDate();
+      const year = eventDate.getFullYear();
+      const month = String(eventDate.getMonth() + 1).padStart(2, '0');
+      const day = String(eventDate.getDate()).padStart(2, '0');
+      const dateKey = `${year}-${month}-${day}`;
+
+      counts[dateKey] = (counts[dateKey] || 0) + 1;
     });
 
     console.log(`[CALENDAR] Event counts calculated for ${Object.keys(counts).length} dates`);
@@ -540,8 +549,7 @@ export async function toggleAttendance(eventId, userId) {
 
     await updateDoc(eventRef, {
       attendees: newAttendees,
-      attendeeCount: newCount,
-      updatedAt: serverTimestamp()
+      attendeeCount: newCount
     });
 
     console.log(`[CALENDAR] Attendance toggled for event ${eventId}, user ${userId}: ${!isAttending}`);
@@ -550,6 +558,95 @@ export async function toggleAttendance(eventId, userId) {
   } catch (error) {
     console.error('[CALENDAR] Error toggling attendance:', error);
     throw error;
+  }
+}
+
+/**
+ * Haal alle attendees op voor events van een artiest
+ * @param {string} artistId - UID van de artiest
+ * @returns {Promise<Array>} Array van {event, attendees} objecten
+ */
+export async function getAttendeeNotifications(artistId) {
+  try {
+    const eventsRef = collection(db, 'events');
+    const q = query(
+      eventsRef,
+      where('artistId', '==', artistId),
+      orderBy('date', 'asc')
+    );
+
+    const snapshot = await getDocs(q);
+    const notifications = [];
+
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      // FIX: Check of attendees bestaat EN niet leeg is EN niet alleen de artiest zelf bevat
+      const attendees = data.attendees || [];
+      // Filter de artiest zelf eruit
+      const otherAttendees = attendees.filter(uid => uid !== artistId);
+
+      if (otherAttendees.length > 0) {
+        notifications.push({
+          eventId: doc.id,
+          venue: data.venue,
+          city: data.city,
+          date: data.date?.toDate() || null,
+          attendees: otherAttendees,
+          attendeeCount: otherAttendees.length
+        });
+      }
+    });
+
+    return notifications;
+  } catch (error) {
+    console.error('[CALENDAR] Error fetching attendee notifications:', error);
+    return [];
+  }
+}
+
+/**
+ * Haal profiel info op voor een lijst van user IDs
+ * @param {Array} userIds - Array van user UIDs
+ * @returns {Promise<Array>} Array van user profiles
+ */
+export async function getAttendeeProfiles(userIds) {
+  if (!userIds || userIds.length === 0) return [];
+
+  try {
+    const profiles = [];
+
+    // Haal profielen op (check eerst artists, dan programmers)
+    for (const uid of userIds.slice(0, 20)) { // Max 20 om queries te beperken
+      // Probeer artist
+      let userDoc = await getDoc(doc(db, 'artists', uid));
+
+      if (!userDoc.exists()) {
+        // Probeer programmer
+        userDoc = await getDoc(doc(db, 'programmers', uid));
+      }
+
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        profiles.push({
+          uid: uid,
+          name: data.stageName || `${data.firstName || ''} ${data.lastName || ''}`.trim() || 'Anoniem',
+          profilePicUrl: data.profilePicUrl || null,
+          role: data.role || 'user'
+        });
+      } else {
+        profiles.push({
+          uid: uid,
+          name: 'Community lid',
+          profilePicUrl: null,
+          role: 'user'
+        });
+      }
+    }
+
+    return profiles;
+  } catch (error) {
+    console.error('[CALENDAR] Error fetching attendee profiles:', error);
+    return [];
   }
 }
 

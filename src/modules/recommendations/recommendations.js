@@ -197,26 +197,16 @@ async function handleRecommendationSubmit(e) {
  * @param {string} artistId - The artist's user ID
  */
 export async function loadRecommendations(artistId) {
-  const container = document.getElementById('recommendations-list');
-  const loadingEl = document.getElementById('recommendations-loading');
-  const emptyEl = document.getElementById('recommendations-empty');
-  const errorEl = document.getElementById('recommendations-error');
+  const container = document.getElementById('detail-recommendations-list');
 
   if (!container) {
-    console.warn("Recommendations container not found");
-    return;
+    console.warn('[RECOMMENDATIONS] Container not found');
+    return [];
   }
 
-  // Show loading
-  if (loadingEl) loadingEl.style.display = 'block';
-  if (emptyEl) emptyEl.style.display = 'none';
-  if (errorEl) errorEl.style.display = 'none';
-  container.innerHTML = '';
-  container.style.display = 'none';
+  container.innerHTML = '<p style="color: #9ca3af; font-size: 14px;">Loading...</p>';
 
   try {
-    console.log("Loading recommendations for artist:", artistId);
-    
     const recommendationsRef = collection(db, 'recommendations');
     const q = query(
       recommendationsRef,
@@ -226,35 +216,60 @@ export async function loadRecommendations(artistId) {
     );
 
     const querySnapshot = await getDocs(q);
-
     const recommendations = [];
     querySnapshot.forEach((doc) => {
       recommendations.push({ id: doc.id, ...doc.data() });
     });
 
-    console.log(`Found ${recommendations.length} recommendations`);
-
-    // Hide loading
-    if (loadingEl) loadingEl.style.display = 'none';
-
     if (recommendations.length === 0) {
-      if (emptyEl) emptyEl.style.display = 'block';
-    } else {
-      container.style.display = 'block';
-      displayRecommendations(recommendations);
+      container.innerHTML = `
+        <p style="color: #9ca3af; font-size: 14px; text-align: center; padding: 16px 0;">
+          No recommendations yet
+        </p>
+      `;
+      // Hide "View All" button when no recommendations
+      const viewAllBtn = document.getElementById('view-all-recommendations-btn');
+      if (viewAllBtn) viewAllBtn.style.display = 'none';
+      return recommendations;
     }
+
+    // Show max 3 in sidebar
+    const displayRecs = recommendations.slice(0, 3);
+
+    container.innerHTML = displayRecs.map(rec => {
+      const date = rec.createdAt?.toDate ? rec.createdAt.toDate() : new Date();
+      const formattedDate = date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' });
+      const shortText = rec.text.length > 100 ? rec.text.substring(0, 100) + '...' : rec.text;
+
+      return `
+        <div style="background: #f9fafb; border-radius: 12px; padding: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+            <p style="font-size: 14px; font-weight: 600; color: #1a1a2e;">${rec.programmerName || 'Anonymous'}</p>
+            <p style="font-size: 11px; color: #9ca3af;">${formattedDate}</p>
+          </div>
+          <p style="font-size: 13px; color: #4a4a68; line-height: 1.5;">"${shortText}"</p>
+        </div>
+      `;
+    }).join('');
+
+    // Update "View All" button text with count
+    const viewAllBtn = document.getElementById('view-all-recommendations-btn');
+    if (viewAllBtn) {
+      viewAllBtn.style.display = 'block';
+      viewAllBtn.textContent = `View All ${recommendations.length} Recommendations`;
+    }
+
+    // Store all recommendations for modal (we'll use this in Deel 2)
+    window._allRecommendations = recommendations;
+    window._currentArtistId = artistId;
+
+    console.log('[RECOMMENDATIONS] Loaded', recommendations.length, 'total,', displayRecs.length, 'displayed');
+    return recommendations;
 
   } catch (error) {
-    console.error("Error loading recommendations:", error);
-    
-    // Hide loading
-    if (loadingEl) loadingEl.style.display = 'none';
-    
-    // Show error message
-    if (errorEl) {
-      errorEl.textContent = 'Fout bij laden. Probeer het later opnieuw.';
-      errorEl.style.display = 'block';
-    }
+    console.error('[RECOMMENDATIONS] Error:', error);
+    container.innerHTML = `<p style="color: #ef4444; font-size: 14px;">Error loading recommendations</p>`;
+    return [];
   }
 }
 

@@ -56,6 +56,13 @@ src/
     artist/
       artist-media.js
       artist-own-profile.js
+    calendar/
+      calendar-controller.js
+      calendar-map.js
+      calendar-service.js
+      calendar-ui.js
+      calendar-views.js
+      poster-generator.js
     dashboard/
       dashboard-controller.js
       dashboard-service.js
@@ -159,7 +166,8 @@ This section contains the contents of the repository's files.
       "Bash(rm:*)",
       "Bash(test:*)",
       "Bash(mkdir:*)",
-      "Bash(chmod:*)"
+      "Bash(chmod:*)",
+      "Bash(python3:*)"
     ]
   }
 }
@@ -678,6 +686,1222 @@ exports.onNewMessage = onDocumentCreated({
 }
 </file>
 
+<file path="scripts/validate-env.cjs">
+#!/usr/bin/env node
+
+/**
+ * Build Guard: Pre-build Environment Validation
+ *
+ * This script validates that all required VITE_ environment variables
+ * are present before allowing the build to proceed.
+ *
+ * Usage:
+ *   node scripts/validate-env.js staging
+ *   node scripts/validate-env.js production
+ */
+
+const fs = require('fs');
+const path = require('path');
+
+// Get the mode from command line argument
+const mode = process.argv[2];
+
+if (!mode) {
+  console.error('❌ ERROR: Mode argument is required (staging or production)');
+  console.error('Usage: node scripts/validate-env.js <staging|production>');
+  process.exit(1);
+}
+
+if (mode !== 'staging' && mode !== 'production') {
+  console.error(`❌ ERROR: Invalid mode "${mode}". Must be "staging" or "production"`);
+  process.exit(1);
+}
+
+// Determine which .env file to check
+const envFile = mode === 'production' ? '.env.production' : '.env.staging';
+const envPath = path.join(__dirname, '..', envFile);
+
+console.log('🔍 BUILD GUARD: Validating environment configuration...');
+console.log(`📋 Mode: ${mode}`);
+console.log(`📄 File: ${envFile}`);
+
+// Check if the env file exists
+if (!fs.existsSync(envPath)) {
+  console.error(`❌ FATAL: Environment file ${envFile} not found!`);
+  console.error(`Expected path: ${envPath}`);
+  process.exit(1);
+}
+
+// Read and parse the env file
+const envContent = fs.readFileSync(envPath, 'utf8');
+const envVars = {};
+
+envContent.split('\n').forEach(line => {
+  const trimmed = line.trim();
+  if (trimmed && !trimmed.startsWith('#')) {
+    const [key, ...valueParts] = trimmed.split('=');
+    if (key && valueParts.length > 0) {
+      // Remove quotes from value if present
+      let value = valueParts.join('=').trim();
+      value = value.replace(/^["']|["']$/g, '');
+      envVars[key] = value;
+    }
+  }
+});
+
+// Required environment variables
+const requiredVars = [
+  'VITE_FIREBASE_API_KEY',
+  'VITE_FIREBASE_AUTH_DOMAIN',
+  'VITE_FIREBASE_PROJECT_ID',
+  'VITE_FIREBASE_STORAGE_BUCKET',
+  'VITE_FIREBASE_MESSAGING_SENDER_ID',
+  'VITE_FIREBASE_APP_ID'
+];
+
+// Validate each required variable
+const missing = [];
+const invalid = [];
+
+requiredVars.forEach(varName => {
+  if (!envVars[varName]) {
+    missing.push(varName);
+  } else if (envVars[varName].length < 5) {
+    invalid.push(varName);
+  }
+});
+
+// Expected project IDs for validation
+const expectedProjectId = mode === 'production' ? 'dans-dichter-db' : 'ddd-spark';
+const actualProjectId = envVars['VITE_FIREBASE_PROJECT_ID'];
+
+// Report results
+console.log('');
+console.log('✓ Environment file exists');
+console.log(`✓ Found ${Object.keys(envVars).length} environment variables`);
+
+if (missing.length > 0) {
+  console.error('');
+  console.error('❌ FATAL: Missing required environment variables:');
+  missing.forEach(v => console.error(`   - ${v}`));
+  process.exit(1);
+}
+
+if (invalid.length > 0) {
+  console.error('');
+  console.error('❌ FATAL: Invalid (too short) environment variables:');
+  invalid.forEach(v => console.error(`   - ${v}: "${envVars[v]}"`));
+  process.exit(1);
+}
+
+// Validate project ID matches expected environment
+if (actualProjectId !== expectedProjectId) {
+  console.error('');
+  console.error('❌ FATAL: Project ID mismatch!');
+  console.error(`   Expected for ${mode}: ${expectedProjectId}`);
+  console.error(`   Found in ${envFile}: ${actualProjectId}`);
+  console.error('');
+  console.error('This prevents accidental cross-environment deployment.');
+  process.exit(1);
+}
+
+// All checks passed
+console.log(`✓ All ${requiredVars.length} required variables present`);
+console.log(`✓ Project ID verified: ${actualProjectId}`);
+console.log('');
+console.log('✅ BUILD GUARD: Environment validation passed');
+console.log(`🚀 Proceeding with ${mode} build...`);
+console.log('');
+
+process.exit(0);
+</file>
+
+<file path="src/modules/calendar/calendar-map.js">
+/**
+ * calendar-map.js
+ * Community Map voor events met Leaflet.js
+ */
+
+// Predefined coordinates voor steden (NL/BE)
+const CITY_COORDINATES = {
+  // Nederland
+  'amsterdam': [52.3676, 4.9041],
+  'rotterdam': [51.9225, 4.4792],
+  'den haag': [52.0705, 4.3007],
+  'utrecht': [52.0907, 5.1214],
+  'eindhoven': [51.4416, 5.4697],
+  'groningen': [53.2194, 6.5665],
+  'tilburg': [51.5555, 5.0913],
+  'almere': [52.3508, 5.2647],
+  'breda': [51.5719, 4.7683],
+  'nijmegen': [51.8426, 5.8546],
+  'arnhem': [51.9851, 5.8987],
+  'haarlem': [52.3874, 4.6462],
+  'enschede': [52.2215, 6.8937],
+  'maastricht': [50.8514, 5.6910],
+  'leiden': [52.1601, 4.4970],
+  'dordrecht': [51.8133, 4.6901],
+  'zwolle': [52.5168, 6.0830],
+  'deventer': [52.2551, 6.1639],
+  'delft': [52.0116, 4.3571],
+  'alkmaar': [52.6324, 4.7534],
+
+  // België - Vlaanderen
+  'antwerpen': [51.2194, 4.4025],
+  'gent': [51.0543, 3.7174],
+  'brugge': [51.2093, 3.2247],
+  'leuven': [50.8798, 4.7005],
+  'mechelen': [51.0259, 4.4776],
+  'aalst': [50.9365, 4.0382],
+  'kortrijk': [50.8279, 3.2649],
+  'hasselt': [50.9307, 5.3378],
+  'oostende': [51.2154, 2.9286],
+  'sint-niklaas': [51.1565, 4.1434],
+  'genk': [50.9654, 5.5022],
+  'roeselare': [50.9446, 3.1256],
+  'turnhout': [51.3227, 4.9484],
+
+  // Brussel
+  'brussel': [50.8503, 4.3517],
+  'brussels': [50.8503, 4.3517],
+  'bruxelles': [50.8503, 4.3517]
+};
+
+// Map instance
+let mapInstance = null;
+let markersLayer = null;
+
+/**
+ * Haal coordinates op voor een stad
+ * @param {string} city - Stad naam
+ * @returns {Array|null} [lat, lng] of null
+ */
+export function getCityCoordinates(city) {
+  if (!city) return null;
+  const cityLower = city.toLowerCase().trim();
+
+  // Directe match
+  if (CITY_COORDINATES[cityLower]) {
+    return CITY_COORDINATES[cityLower];
+  }
+
+  // Partial match
+  for (const [key, coords] of Object.entries(CITY_COORDINATES)) {
+    if (cityLower.includes(key) || key.includes(cityLower)) {
+      return coords;
+    }
+  }
+
+  return null;
+}
+
+/**
+ * Groepeer events per stad met coordinates
+ * @param {Array} events - Array van events
+ * @returns {Object} Object met stad als key en {coords, events} als value
+ */
+export function groupEventsByCity(events) {
+  const grouped = {};
+
+  events.forEach(event => {
+    if (!event.city) return;
+
+    const cityLower = event.city.toLowerCase().trim();
+    const coords = getCityCoordinates(event.city);
+
+    if (!coords) {
+      console.warn(`[MAP] No coordinates for city: ${event.city}`);
+      return;
+    }
+
+    const cityKey = cityLower;
+
+    if (!grouped[cityKey]) {
+      grouped[cityKey] = {
+        city: event.city,
+        coords: coords,
+        events: []
+      };
+    }
+
+    grouped[cityKey].events.push(event);
+  });
+
+  return grouped;
+}
+
+/**
+ * Initialize de kaart
+ * @param {string} containerId - ID van de container
+ * @returns {Object} Leaflet map instance
+ */
+export function initMap(containerId) {
+  const container = document.getElementById(containerId);
+  if (!container) {
+    console.error('[MAP] Container not found:', containerId);
+    return null;
+  }
+
+  // Prevent clicks from bubbling up to prevent unwanted redirects
+  container.addEventListener('click', (e) => {
+    e.stopPropagation();
+  });
+
+  // Cleanup bestaande map
+  if (mapInstance) {
+    mapInstance.remove();
+    mapInstance = null;
+  }
+
+  // Maak nieuwe map, gecentreerd op BeNeLux
+  mapInstance = L.map(containerId, {
+    center: [51.5, 4.5], // Centrum van NL/BE
+    zoom: 7,
+    minZoom: 6,
+    maxZoom: 15
+  });
+
+  // Voeg tile layer toe (OpenStreetMap)
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors'
+  }).addTo(mapInstance);
+
+  // Maak markers layer
+  markersLayer = L.layerGroup().addTo(mapInstance);
+
+  // Handle clicks on popup content
+  mapInstance.on('popupopen', function(e) {
+    const popup = e.popup;
+    const container = popup.getElement();
+
+    if (container) {
+      container.addEventListener('click', async function(evt) {
+        const eventItem = evt.target.closest('.map-popup-event[data-artist-id]');
+        if (eventItem) {
+          evt.preventDefault();
+          evt.stopPropagation();
+
+          const artistId = eventItem.dataset.artistId;
+          if (artistId) {
+            console.log('[MAP] Navigating to artist:', artistId);
+
+            // Sluit popup eerst
+            mapInstance.closePopup();
+
+            // Navigeer naar artiest profiel via import
+            try {
+              const { showArtistDetail } = await import('../search/search-controller.js');
+              await showArtistDetail(artistId);
+            } catch (error) {
+              console.error('[MAP] Error navigating to artist:', error);
+            }
+          }
+        }
+      });
+    }
+  });
+
+  console.log('[MAP] Map initialized');
+  return mapInstance;
+}
+
+/**
+ * Update markers op de kaart
+ * @param {Array} events - Array van events
+ * @param {Function} onCityClick - Callback wanneer op stad wordt geklikt
+ */
+export function updateMapMarkers(events, onCityClick = null) {
+  if (!mapInstance || !markersLayer) {
+    console.warn('[MAP] Map not initialized');
+    return;
+  }
+
+  // Clear bestaande markers
+  markersLayer.clearLayers();
+
+  // Groepeer events per stad
+  const grouped = groupEventsByCity(events);
+
+  // Voeg markers toe
+  for (const [cityKey, data] of Object.entries(grouped)) {
+    const { city, coords, events: cityEvents } = data;
+    const eventCount = cityEvents.length;
+
+    // Custom marker icon met aantal
+    const markerIcon = L.divIcon({
+      className: 'custom-map-marker',
+      html: `
+        <div class="relative">
+          <div class="w-10 h-10 bg-indigo-600 rounded-full flex items-center justify-center text-white font-bold text-sm shadow-lg border-2 border-white cursor-pointer hover:bg-indigo-700 transition-colors">
+            ${eventCount}
+          </div>
+          <div class="absolute -bottom-1 left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-indigo-600"></div>
+        </div>
+      `,
+      iconSize: [40, 48],
+      iconAnchor: [20, 48]
+    });
+
+    const marker = L.marker(coords, { icon: markerIcon });
+
+    // Popup met event info
+    const popupContent = createPopupContent(city, cityEvents);
+    marker.bindPopup(popupContent, {
+      maxWidth: 300,
+      className: 'custom-map-popup'
+    });
+
+    // Click handler
+    marker.on('click', function(e) {
+      // Stop propagation om te voorkomen dat andere handlers dit opvangen
+      if (e.originalEvent) {
+        e.originalEvent.stopPropagation();
+        e.originalEvent.preventDefault();
+      }
+
+      console.log('[MAP] Marker clicked:', city);
+      this.openPopup();
+
+      if (onCityClick) {
+        onCityClick(city, cityEvents);
+      }
+    });
+
+    markersLayer.addLayer(marker);
+  }
+
+  console.log(`[MAP] Added ${Object.keys(grouped).length} markers`);
+}
+
+/**
+ * Maak popup content voor een stad
+ * @param {string} city - Stad naam
+ * @param {Array} events - Events in deze stad
+ * @returns {string} HTML string
+ */
+function createPopupContent(city, events) {
+  const eventsList = events.slice(0, 5).map(event => {
+    const date = event.date ? new Date(event.date).toLocaleDateString('nl-BE', {
+      day: 'numeric',
+      month: 'short'
+    }) : 'TBA';
+
+    const artistId = event.artistId || '';
+    const cursorClass = artistId ? 'cursor-pointer hover:bg-gray-50' : '';
+    const dataAttr = artistId ? `data-artist-id="${artistId}"` : '';
+
+    return `
+      <div class="map-popup-event flex items-center justify-between py-2 border-b border-gray-100 last:border-0 ${cursorClass} rounded px-2 -mx-2 transition-colors" ${dataAttr}>
+        <div class="flex-1 min-w-0">
+          <p class="text-sm font-medium text-gray-900 truncate">${event.venue || 'TBA'}</p>
+          <p class="text-xs text-gray-500">${event.artistName || 'Artiest'}</p>
+        </div>
+        <span class="text-xs font-medium text-indigo-600 ml-2">${date}</span>
+      </div>
+    `;
+  }).join('');
+
+  const moreText = events.length > 5 ? `<p class="text-xs text-gray-500 mt-2">+ ${events.length - 5} meer</p>` : '';
+
+  return `
+    <div class="map-popup-content p-1">
+      <h3 class="font-bold text-gray-900 mb-2">${city}</h3>
+      <p class="text-xs text-gray-500 mb-3">${events.length} event${events.length > 1 ? 's' : ''}</p>
+      <div class="max-h-48 overflow-y-auto">
+        ${eventsList}
+      </div>
+      ${moreText}
+    </div>
+  `;
+}
+
+/**
+ * Resize map (nodig na container size change)
+ */
+export function resizeMap() {
+  if (mapInstance) {
+    setTimeout(() => {
+      mapInstance.invalidateSize();
+    }, 100);
+  }
+}
+
+/**
+ * Destroy map instance
+ */
+export function destroyMap() {
+  if (mapInstance) {
+    mapInstance.remove();
+    mapInstance = null;
+    markersLayer = null;
+    console.log('[MAP] Map destroyed');
+  }
+}
+
+/**
+ * Fly to een specifieke stad
+ * @param {string} city - Stad naam
+ */
+export function flyToCity(city) {
+  if (!mapInstance) return;
+
+  const coords = getCityCoordinates(city);
+  if (coords) {
+    mapInstance.flyTo(coords, 12, { duration: 1 });
+  }
+}
+</file>
+
+<file path="src/modules/calendar/calendar-views.js">
+/**
+ * calendar-views.js
+ * View rendering functies voor Gigs, Agenda en Evenementen pagina's
+ */
+
+/**
+ * Shows the Gigs page for artists (their own gigs)
+ */
+export async function showGigsPage() {
+  const { getStore } = await import('../../utils/store.js');
+  const currentUserData = getStore('currentUserData');
+
+  if (!currentUserData || currentUserData.role !== 'artist') {
+    console.warn('[UI] Only artists can access gigs page');
+    return;
+  }
+
+  console.log('[UI] Showing gigs page');
+
+  // Render navigation
+  const navModule = await import('../navigation/navigation.js');
+  navModule.renderDesktopNav();
+  navModule.renderMobileNav();
+
+  // Show dashboard view container
+  const { showPage } = await import('../../ui/ui.js');
+  showPage('dashboard-view', false);
+  window.history.pushState({ view: 'gigs' }, '', '#gigs');
+
+  // Get containers
+  const artistDashboard = document.getElementById('artist-dashboard');
+  const programmerDashboard = document.getElementById('programmer-dashboard');
+
+  if (artistDashboard) {
+    artistDashboard.style.display = 'block';
+    artistDashboard.innerHTML = `
+      <div style="max-width: 800px; margin: 0 auto; padding: 20px;">
+        <div id="upcoming-gigs-container">
+          <!-- Calendar module renders here -->
+        </div>
+      </div>
+    `;
+  }
+  if (programmerDashboard) {
+    programmerDashboard.style.display = 'none';
+  }
+
+  // Initialize calendar
+  const { initCalendar } = await import('./calendar-controller.js');
+  await initCalendar();
+
+  // Update mobile nav active state
+  const { updateMobileNavActive } = await import('../navigation/navigation.js');
+  updateMobileNavActive('gigs');
+
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 100);
+  }
+}
+
+/**
+ * Shows the Agenda page for programmers (all upcoming gigs)
+ */
+export async function showAgendaPage() {
+  const { getStore } = await import('../../utils/store.js');
+  const currentUserData = getStore('currentUserData');
+
+  if (!currentUserData || currentUserData.role !== 'programmer') {
+    console.warn('[UI] Only programmers can access agenda page');
+    return;
+  }
+
+  console.log('[UI] Showing agenda page');
+
+  // Render navigation
+  const navModule = await import('../navigation/navigation.js');
+  navModule.renderDesktopNav();
+  navModule.renderMobileNav();
+
+  // Show dashboard view container
+  const { showPage } = await import('../../ui/ui.js');
+  showPage('dashboard-view', false);
+  window.history.pushState({ view: 'agenda' }, '', '#agenda');
+
+  // Get containers
+  const artistDashboard = document.getElementById('artist-dashboard');
+  const programmerDashboard = document.getElementById('programmer-dashboard');
+
+  if (artistDashboard) {
+    artistDashboard.style.display = 'none';
+  }
+  if (programmerDashboard) {
+    programmerDashboard.style.display = 'block';
+    programmerDashboard.innerHTML = `
+      <div class="max-w-6xl mx-auto px-4 py-6">
+        <!-- Header -->
+        <div class="mb-6">
+          <h1 class="text-2xl font-bold text-gray-900">Agenda</h1>
+          <p class="text-gray-500 mt-1">Ontdek waar artiesten binnenkort optreden</p>
+        </div>
+
+        <!-- Main Content: Responsive Layout -->
+        <div class="flex flex-col lg:flex-row gap-6">
+          <!-- Filters Sidebar (Desktop Only) -->
+          <aside id="agenda-filters-container" class="hidden lg:block w-64 flex-shrink-0">
+            <!-- Month Calendar & Filters render here -->
+          </aside>
+
+          <!-- Events List -->
+          <main class="flex-1">
+            <!-- Mobile Date Selector -->
+            <div id="mobile-date-selector" class="lg:hidden mb-4">
+              <!-- Month/Year header met navigatie -->
+              <div class="flex items-center justify-between mb-3">
+                <button id="mobile-month-prev" class="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                  <i data-lucide="chevron-left" class="w-5 h-5 text-gray-600"></i>
+                </button>
+                <span id="mobile-month-label" class="font-semibold text-gray-900">Januari 2026</span>
+                <button id="mobile-month-next" class="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                  <i data-lucide="chevron-right" class="w-5 h-5 text-gray-600"></i>
+                </button>
+              </div>
+
+              <!-- Compact calendar grid -->
+              <div id="mobile-calendar-grid" class="bg-white rounded-xl border border-gray-200 p-3 shadow-sm">
+                <!-- Weekday headers -->
+                <div class="grid grid-cols-7 gap-1 mb-2">
+                  <div class="text-center text-xs font-medium text-gray-500">Ma</div>
+                  <div class="text-center text-xs font-medium text-gray-500">Di</div>
+                  <div class="text-center text-xs font-medium text-gray-500">Wo</div>
+                  <div class="text-center text-xs font-medium text-gray-500">Do</div>
+                  <div class="text-center text-xs font-medium text-gray-500">Vr</div>
+                  <div class="text-center text-xs font-medium text-gray-500">Za</div>
+                  <div class="text-center text-xs font-medium text-gray-500">Zo</div>
+                </div>
+                <!-- Days grid renders here -->
+                <div id="mobile-calendar-days" class="grid grid-cols-7 gap-1">
+                  <!-- Days -->
+                </div>
+              </div>
+            </div>
+
+            <!-- View Mode Toggle -->
+            <div class="flex items-center justify-between mb-4">
+              <div id="filter-mode-container"></div>
+
+              <!-- List/Map Toggle -->
+              <div class="flex gap-2">
+                <button id="view-mode-list" class="view-mode-btn px-3 py-1.5 text-sm font-medium rounded-lg bg-indigo-600 text-white">
+                  <i data-lucide="list" class="w-4 h-4 inline-block mr-1"></i>
+                  Lijst
+                </button>
+                <button id="view-mode-map" class="view-mode-btn px-3 py-1.5 text-sm font-medium rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">
+                  <i data-lucide="map" class="w-4 h-4 inline-block mr-1"></i>
+                  Kaart
+                </button>
+              </div>
+            </div>
+
+            <!-- List View -->
+            <div id="agenda-events-list" class="space-y-4">
+              <!-- Loading -->
+              <div class="flex justify-center py-12">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+              </div>
+            </div>
+
+            <!-- Map View (hidden by default) -->
+            <div id="agenda-map-container" class="hidden">
+              <div id="community-map" class="w-full h-[500px] lg:h-[600px] rounded-2xl border border-gray-200 shadow-sm"></div>
+            </div>
+          </main>
+        </div>
+      </div>
+    `;
+  }
+
+  // Initialize the new Agenda View
+  const { initAgendaView } = await import('./calendar-controller.js');
+  await initAgendaView();
+
+  // Update mobile nav active state
+  const { updateMobileNavActive } = await import('../navigation/navigation.js');
+  updateMobileNavActive('agenda');
+
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 100);
+  }
+}
+
+/**
+ * Shows the Events page for artists (all upcoming events)
+ */
+export async function showEventsPage() {
+  const { getStore } = await import('../../utils/store.js');
+  const currentUserData = getStore('currentUserData');
+
+  if (!currentUserData || currentUserData.role !== 'artist') {
+    console.warn('[UI] Only artists can access events page');
+    return;
+  }
+
+  console.log('[UI] Showing events page');
+
+  // Render navigation
+  const navModule = await import('../navigation/navigation.js');
+  navModule.renderDesktopNav();
+  navModule.renderMobileNav();
+
+  // Show dashboard view container
+  const { showPage } = await import('../../ui/ui.js');
+  showPage('dashboard-view', false);
+  window.history.pushState({ view: 'events' }, '', '#events');
+
+  // Get containers
+  const artistDashboard = document.getElementById('artist-dashboard');
+  const programmerDashboard = document.getElementById('programmer-dashboard');
+
+  // Use artist dashboard for artists
+  if (programmerDashboard) {
+    programmerDashboard.style.display = 'none';
+  }
+  if (artistDashboard) {
+    artistDashboard.style.display = 'block';
+    artistDashboard.innerHTML = `
+      <div class="max-w-6xl mx-auto px-4 py-6">
+        <!-- Header -->
+        <div class="mb-6">
+          <h1 class="text-2xl font-bold text-gray-900">Evenementen</h1>
+          <p class="text-gray-500 mt-1">Ontdek waar andere artiesten optreden</p>
+        </div>
+
+        <!-- Main Content: Responsive Layout -->
+        <div class="flex flex-col lg:flex-row gap-6">
+          <!-- Filters Sidebar (Desktop Only) -->
+          <aside id="agenda-filters-container" class="hidden lg:block w-64 flex-shrink-0">
+            <!-- Month Calendar & Filters render here -->
+          </aside>
+
+          <!-- Events List -->
+          <main class="flex-1">
+            <!-- Mobile Date Selector -->
+            <div id="mobile-date-selector" class="lg:hidden mb-4">
+              <!-- Month/Year header met navigatie -->
+              <div class="flex items-center justify-between mb-3">
+                <button id="mobile-month-prev" class="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                  <i data-lucide="chevron-left" class="w-5 h-5 text-gray-600"></i>
+                </button>
+                <span id="mobile-month-label" class="font-semibold text-gray-900">Januari 2026</span>
+                <button id="mobile-month-next" class="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                  <i data-lucide="chevron-right" class="w-5 h-5 text-gray-600"></i>
+                </button>
+              </div>
+
+              <!-- Compact calendar grid -->
+              <div id="mobile-calendar-grid" class="bg-white rounded-xl border border-gray-200 p-3 shadow-sm">
+                <!-- Weekday headers -->
+                <div class="grid grid-cols-7 gap-1 mb-2">
+                  <div class="text-center text-xs font-medium text-gray-500">Ma</div>
+                  <div class="text-center text-xs font-medium text-gray-500">Di</div>
+                  <div class="text-center text-xs font-medium text-gray-500">Wo</div>
+                  <div class="text-center text-xs font-medium text-gray-500">Do</div>
+                  <div class="text-center text-xs font-medium text-gray-500">Vr</div>
+                  <div class="text-center text-xs font-medium text-gray-500">Za</div>
+                  <div class="text-center text-xs font-medium text-gray-500">Zo</div>
+                </div>
+                <!-- Days grid renders here -->
+                <div id="mobile-calendar-days" class="grid grid-cols-7 gap-1">
+                  <!-- Days -->
+                </div>
+              </div>
+            </div>
+
+            <!-- View Mode Toggle -->
+            <div class="flex items-center justify-between mb-4">
+              <div id="filter-mode-container"></div>
+
+              <!-- List/Map Toggle -->
+              <div class="flex gap-2">
+                <button id="view-mode-list" class="view-mode-btn px-3 py-1.5 text-sm font-medium rounded-lg bg-indigo-600 text-white">
+                  <i data-lucide="list" class="w-4 h-4 inline-block mr-1"></i>
+                  Lijst
+                </button>
+                <button id="view-mode-map" class="view-mode-btn px-3 py-1.5 text-sm font-medium rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">
+                  <i data-lucide="map" class="w-4 h-4 inline-block mr-1"></i>
+                  Kaart
+                </button>
+              </div>
+            </div>
+
+            <!-- List View -->
+            <div id="agenda-events-list" class="space-y-4">
+              <!-- Loading -->
+              <div class="flex justify-center py-12">
+                <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+              </div>
+            </div>
+
+            <!-- Map View (hidden by default) -->
+            <div id="agenda-map-container" class="hidden">
+              <div id="community-map" class="w-full h-[500px] lg:h-[600px] rounded-2xl border border-gray-200 shadow-sm"></div>
+            </div>
+          </main>
+        </div>
+      </div>
+    `;
+  }
+
+  // Initialize the Agenda View (reuse same logic)
+  const { initAgendaView } = await import('./calendar-controller.js');
+  await initAgendaView();
+
+  // Update mobile nav active state
+  const { updateMobileNavActive } = await import('../navigation/navigation.js');
+  updateMobileNavActive('events');
+
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 100);
+  }
+}
+</file>
+
+<file path="src/modules/calendar/poster-generator.js">
+/**
+ * poster-generator.js
+ * Genereer downloadbare tour posters voor artiesten
+ */
+
+// Poster dimensies (Instagram Story formaat)
+const POSTER_WIDTH = 1080;
+const POSTER_HEIGHT = 1920;
+
+/**
+ * Poster thema's met kleuren
+ */
+export const POSTER_THEMES = {
+  indigo: {
+    name: 'Indigo Night',
+    preview: 'linear-gradient(135deg, #1e1b4b 0%, #312e81 100%)',
+    background: ['#1e1b4b', '#312e81', '#1e1b4b'],
+    accent: '#4f46e5',
+    accentLight: '#818cf8',
+    text: '#ffffff',
+    textMuted: '#a5b4fc',
+    decorCircle: '#818cf8'
+  },
+  purple: {
+    name: 'Purple Haze',
+    preview: 'linear-gradient(135deg, #2e1065 0%, #581c87 100%)',
+    background: ['#2e1065', '#581c87', '#2e1065'],
+    accent: '#9333ea',
+    accentLight: '#c084fc',
+    text: '#ffffff',
+    textMuted: '#d8b4fe',
+    decorCircle: '#a855f7'
+  },
+  midnight: {
+    name: 'Midnight Black',
+    preview: 'linear-gradient(135deg, #0a0a0a 0%, #171717 100%)',
+    background: ['#0a0a0a', '#171717', '#0a0a0a'],
+    accent: '#525252',
+    accentLight: '#a3a3a3',
+    text: '#ffffff',
+    textMuted: '#a3a3a3',
+    decorCircle: '#404040'
+  },
+  clean: {
+    name: 'Clean White',
+    preview: 'linear-gradient(135deg, #ffffff 0%, #f5f5f5 100%)',
+    background: ['#ffffff', '#fafafa', '#ffffff'],
+    accent: '#6366f1',
+    accentLight: '#818cf8',
+    text: '#111827',
+    textMuted: '#6b7280',
+    decorCircle: '#e0e7ff'
+  },
+  sunset: {
+    name: 'Sunset Glow',
+    preview: 'linear-gradient(135deg, #7c2d12 0%, #c2410c 100%)',
+    background: ['#7c2d12', '#c2410c', '#7c2d12'],
+    accent: '#f97316',
+    accentLight: '#fdba74',
+    text: '#ffffff',
+    textMuted: '#fed7aa',
+    decorCircle: '#fb923c'
+  },
+  ocean: {
+    name: 'Ocean Deep',
+    preview: 'linear-gradient(135deg, #0c4a6e 0%, #0369a1 100%)',
+    background: ['#0c4a6e', '#0369a1', '#0c4a6e'],
+    accent: '#0ea5e9',
+    accentLight: '#7dd3fc',
+    text: '#ffffff',
+    textMuted: '#bae6fd',
+    decorCircle: '#38bdf8'
+  },
+  forest: {
+    name: 'Forest Green',
+    preview: 'linear-gradient(135deg, #14532d 0%, #166534 100%)',
+    background: ['#14532d', '#166534', '#14532d'],
+    accent: '#22c55e',
+    accentLight: '#86efac',
+    text: '#ffffff',
+    textMuted: '#bbf7d0',
+    decorCircle: '#4ade80'
+  }
+};
+
+/**
+ * Huidige geselecteerde thema
+ */
+let currentTheme = 'indigo';
+
+/**
+ * Get thema keys als array
+ */
+export function getThemeKeys() {
+  return Object.keys(POSTER_THEMES);
+}
+
+/**
+ * Set het huidige thema
+ */
+export function setCurrentTheme(themeKey) {
+  if (POSTER_THEMES[themeKey]) {
+    currentTheme = themeKey;
+  }
+}
+
+/**
+ * Get het huidige thema
+ */
+export function getCurrentTheme() {
+  return currentTheme;
+}
+
+/**
+ * Genereer een tour poster canvas
+ * @param {object} artistData - Artiest gegevens
+ * @param {Array} events - Array van gigs (minimaal 3)
+ * @param {string} themeKey - Thema key (default: 'indigo')
+ * @returns {Promise<HTMLCanvasElement>} Canvas element
+ */
+export async function generatePosterCanvas(artistData, events, themeKey = 'indigo') {
+  const theme = POSTER_THEMES[themeKey] || POSTER_THEMES.indigo;
+
+  const canvas = document.createElement('canvas');
+  canvas.width = POSTER_WIDTH;
+  canvas.height = POSTER_HEIGHT;
+  const ctx = canvas.getContext('2d');
+
+  // Achtergrond gradient met thema kleuren
+  const gradient = ctx.createLinearGradient(0, 0, 0, POSTER_HEIGHT);
+  gradient.addColorStop(0, theme.background[0]);
+  gradient.addColorStop(0.5, theme.background[1]);
+  gradient.addColorStop(1, theme.background[2]);
+  ctx.fillStyle = gradient;
+  ctx.fillRect(0, 0, POSTER_WIDTH, POSTER_HEIGHT);
+
+  // Decoratieve elementen met thema kleur
+  ctx.globalAlpha = 0.1;
+  ctx.fillStyle = theme.decorCircle;
+  ctx.beginPath();
+  ctx.arc(900, 200, 300, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(100, 1600, 250, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.globalAlpha = 1;
+
+  // ====== DYNAMIC SCALING ======
+  const eventCount = Math.min(events.length, 10);
+
+  // Bereken scaling factor op basis van aantal events
+  // Minder events = grotere tekst en meer spacing
+  // Meer events = kleinere tekst en minder spacing
+  const scaleFactor = eventCount <= 3 ? 1.5 : eventCount <= 5 ? 1.2 : eventCount <= 7 ? 1.0 : 0.85;
+
+  // Base sizes
+  const profileSize = Math.round(200 * scaleFactor);
+  const nameSize = Math.round(72 * scaleFactor);
+  const tourLabelSize = Math.round(36 * scaleFactor);
+  const gigDateSize = Math.round(36 * scaleFactor);
+  const gigMonthSize = Math.round(20 * scaleFactor);
+  const gigVenueSize = Math.round(32 * scaleFactor);
+  const gigCitySize = Math.round(26 * scaleFactor);
+  const dateBoxWidth = Math.round(120 * scaleFactor);
+  const dateBoxHeight = Math.round(80 * scaleFactor);
+  const gigHeight = Math.round(140 * scaleFactor);
+
+  // Bereken verticale centrering
+  const totalContentHeight = profileSize + 100 + (eventCount * gigHeight) + 200;
+  let yOffset = Math.max(100, (POSTER_HEIGHT - totalContentHeight) / 2);
+
+  // Load en draw profielfoto (als beschikbaar)
+  if (artistData.profilePicUrl) {
+    try {
+      const img = await loadImage(artistData.profilePicUrl);
+
+      // Circulaire clip voor profielfoto
+      const imgSize = profileSize;
+      const imgX = (POSTER_WIDTH - imgSize) / 2;
+      const imgY = yOffset;
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(imgX + imgSize/2, imgY + imgSize/2, imgSize/2, 0, Math.PI * 2);
+      ctx.closePath();
+      ctx.clip();
+      ctx.drawImage(img, imgX, imgY, imgSize, imgSize);
+      ctx.restore();
+
+      // Border rond foto
+      ctx.strokeStyle = theme.accentLight;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(imgX + imgSize/2, imgY + imgSize/2, imgSize/2, 0, Math.PI * 2);
+      ctx.stroke();
+
+      yOffset += imgSize + Math.round(40 * scaleFactor);
+    } catch (error) {
+      console.warn('[POSTER] Could not load profile image:', error);
+      yOffset += Math.round(40 * scaleFactor);
+    }
+  }
+
+  // Artiest naam
+  ctx.fillStyle = theme.text;
+  ctx.font = `bold ${nameSize}px system-ui, -apple-system, sans-serif`;
+  ctx.textAlign = 'center';
+  const artistName = artistData.stageName || `${artistData.firstName} ${artistData.lastName}`;
+  ctx.fillText(artistName.toUpperCase(), POSTER_WIDTH / 2, yOffset + nameSize * 0.8);
+  yOffset += nameSize + Math.round(20 * scaleFactor);
+
+  // "ON TOUR" label
+  ctx.fillStyle = theme.textMuted;
+  ctx.font = `bold ${tourLabelSize}px system-ui, -apple-system, sans-serif`;
+  ctx.fillText('ON TOUR', POSTER_WIDTH / 2, yOffset + tourLabelSize);
+  yOffset += tourLabelSize + Math.round(40 * scaleFactor);
+
+  // Divider lijn
+  ctx.strokeStyle = theme.accent;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(POSTER_WIDTH * 0.2, yOffset);
+  ctx.lineTo(POSTER_WIDTH * 0.8, yOffset);
+  ctx.stroke();
+  yOffset += Math.round(50 * scaleFactor);
+
+  // Gigs lijst
+  const maxGigs = Math.min(events.length, 10);
+
+  for (let i = 0; i < maxGigs; i++) {
+    const event = events[i];
+    const date = event.date ? new Date(event.date) : null;
+
+    // Datum box X positie (links uitlijnen met scaling)
+    const dateBoxX = Math.round(100 * scaleFactor);
+    const textStartX = dateBoxX + dateBoxWidth + Math.round(30 * scaleFactor);
+
+    // Datum
+    if (date) {
+      const day = date.getDate();
+      const month = date.toLocaleDateString('nl-BE', { month: 'short' }).toUpperCase();
+
+      // Datum box
+      ctx.fillStyle = theme.accent;
+      roundRect(ctx, dateBoxX, yOffset, dateBoxWidth, dateBoxHeight, 12);
+      ctx.fill();
+
+      ctx.fillStyle = theme.text;
+      ctx.font = `bold ${gigDateSize}px system-ui, -apple-system, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText(day.toString(), dateBoxX + dateBoxWidth/2, yOffset + dateBoxHeight * 0.45);
+      ctx.font = `${gigMonthSize}px system-ui, -apple-system, sans-serif`;
+      ctx.fillText(month, dateBoxX + dateBoxWidth/2, yOffset + dateBoxHeight * 0.8);
+    }
+
+    // Venue en stad
+    ctx.textAlign = 'left';
+    ctx.fillStyle = theme.text;
+    ctx.font = `bold ${gigVenueSize}px system-ui, -apple-system, sans-serif`;
+    ctx.fillText(event.venue || 'TBA', textStartX, yOffset + dateBoxHeight * 0.4);
+
+    ctx.fillStyle = theme.textMuted;
+    ctx.font = `${gigCitySize}px system-ui, -apple-system, sans-serif`;
+    ctx.fillText(event.city || '', textStartX, yOffset + dateBoxHeight * 0.75);
+
+    yOffset += gigHeight;
+  }
+
+  // "Meer shows" indicator als er meer dan 10 gigs zijn
+  if (events.length > 10) {
+    ctx.fillStyle = theme.textMuted;
+    ctx.font = `${Math.round(24 * scaleFactor)}px system-ui, -apple-system, sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.fillText(`+ ${events.length - 10} meer shows`, POSTER_WIDTH / 2, yOffset + 20);
+  }
+
+  // Footer (altijd onderaan)
+  ctx.fillStyle = theme.accent;
+  ctx.font = '20px system-ui, -apple-system, sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('spokenword.community', POSTER_WIDTH / 2, POSTER_HEIGHT - 60);
+
+  return canvas;
+}
+
+/**
+ * Helper: Load image als Promise
+ */
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+/**
+ * Helper: Draw rounded rectangle
+ */
+function roundRect(ctx, x, y, width, height, radius) {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+}
+
+/**
+ * Download poster als PNG
+ * @param {HTMLCanvasElement} canvas - Canvas element
+ * @param {string} filename - Bestandsnaam
+ */
+export function downloadPoster(canvas, filename = 'tour-poster.png') {
+  const link = document.createElement('a');
+  link.download = filename;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+}
+
+/**
+ * Render poster preview modal
+ * @param {HTMLCanvasElement} canvas - Canvas element
+ * @param {string} currentThemeKey - Huidige thema key
+ * @returns {string} HTML string
+ */
+export function renderPosterModal(canvas, currentThemeKey = 'indigo') {
+  // Converteer canvas naar data URL voor preview
+  const previewUrl = canvas.toDataURL('image/png');
+
+  // Render thema knoppen
+  const themeButtons = Object.entries(POSTER_THEMES).map(([key, theme]) => `
+    <button
+      class="theme-select-btn w-10 h-10 rounded-lg border-2 transition-all ${
+        key === currentThemeKey
+          ? 'border-indigo-600 ring-2 ring-indigo-300'
+          : 'border-gray-200 hover:border-gray-400'
+      }"
+      data-theme="${key}"
+      title="${theme.name}"
+      style="background: ${theme.preview};"
+    ></button>
+  `).join('');
+
+  return `
+    <div id="poster-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.8);">
+      <div class="bg-white rounded-3xl shadow-2xl max-w-lg w-full overflow-hidden max-h-[90vh] flex flex-col">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-4 border-b border-gray-100 flex-shrink-0">
+          <h2 class="text-xl font-bold text-gray-900">Tour Poster</h2>
+          <button id="close-poster-modal" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Theme Selector -->
+        <div class="px-4 py-3 border-b border-gray-100 flex-shrink-0">
+          <p class="text-sm font-medium text-gray-700 mb-2">Kies een stijl:</p>
+          <div class="flex gap-2 flex-wrap">
+            ${themeButtons}
+          </div>
+        </div>
+
+        <!-- Preview (scrollable) -->
+        <div class="p-4 bg-gray-100 overflow-y-auto flex-1">
+          <div id="poster-preview-container" class="aspect-[9/16] max-h-[50vh] mx-auto rounded-xl overflow-hidden shadow-lg">
+            <img id="poster-preview-img" src="${previewUrl}" alt="Tour Poster Preview" class="w-full h-full object-contain">
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="p-4 flex gap-3 flex-shrink-0">
+          <button id="download-poster-btn" class="flex-1 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-colors flex items-center justify-center gap-2">
+            <i data-lucide="download" class="w-5 h-5"></i>
+            Download PNG
+          </button>
+          <button id="close-poster-modal-btn" class="px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors">
+            Sluiten
+          </button>
+        </div>
+
+        <!-- Tip -->
+        <div class="px-4 pb-4 flex-shrink-0">
+          <p class="text-xs text-gray-500 text-center">
+            💡 Perfect formaat voor Instagram Stories (1080x1920px)
+          </p>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Render de "Maak Tour Poster" knop
+ * @param {number} eventCount - Aantal events
+ * @returns {string} HTML string
+ */
+export function renderPosterButton(eventCount) {
+  if (eventCount < 3) {
+    return `
+      <div class="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center">
+        <p class="text-sm text-gray-500">
+          <i data-lucide="image" class="w-4 h-4 inline-block mr-1"></i>
+          Voeg nog ${3 - eventCount} gig${3 - eventCount > 1 ? 's' : ''} toe om een tour poster te maken
+        </p>
+      </div>
+    `;
+  }
+
+  return `
+    <button id="generate-poster-btn" class="w-full px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-semibold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-3">
+      <i data-lucide="sparkles" class="w-5 h-5"></i>
+      Maak Tour Poster
+      <span class="text-indigo-200 text-sm">(${eventCount} shows)</span>
+    </button>
+  `;
+}
+</file>
+
 <file path=".gitignore">
 # Dependencies
 node_modules/
@@ -791,144 +2015,6 @@ deploy.js
   },
   "storage": {
     "rules": "storage.rules"
-  }
-}
-</file>
-
-<file path="firestore.indexes.json">
-{
-  "indexes": [
-    {
-      "collectionGroup": "conversations",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "participants",
-          "arrayConfig": "CONTAINS"
-        },
-        {
-          "fieldPath": "lastMessageAt",
-          "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "DESCENDING"
-        }
-      ],
-      "density": "SPARSE_ALL"
-    },
-    {
-      "collectionGroup": "recommendations",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "artistId",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "isApproved",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "createdAt",
-          "order": "DESCENDING"
-        },
-        {
-          "fieldPath": "__name__",
-          "order": "DESCENDING"
-        }
-      ],
-      "density": "SPARSE_ALL"
-    }
-  ],
-  "fieldOverrides": []
-}
-</file>
-
-<file path="firestore.rules">
-rules_version = '2';
-
-service cloud.firestore {
-  match /databases/{database}/documents {
-    
-    // 1. Gebruikersprofielen (basisbeveiliging)
-    match /users/{userId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // 2. Programmeurs (Data voor dashboards)
-    match /programmers/{userId} {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // 3. Artiesten (Profielen voor de zoekfunctie)
-    match /artists/{userId} {
-      // FIXED: Alleen ingelogde users kunnen artists zien
-      allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // 4. Conversations (Chat-functionaliteit)
-    match /conversations/{conversationId} {
-      // Lezen: alleen als je een participant bent
-      allow read: if request.auth != null && 
-                     request.auth.uid in resource.data.participants;
-      
-      // Aanmaken: alleen als je jezelf toevoegt als participant
-      allow create: if request.auth != null && 
-                       request.auth.uid in request.resource.data.participants;
-      
-      // Bijwerken: alleen participants (voor lastMessage updates)
-      allow update: if request.auth != null && 
-                       request.auth.uid in resource.data.participants;
-      
-      // Messages subcollectie
-      match /messages/{messageId} {
-        // Lezen: alleen als je participant bent van de parent conversation
-        allow read: if request.auth != null && 
-                       request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
-        
-        // Aanmaken: alleen als je participant bent EN de sender
-        allow create: if request.auth != null && 
-                         request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants &&
-                         request.auth.uid == request.resource.data.senderId;
-      }
-    }
-
-    // 5. Aanbevelingen (Recommendations)
-    match /recommendations/{recommendationId} {
-      // Iedereen die ingelogd is mag aanbevelingen lezen
-      allow read: if request.auth != null;
-
-      // Alleen programmers mogen aanbevelingen aanmaken
-      allow create: if request.auth != null
-                    && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'programmer'
-                    && request.resource.data.programmerId == request.auth.uid
-                    && request.resource.data.isApproved == true;
-
-      // Alleen de auteur mag zijn aanbeveling verwijderen
-      allow delete: if request.auth != null
-                    && resource.data.programmerId == request.auth.uid;
-
-      // Bewerken is niet toegestaan
-      allow update: if false;
-    }
-
-    // 6. Mail collectie (voor email triggers) - blokkeren
-    match /mail/{docId} {
-      allow read, write: if false;
-    }
-    
-    // 7. Templates collectie - blokkeren
-    match /templates/{docId} {
-      allow read, write: if false;
-    }
-
-    // Blokkeer alle andere toegang
-    match /{allPaths=**} {
-      allow read, write: if false;
-    }
   }
 }
 </file>
@@ -1993,136 +3079,6 @@ service firebase.storage {
 }
 </file>
 
-<file path="scripts/validate-env.cjs">
-#!/usr/bin/env node
-
-/**
- * Build Guard: Pre-build Environment Validation
- *
- * This script validates that all required VITE_ environment variables
- * are present before allowing the build to proceed.
- *
- * Usage:
- *   node scripts/validate-env.js staging
- *   node scripts/validate-env.js production
- */
-
-const fs = require('fs');
-const path = require('path');
-
-// Get the mode from command line argument
-const mode = process.argv[2];
-
-if (!mode) {
-  console.error('❌ ERROR: Mode argument is required (staging or production)');
-  console.error('Usage: node scripts/validate-env.js <staging|production>');
-  process.exit(1);
-}
-
-if (mode !== 'staging' && mode !== 'production') {
-  console.error(`❌ ERROR: Invalid mode "${mode}". Must be "staging" or "production"`);
-  process.exit(1);
-}
-
-// Determine which .env file to check
-const envFile = mode === 'production' ? '.env.production' : '.env.staging';
-const envPath = path.join(__dirname, '..', envFile);
-
-console.log('🔍 BUILD GUARD: Validating environment configuration...');
-console.log(`📋 Mode: ${mode}`);
-console.log(`📄 File: ${envFile}`);
-
-// Check if the env file exists
-if (!fs.existsSync(envPath)) {
-  console.error(`❌ FATAL: Environment file ${envFile} not found!`);
-  console.error(`Expected path: ${envPath}`);
-  process.exit(1);
-}
-
-// Read and parse the env file
-const envContent = fs.readFileSync(envPath, 'utf8');
-const envVars = {};
-
-envContent.split('\n').forEach(line => {
-  const trimmed = line.trim();
-  if (trimmed && !trimmed.startsWith('#')) {
-    const [key, ...valueParts] = trimmed.split('=');
-    if (key && valueParts.length > 0) {
-      // Remove quotes from value if present
-      let value = valueParts.join('=').trim();
-      value = value.replace(/^["']|["']$/g, '');
-      envVars[key] = value;
-    }
-  }
-});
-
-// Required environment variables
-const requiredVars = [
-  'VITE_FIREBASE_API_KEY',
-  'VITE_FIREBASE_AUTH_DOMAIN',
-  'VITE_FIREBASE_PROJECT_ID',
-  'VITE_FIREBASE_STORAGE_BUCKET',
-  'VITE_FIREBASE_MESSAGING_SENDER_ID',
-  'VITE_FIREBASE_APP_ID'
-];
-
-// Validate each required variable
-const missing = [];
-const invalid = [];
-
-requiredVars.forEach(varName => {
-  if (!envVars[varName]) {
-    missing.push(varName);
-  } else if (envVars[varName].length < 5) {
-    invalid.push(varName);
-  }
-});
-
-// Expected project IDs for validation
-const expectedProjectId = mode === 'production' ? 'dans-dichter-db' : 'ddd-spark';
-const actualProjectId = envVars['VITE_FIREBASE_PROJECT_ID'];
-
-// Report results
-console.log('');
-console.log('✓ Environment file exists');
-console.log(`✓ Found ${Object.keys(envVars).length} environment variables`);
-
-if (missing.length > 0) {
-  console.error('');
-  console.error('❌ FATAL: Missing required environment variables:');
-  missing.forEach(v => console.error(`   - ${v}`));
-  process.exit(1);
-}
-
-if (invalid.length > 0) {
-  console.error('');
-  console.error('❌ FATAL: Invalid (too short) environment variables:');
-  invalid.forEach(v => console.error(`   - ${v}: "${envVars[v]}"`));
-  process.exit(1);
-}
-
-// Validate project ID matches expected environment
-if (actualProjectId !== expectedProjectId) {
-  console.error('');
-  console.error('❌ FATAL: Project ID mismatch!');
-  console.error(`   Expected for ${mode}: ${expectedProjectId}`);
-  console.error(`   Found in ${envFile}: ${actualProjectId}`);
-  console.error('');
-  console.error('This prevents accidental cross-environment deployment.');
-  process.exit(1);
-}
-
-// All checks passed
-console.log(`✓ All ${requiredVars.length} required variables present`);
-console.log(`✓ Project ID verified: ${actualProjectId}`);
-console.log('');
-console.log('✅ BUILD GUARD: Environment validation passed');
-console.log(`🚀 Proceeding with ${mode} build...`);
-console.log('');
-
-process.exit(0);
-</file>
-
 <file path="src/modules/artist/artist-media.js">
 /**
  * artist-media.js
@@ -2466,6 +3422,2826 @@ function extractYouTubeId(url) {
 }
 
 export { renderGalleryPhotos, renderYouTubeVideos };
+</file>
+
+<file path="src/modules/calendar/calendar-controller.js">
+/**
+ * calendar-controller.js
+ * Event handling en initialisatie voor calendar module
+ */
+
+import { getStore } from '../../utils/store.js';
+import {
+  addEvent,
+  getArtistEvents,
+  updateEvent,
+  deleteEvent,
+  getEvent,
+  getAllUpcomingEvents,
+  getEventsForDateRange,
+  getEventsGroupedByDate,
+  getEventCountsPerDate,
+  toggleAttendance
+} from './calendar-service.js';
+import {
+  renderUpcomingGigsWidget,
+  renderGigModal,
+  renderDeleteConfirmModal,
+  renderClusterCard,
+  renderSoloGigCard,
+  renderAgendaFilters,
+  renderAgendaLayout,
+  renderMonthCalendar
+} from './calendar-ui.js';
+
+let currentEvents = [];
+let currentPosterCanvas = null;
+let currentPosterTheme = 'indigo';
+let currentPosterArtistData = null;
+let currentPosterEvents = null;
+
+// Agenda state
+let agendaState = {
+  selectedDate: new Date(),
+  filterMode: 'month', // 'day' of 'month'
+  events: [],
+  filteredEvents: [],
+  filters: {
+    types: [], // lege array = alle types
+    region: 'all' // 'all', 'nederland', 'vlaanderen', 'brussel'
+  },
+  viewMode: 'list', // 'list' of 'map'
+  isLoading: false
+};
+
+// Getter voor externe toegang
+export function getAgendaState() {
+  return { ...agendaState };
+}
+
+/**
+ * Initialize calendar module voor artist dashboard
+ */
+export async function initCalendar() {
+  const currentUser = getStore('currentUser');
+  const currentUserData = getStore('currentUserData');
+
+  if (!currentUser || currentUserData?.role !== 'artist') {
+    console.log('[CALENDAR] Not an artist, skipping calendar init');
+    return;
+  }
+
+  console.log('[CALENDAR] Initializing calendar module');
+
+  // Load events
+  await loadAndRenderEvents();
+
+  // Setup event listeners
+  setupCalendarEventListeners();
+}
+
+/**
+ * Load events en render widget
+ */
+export async function loadAndRenderEvents() {
+  const currentUser = getStore('currentUser');
+  if (!currentUser) return;
+
+  try {
+    currentEvents = await getArtistEvents(currentUser.uid, { upcomingOnly: true, limitCount: 10 });
+    await renderGigsWidget();
+  } catch (error) {
+    console.error('[CALENDAR] Error loading events:', error);
+    currentEvents = [];
+    await renderGigsWidget();
+  }
+}
+
+/**
+ * Render de gigs widget in het dashboard
+ */
+async function renderGigsWidget() {
+  const container = document.getElementById('upcoming-gigs-container');
+  if (!container) {
+    console.warn('[CALENDAR] Gigs container not found');
+    return;
+  }
+
+  const currentUser = getStore('currentUser');
+
+  // Load and render attendee notifications for artist
+  if (currentUser) {
+    const { getAttendeeNotifications, getAttendeeProfiles } = await import('./calendar-service.js');
+    const notifications = await getAttendeeNotifications(currentUser.uid);
+
+    // Haal profielen op voor elke notificatie
+    for (const notification of notifications) {
+      notification.profiles = await getAttendeeProfiles(notification.attendees);
+    }
+
+    if (notifications.length > 0) {
+      const { renderAttendeeNotifications } = await import('./calendar-ui.js');
+
+      // Remove existing notifications first
+      const existingNotifications = document.getElementById('attendee-notifications-container');
+      if (existingNotifications) {
+        existingNotifications.remove();
+      }
+
+      const notificationsHtml = renderAttendeeNotifications(notifications);
+
+      // Insert before the gigs container
+      container.insertAdjacentHTML('beforebegin', `
+        <div id="attendee-notifications-container">
+          ${notificationsHtml}
+        </div>
+      `);
+    }
+  }
+
+  container.innerHTML = renderUpcomingGigsWidget(currentEvents, true);
+
+  // Render poster button
+  const posterContainer = document.getElementById('poster-generator-container');
+  if (posterContainer) {
+    const { renderPosterButton } = await import('./poster-generator.js');
+    posterContainer.innerHTML = renderPosterButton(currentEvents.length);
+  }
+
+  // Re-initialize Lucide icons
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 50);
+  }
+}
+
+/**
+ * Setup event listeners via event delegation
+ */
+function setupCalendarEventListeners() {
+  // Use event delegation on document.body
+  document.body.addEventListener('click', handleCalendarClick);
+  console.log('[CALENDAR] Event listeners attached');
+}
+
+/**
+ * Handle all calendar-related clicks
+ * @param {Event} e - Click event
+ */
+async function handleCalendarClick(e) {
+  const target = e.target;
+
+  // Add Gig buttons
+  if (target.closest('#add-gig-btn') || target.closest('#add-first-gig-btn')) {
+    e.preventDefault();
+    openGigModal();
+    return;
+  }
+
+  // Edit Gig button
+  if (target.closest('.edit-gig-btn')) {
+    e.preventDefault();
+    const eventId = target.closest('.edit-gig-btn').dataset.eventId;
+    await openEditGigModal(eventId);
+    return;
+  }
+
+  // Delete Gig button
+  if (target.closest('.delete-gig-btn')) {
+    e.preventDefault();
+    const eventId = target.closest('.delete-gig-btn').dataset.eventId;
+    openDeleteConfirmation(eventId);
+    return;
+  }
+
+  // Close modal
+  if (target.closest('#close-gig-modal') || target.closest('#cancel-gig-btn')) {
+    e.preventDefault();
+    closeGigModal();
+    return;
+  }
+
+  // Cancel delete
+  if (target.closest('#cancel-delete-gig')) {
+    e.preventDefault();
+    closeDeleteModal();
+    return;
+  }
+
+  // Confirm delete
+  if (target.closest('#confirm-delete-gig')) {
+    e.preventDefault();
+    const eventId = target.closest('#confirm-delete-gig').dataset.eventId;
+    await confirmDeleteGig(eventId);
+    return;
+  }
+
+  // Close modal on backdrop click
+  if (target.id === 'gig-modal' || target.id === 'delete-gig-modal') {
+    e.preventDefault();
+    closeGigModal();
+    closeDeleteModal();
+    return;
+  }
+
+  // Generate Poster button
+  if (target.closest('#generate-poster-btn')) {
+    e.preventDefault();
+    await openPosterGenerator();
+    return;
+  }
+
+  // Close poster modal
+  if (target.closest('#close-poster-modal') || target.closest('#close-poster-modal-btn')) {
+    e.preventDefault();
+    closePosterModal();
+    return;
+  }
+
+  // Download poster
+  if (target.closest('#download-poster-btn')) {
+    e.preventDefault();
+    await downloadCurrentPoster();
+    return;
+  }
+
+  // Click op backdrop sluit modal
+  if (target.id === 'poster-modal') {
+    e.preventDefault();
+    closePosterModal();
+    return;
+  }
+
+  // Theme select button
+  if (target.closest('.theme-select-btn')) {
+    e.preventDefault();
+    const btn = target.closest('.theme-select-btn');
+    const themeKey = btn.dataset.theme;
+    if (themeKey) {
+      await switchPosterTheme(themeKey);
+    }
+    return;
+  }
+
+  // Toggle attendees list
+  if (target.closest('.toggle-attendees-btn')) {
+    e.preventDefault();
+    const btn = target.closest('.toggle-attendees-btn');
+    const eventId = btn.dataset.eventId;
+    const listEl = document.getElementById(`attendees-list-${eventId}`);
+
+    if (listEl) {
+      listEl.classList.toggle('hidden');
+      btn.textContent = listEl.classList.contains('hidden') ? 'Bekijk namen' : 'Verberg namen';
+    }
+    return;
+  }
+}
+
+/**
+ * Open modal voor nieuwe gig
+ */
+function openGigModal() {
+  // Remove existing modal if any
+  closeGigModal();
+
+  // Add modal to DOM
+  const modalHtml = renderGigModal(null);
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+  // Setup form submit handler
+  const form = document.getElementById('gig-form');
+  if (form) {
+    form.addEventListener('submit', handleGigFormSubmit);
+  }
+
+  // Re-init icons
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 50);
+  }
+
+  console.log('[CALENDAR] Add gig modal opened');
+}
+
+/**
+ * Open modal voor edit gig
+ * @param {string} eventId - Event ID
+ */
+async function openEditGigModal(eventId) {
+  try {
+    const event = await getEvent(eventId);
+    if (!event) {
+      console.error('[CALENDAR] Event not found:', eventId);
+      return;
+    }
+
+    // Remove existing modal
+    closeGigModal();
+
+    // Add modal with event data
+    const modalHtml = renderGigModal(event);
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    // Setup form submit handler
+    const form = document.getElementById('gig-form');
+    if (form) {
+      form.addEventListener('submit', handleGigFormSubmit);
+    }
+
+    // Re-init icons
+    if (window.lucide) {
+      setTimeout(() => lucide.createIcons(), 50);
+    }
+
+    console.log('[CALENDAR] Edit gig modal opened for:', eventId);
+
+  } catch (error) {
+    console.error('[CALENDAR] Error opening edit modal:', error);
+  }
+}
+
+/**
+ * Handle form submit (add or edit)
+ * @param {Event} e - Submit event
+ */
+async function handleGigFormSubmit(e) {
+  e.preventDefault();
+
+  const form = e.target;
+  const formData = new FormData(form);
+
+  const currentUser = getStore('currentUser');
+  const currentUserData = getStore('currentUserData');
+
+  if (!currentUser || !currentUserData) {
+    console.error('[CALENDAR] No user data');
+    return;
+  }
+
+  const eventData = {
+    date: formData.get('date'),
+    city: formData.get('city'),
+    venue: formData.get('venue'),
+    type: formData.get('type'),
+    link: formData.get('link') || ''
+  };
+
+  const eventId = formData.get('eventId');
+  const isEdit = !!eventId;
+
+  // Disable submit button
+  const submitBtn = form.querySelector('button[type="submit"]');
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.textContent = isEdit ? 'Opslaan...' : 'Toevoegen...';
+  }
+
+  try {
+    if (isEdit) {
+      // Update existing event
+      await updateEvent(eventId, eventData);
+      console.log('[CALENDAR] Event updated:', eventId);
+    } else {
+      // Add new event
+      await addEvent({
+        ...eventData,
+        artistId: currentUser.uid,
+        artistName: currentUserData.stageName || `${currentUserData.firstName} ${currentUserData.lastName}`,
+        artistProfilePicUrl: currentUserData.profilePicUrl || ''
+      });
+      console.log('[CALENDAR] Event added');
+    }
+
+    // Close modal and refresh list
+    closeGigModal();
+    await loadAndRenderEvents();
+
+  } catch (error) {
+    console.error('[CALENDAR] Error saving event:', error);
+    alert('Er ging iets mis bij het opslaan. Probeer het opnieuw.');
+
+    // Re-enable button
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      submitBtn.textContent = isEdit ? 'Opslaan' : 'Toevoegen';
+    }
+  }
+}
+
+/**
+ * Open delete confirmation modal
+ * @param {string} eventId - Event ID
+ */
+function openDeleteConfirmation(eventId) {
+  const event = currentEvents.find(e => e.id === eventId);
+  if (!event) return;
+
+  // Remove existing modals
+  closeDeleteModal();
+
+  const modalHtml = renderDeleteConfirmModal(eventId, event.venue || 'dit optreden');
+  document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+  // Re-init icons
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 50);
+  }
+}
+
+/**
+ * Confirm and execute delete
+ * @param {string} eventId - Event ID
+ */
+async function confirmDeleteGig(eventId) {
+  try {
+    await deleteEvent(eventId);
+    closeDeleteModal();
+    await loadAndRenderEvents();
+    console.log('[CALENDAR] Event deleted:', eventId);
+  } catch (error) {
+    console.error('[CALENDAR] Error deleting event:', error);
+    alert('Er ging iets mis bij het verwijderen.');
+  }
+}
+
+/**
+ * Close gig modal
+ */
+function closeGigModal() {
+  const modal = document.getElementById('gig-modal');
+  if (modal) {
+    modal.remove();
+  }
+}
+
+/**
+ * Close delete modal
+ */
+function closeDeleteModal() {
+  const modal = document.getElementById('delete-gig-modal');
+  if (modal) {
+    modal.remove();
+  }
+}
+
+/**
+ * Get current events (for external access)
+ * @returns {Array} Current events array
+ */
+export function getCurrentEvents() {
+  return currentEvents;
+}
+
+/**
+ * Load events for a specific artist (for public profile view)
+ * @param {string} artistId - Artist UID
+ * @returns {Promise<Array>} Events array
+ */
+export async function loadArtistEventsForProfile(artistId) {
+  try {
+    return await getArtistEvents(artistId, { upcomingOnly: true, limitCount: 5 });
+  } catch (error) {
+    console.error('[CALENDAR] Error loading artist events:', error);
+    return [];
+  }
+}
+
+/**
+ * Filter events op basis van huidige filters
+ */
+function applyFilters(events) {
+  let filtered = [...events];
+
+  // Filter op type
+  if (agendaState.filters.types.length > 0) {
+    filtered = filtered.filter(e => agendaState.filters.types.includes(e.type));
+  }
+
+  // Filter op regio (simpele string match op city)
+  if (agendaState.filters.region !== 'all') {
+    const regionCities = {
+      'nederland': ['amsterdam', 'rotterdam', 'utrecht', 'den haag', 'eindhoven', 'groningen', 'tilburg', 'almere', 'breda', 'nijmegen'],
+      'vlaanderen': ['antwerpen', 'gent', 'brugge', 'leuven', 'mechelen', 'aalst', 'kortrijk', 'hasselt', 'oostende', 'sint-niklaas'],
+      'brussel': ['brussel', 'brussels', 'bruxelles']
+    };
+    const cities = regionCities[agendaState.filters.region] || [];
+    filtered = filtered.filter(e => {
+      const cityLower = (e.city || '').toLowerCase();
+      return cities.some(c => cityLower.includes(c));
+    });
+  }
+
+  return filtered;
+}
+
+/**
+ * Filter events voor geselecteerde datum
+ */
+function getEventsForSelectedDate(events) {
+  const selected = agendaState.selectedDate;
+  return events.filter(e => {
+    if (!e.date) return false;
+    const eventDate = new Date(e.date);
+    return eventDate.toDateString() === selected.toDateString();
+  });
+}
+
+/**
+ * Filter events op basis van filter mode (dag of maand)
+ */
+function getFilteredEventsByDateMode(events) {
+  const selected = agendaState.selectedDate;
+
+  if (agendaState.filterMode === 'day') {
+    // Filter op exacte datum
+    return events.filter(e => {
+      if (!e.date) return false;
+      const eventDate = new Date(e.date);
+      return eventDate.toDateString() === selected.toDateString();
+    });
+  } else {
+    // Filter op maand
+    return events.filter(e => {
+      if (!e.date) return false;
+      const eventDate = new Date(e.date);
+      return eventDate.getMonth() === selected.getMonth()
+        && eventDate.getFullYear() === selected.getFullYear();
+    });
+  }
+}
+
+/**
+ * Render mobile calendar days
+ */
+async function renderMobileCalendarDays() {
+  const container = document.getElementById('mobile-calendar-days');
+  const monthLabel = document.getElementById('mobile-month-label');
+
+  if (!container) return;
+
+  const selectedDate = agendaState.selectedDate;
+  const year = selectedDate.getFullYear();
+  const month = selectedDate.getMonth();
+
+  // Update month label
+  if (monthLabel) {
+    const monthNames = ['Januari', 'Februari', 'Maart', 'April', 'Mei', 'Juni',
+                        'Juli', 'Augustus', 'September', 'Oktober', 'November', 'December'];
+    monthLabel.textContent = `${monthNames[month]} ${year}`;
+  }
+
+  // Get event counts for this month
+  const startOfMonth = new Date(year, month, 1);
+  const endOfMonth = new Date(year, month + 1, 0);
+
+  let eventCounts = {};
+  try {
+    eventCounts = await getEventCountsPerDate(startOfMonth, endOfMonth);
+  } catch (error) {
+    console.warn('[CALENDAR] Could not fetch event counts:', error);
+  }
+
+  // Calculate days
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const daysInMonth = lastDay.getDate();
+
+  let startDay = firstDay.getDay() - 1;
+  if (startDay < 0) startDay = 6;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  let html = '';
+
+  // Empty cells for previous month
+  for (let i = 0; i < startDay; i++) {
+    html += '<div class="w-8 h-8"></div>';
+  }
+
+  // Days of current month
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(year, month, day);
+    const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+    const isSelected = date.toDateString() === selectedDate.toDateString();
+    const isToday = date.toDateString() === today.toDateString();
+    const hasEvents = eventCounts[dateStr] > 0;
+
+    let classes = 'w-8 h-8 flex flex-col items-center justify-center text-sm rounded-lg cursor-pointer transition-colors relative';
+
+    if (isSelected) {
+      classes += ' bg-indigo-600 text-white font-semibold';
+    } else if (isToday) {
+      classes += ' bg-indigo-100 text-indigo-700 font-semibold';
+    } else {
+      classes += ' text-gray-700 hover:bg-gray-100';
+    }
+
+    // Event dot
+    const dotHtml = hasEvents
+      ? `<span class="absolute bottom-0.5 w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-indigo-500'}"></span>`
+      : '';
+
+    html += `
+      <button class="mobile-calendar-day ${classes}" data-date="${dateStr}">
+        <span>${day}</span>
+        ${dotHtml}
+      </button>
+    `;
+  }
+
+  container.innerHTML = html;
+}
+
+/**
+ * Setup event listeners voor Agenda pagina
+ */
+function setupAgendaEventListeners() {
+  document.body.addEventListener('click', handleAgendaClick);
+  console.log('[CALENDAR] Agenda event listeners attached');
+}
+
+/**
+ * Handle alle Agenda-gerelateerde clicks
+ */
+async function handleAgendaClick(e) {
+  const target = e.target;
+
+  // Mobile calendar day click
+  if (target.closest('.mobile-calendar-day')) {
+    e.preventDefault();
+    const dayEl = target.closest('.mobile-calendar-day');
+    const dateStr = dayEl.dataset.date;
+    if (dateStr) {
+      // Parse as local date, not UTC
+      const [year, month, day] = dateStr.split('-').map(Number);
+      await selectDate(new Date(year, month - 1, day));
+    }
+    return;
+  }
+
+  // Mobile month navigation
+  if (target.closest('#mobile-month-prev')) {
+    e.preventDefault();
+    const newDate = new Date(agendaState.selectedDate);
+    newDate.setMonth(newDate.getMonth() - 1);
+    agendaState.selectedDate = newDate;
+    await renderAgendaContent();
+    return;
+  }
+
+  if (target.closest('#mobile-month-next')) {
+    e.preventDefault();
+    const newDate = new Date(agendaState.selectedDate);
+    newDate.setMonth(newDate.getMonth() + 1);
+    agendaState.selectedDate = newDate;
+    await renderAgendaContent();
+    return;
+  }
+
+  // Month calendar day click (desktop)
+  if (target.closest('.calendar-day')) {
+    e.preventDefault();
+    const dayEl = target.closest('.calendar-day');
+    const dateStr = dayEl.dataset.date;
+    if (dateStr) {
+      // Parse as local date, not UTC
+      const [year, month, day] = dateStr.split('-').map(Number);
+      await selectDate(new Date(year, month - 1, day));
+    }
+    return;
+  }
+
+  // Month navigation
+  if (target.closest('#month-prev')) {
+    e.preventDefault();
+    const newDate = new Date(agendaState.selectedDate);
+    newDate.setMonth(newDate.getMonth() - 1);
+    agendaState.selectedDate = newDate;
+    await renderAgendaContent();
+    return;
+  }
+
+  if (target.closest('#month-next')) {
+    e.preventDefault();
+    const newDate = new Date(agendaState.selectedDate);
+    newDate.setMonth(newDate.getMonth() + 1);
+    agendaState.selectedDate = newDate;
+    await renderAgendaContent();
+    return;
+  }
+
+  // Filter mode toggle
+  if (target.closest('#filter-mode-day')) {
+    e.preventDefault();
+    agendaState.filterMode = 'day';
+    await renderAgendaContent();
+    return;
+  }
+
+  if (target.closest('#filter-mode-month')) {
+    e.preventDefault();
+    agendaState.filterMode = 'month';
+    await renderAgendaContent();
+    return;
+  }
+
+  // Type filter checkbox
+  if (target.name === 'event-type') {
+    const type = target.value;
+    await toggleTypeFilter(type);
+    return;
+  }
+
+  // Regio filter dropdown
+  if (target.name === 'region-filter') {
+    const region = target.value;
+    await setRegionFilter(region);
+    return;
+  }
+
+  // "Ik ga ook" button
+  if (target.closest('.attend-event-btn')) {
+    e.preventDefault();
+    const btn = target.closest('.attend-event-btn');
+    const eventId = btn.dataset.eventId;
+    await toggleEventAttendance(eventId);
+    return;
+  }
+
+  // View mode toggle - List
+  if (target.closest('#view-mode-list')) {
+    e.preventDefault();
+    setViewMode('list');
+    return;
+  }
+
+  // View mode toggle - Map
+  if (target.closest('#view-mode-map')) {
+    e.preventDefault();
+    setViewMode('map');
+    return;
+  }
+
+  // Event card click (naar detail of artiest profiel)
+  if (target.closest('.solo-gig-card')) {
+    const card = target.closest('.solo-gig-card');
+    const artistId = card.dataset.artistId;
+    if (artistId && !target.closest('a') && !target.closest('button')) {
+      // Navigeer naar artiest profiel
+      window.location.hash = `#artist/${artistId}`;
+    }
+    return;
+  }
+}
+
+/**
+ * Selecteer een datum en herlaad events
+ */
+async function selectDate(date) {
+  agendaState.selectedDate = date;
+  console.log('[CALENDAR] Date selected:', date.toDateString());
+  await renderAgendaContent();
+}
+
+/**
+ * Toggle type filter
+ */
+async function toggleTypeFilter(type) {
+  const types = agendaState.filters.types;
+  const index = types.indexOf(type);
+
+  if (index > -1) {
+    types.splice(index, 1);
+  } else {
+    types.push(type);
+  }
+
+  console.log('[CALENDAR] Type filters:', types);
+  await renderAgendaContent();
+}
+
+/**
+ * Set regio filter
+ */
+async function setRegionFilter(region) {
+  agendaState.filters.region = region;
+  console.log('[CALENDAR] Region filter:', region);
+  await renderAgendaContent();
+}
+
+/**
+ * Toggle attendance voor een event
+ */
+async function toggleEventAttendance(eventId) {
+  const currentUser = getStore('currentUser');
+
+  if (!currentUser) {
+    console.warn('[CALENDAR] Must be logged in to attend');
+    return;
+  }
+
+  try {
+    await toggleAttendance(eventId, currentUser.uid);
+
+    // Update lokale state en UI
+    const event = agendaState.events.find(e => e.id === eventId);
+    if (event) {
+      const isAttending = event.attendees?.includes(currentUser.uid);
+      if (isAttending) {
+        event.attendees = event.attendees.filter(id => id !== currentUser.uid);
+        event.attendeeCount = (event.attendeeCount || 1) - 1;
+      } else {
+        event.attendees = [...(event.attendees || []), currentUser.uid];
+        event.attendeeCount = (event.attendeeCount || 0) + 1;
+      }
+    }
+
+    await renderAgendaContent();
+    console.log('[CALENDAR] Attendance toggled for event:', eventId);
+
+  } catch (error) {
+    console.error('[CALENDAR] Error toggling attendance:', error);
+  }
+}
+
+/**
+ * Switch tussen lijst en kaart weergave
+ * @param {string} mode - 'list' of 'map'
+ */
+async function setViewMode(mode) {
+  agendaState.viewMode = mode;
+
+  const listContainer = document.getElementById('agenda-events-list');
+  const mapContainer = document.getElementById('agenda-map-container');
+  const listBtn = document.getElementById('view-mode-list');
+  const mapBtn = document.getElementById('view-mode-map');
+
+  if (mode === 'list') {
+    // Show list, hide map
+    if (listContainer) listContainer.classList.remove('hidden');
+    if (mapContainer) mapContainer.classList.add('hidden');
+
+    // Update button styles
+    if (listBtn) {
+      listBtn.classList.remove('bg-gray-100', 'text-gray-700');
+      listBtn.classList.add('bg-indigo-600', 'text-white');
+    }
+    if (mapBtn) {
+      mapBtn.classList.remove('bg-indigo-600', 'text-white');
+      mapBtn.classList.add('bg-gray-100', 'text-gray-700');
+    }
+
+  } else {
+    // Show map, hide list
+    if (listContainer) listContainer.classList.add('hidden');
+    if (mapContainer) mapContainer.classList.remove('hidden');
+
+    // Update button styles
+    if (mapBtn) {
+      mapBtn.classList.remove('bg-gray-100', 'text-gray-700');
+      mapBtn.classList.add('bg-indigo-600', 'text-white');
+    }
+    if (listBtn) {
+      listBtn.classList.remove('bg-indigo-600', 'text-white');
+      listBtn.classList.add('bg-gray-100', 'text-gray-700');
+    }
+
+    // Initialize map if needed
+    const { initMap, updateMapMarkers } = await import('./calendar-map.js');
+
+    if (!document.getElementById('community-map')._leaflet_id) {
+      initMap('community-map');
+    }
+
+    // Update markers with current filtered events
+    const filteredEvents = applyFilters(agendaState.events);
+    updateMapMarkers(filteredEvents, (city, cityEvents) => {
+      console.log('[MAP] City clicked:', city, cityEvents.length, 'events');
+      // Optioneel: filter events op deze stad
+    });
+  }
+
+  // Re-init Lucide icons
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 50);
+  }
+
+  console.log('[CALENDAR] View mode:', mode);
+}
+
+/**
+ * Render/update de Agenda content (events lijst)
+ */
+async function renderAgendaContent() {
+  const container = document.getElementById('agenda-events-list');
+  if (!container) {
+    console.warn('[CALENDAR] agenda-events-list container not found');
+    return;
+  }
+
+  // Haal event counts voor date tape
+  const startDate = new Date(agendaState.selectedDate);
+  startDate.setDate(startDate.getDate() - 7);
+  const endDate = new Date(agendaState.selectedDate);
+  endDate.setDate(endDate.getDate() + 14);
+
+  const eventCounts = await getEventCountsPerDate(startDate, endDate);
+
+  // Filter events
+  const filteredEvents = applyFilters(agendaState.events);
+  // Apply date/month filtering
+  const eventsForDate = getFilteredEventsByDateMode(filteredEvents);
+
+  // Render Filters (desktop) with month calendar
+  const filtersContainer = document.getElementById('agenda-filters-container');
+  if (filtersContainer) {
+    filtersContainer.innerHTML = renderAgendaFilters(agendaState.filters, agendaState.selectedDate, eventCounts);
+  }
+
+  // Render Mobile Calendar
+  renderMobileCalendarDays();
+
+  // Render Filter Mode Toggle
+  const filterModeContainer = document.getElementById('filter-mode-container');
+  if (filterModeContainer) {
+    filterModeContainer.innerHTML = `
+      <div class="flex gap-2">
+        <button id="filter-mode-day" class="px-4 py-2 text-sm rounded-lg transition-colors font-medium ${
+          agendaState.filterMode === 'day'
+            ? 'bg-indigo-600 text-white shadow-sm'
+            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+        }">
+          Dag
+        </button>
+        <button id="filter-mode-month" class="px-4 py-2 text-sm rounded-lg transition-colors font-medium ${
+          agendaState.filterMode === 'month'
+            ? 'bg-indigo-600 text-white shadow-sm'
+            : 'bg-white border border-gray-300 text-gray-700 hover:bg-gray-50'
+        }">
+          Maand
+        </button>
+      </div>
+    `;
+  }
+
+  // Render Events
+  const eventsContainer = document.getElementById('agenda-events-list');
+  if (eventsContainer) {
+    if (eventsForDate.length === 0) {
+      eventsContainer.innerHTML = `
+        <div class="text-center py-12">
+          <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <i data-lucide="calendar-x" class="w-8 h-8 text-gray-400"></i>
+          </div>
+          <h3 class="font-semibold text-gray-900 mb-2">Geen events op deze datum</h3>
+          <p class="text-sm text-gray-500">Selecteer een andere datum of pas je filters aan.</p>
+        </div>
+      `;
+    } else {
+      const currentUser = getStore('currentUser');
+      const currentUserId = currentUser?.uid || null;
+
+      eventsContainer.innerHTML = eventsForDate.map(event => {
+        if (event.isClusterEvent && event.participants?.length > 0) {
+          return renderClusterCard(event, currentUserId);
+        }
+        return renderSoloGigCard(event, currentUserId);
+      }).join('');
+    }
+  }
+
+  // Update map markers if map is visible
+  if (agendaState.viewMode === 'map') {
+    const { updateMapMarkers } = await import('./calendar-map.js');
+    updateMapMarkers(eventsForDate);
+  }
+
+  // Re-init Lucide icons
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 50);
+  }
+}
+
+/**
+ * Initialize Agenda view (voor programmeurs)
+ */
+export async function initAgendaView() {
+  console.log('[CALENDAR] Initializing Agenda view');
+
+  agendaState.isLoading = true;
+  agendaState.selectedDate = new Date(); // Start met vandaag
+
+  try {
+    // Laad alle upcoming events
+    agendaState.events = await getAllUpcomingEvents({ limitCount: 100, daysAhead: 90 });
+
+    console.log(`[CALENDAR] Loaded ${agendaState.events.length} events`);
+
+    // Setup event listeners
+    setupAgendaEventListeners();
+
+    // Render content
+    await renderAgendaContent();
+
+  } catch (error) {
+    console.error('[CALENDAR] Error initializing agenda:', error);
+  } finally {
+    agendaState.isLoading = false;
+  }
+}
+
+/**
+ * Cleanup functie voor wanneer je weg navigeert van Agenda
+ */
+export function cleanupAgendaView() {
+  document.body.removeEventListener('click', handleAgendaClick);
+
+  // Cleanup map
+  import('./calendar-map.js').then(({ destroyMap }) => {
+    destroyMap();
+  });
+
+  agendaState = {
+    selectedDate: new Date(),
+    filterMode: 'month',
+    events: [],
+    filteredEvents: [],
+    filters: { types: [], region: 'all' },
+    viewMode: 'list',
+    isLoading: false
+  };
+  console.log('[CALENDAR] Agenda view cleaned up');
+}
+
+/**
+ * Open de poster generator
+ */
+async function openPosterGenerator() {
+  const currentUserData = getStore('currentUserData');
+
+  if (!currentUserData || currentEvents.length < 3) {
+    console.warn('[POSTER] Not enough events or no user data');
+    return;
+  }
+
+  console.log('[POSTER] Generating poster...');
+
+  try {
+    const { generatePosterCanvas, renderPosterModal } = await import('./poster-generator.js');
+
+    // Store data voor regeneratie bij thema wissel
+    currentPosterArtistData = currentUserData;
+    currentPosterEvents = currentEvents;
+    currentPosterTheme = 'indigo';
+
+    // Genereer canvas
+    currentPosterCanvas = await generatePosterCanvas(currentUserData, currentEvents, currentPosterTheme);
+
+    // Render modal
+    const modalHtml = renderPosterModal(currentPosterCanvas, currentPosterTheme);
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+    // Re-init Lucide icons
+    if (window.lucide) {
+      setTimeout(() => lucide.createIcons(), 50);
+    }
+
+    console.log('[POSTER] Modal opened');
+
+  } catch (error) {
+    console.error('[POSTER] Error generating poster:', error);
+    alert('Er ging iets mis bij het genereren van de poster.');
+  }
+}
+
+/**
+ * Wissel poster thema
+ */
+async function switchPosterTheme(themeKey) {
+  if (!currentPosterArtistData || !currentPosterEvents) {
+    console.warn('[POSTER] No data to regenerate poster');
+    return;
+  }
+
+  console.log('[POSTER] Switching theme to:', themeKey);
+  currentPosterTheme = themeKey;
+
+  try {
+    const { generatePosterCanvas } = await import('./poster-generator.js');
+
+    // Regenereer canvas met nieuw thema
+    currentPosterCanvas = await generatePosterCanvas(
+      currentPosterArtistData,
+      currentPosterEvents,
+      themeKey
+    );
+
+    // Update preview image
+    const previewImg = document.getElementById('poster-preview-img');
+    if (previewImg) {
+      previewImg.src = currentPosterCanvas.toDataURL('image/png');
+    }
+
+    // Update active state op theme buttons
+    document.querySelectorAll('.theme-select-btn').forEach(btn => {
+      const isActive = btn.dataset.theme === themeKey;
+      btn.classList.toggle('border-indigo-600', isActive);
+      btn.classList.toggle('ring-2', isActive);
+      btn.classList.toggle('ring-indigo-300', isActive);
+      btn.classList.toggle('border-gray-200', !isActive);
+    });
+
+  } catch (error) {
+    console.error('[POSTER] Error switching theme:', error);
+  }
+}
+
+/**
+ * Sluit de poster modal
+ */
+function closePosterModal() {
+  const modal = document.getElementById('poster-modal');
+  if (modal) {
+    modal.remove();
+  }
+  currentPosterCanvas = null;
+  currentPosterArtistData = null;
+  currentPosterEvents = null;
+  currentPosterTheme = 'indigo';
+}
+
+/**
+ * Download de huidige poster
+ */
+async function downloadCurrentPoster() {
+  if (!currentPosterCanvas) {
+    console.warn('[POSTER] No canvas to download');
+    return;
+  }
+
+  const currentUserData = getStore('currentUserData');
+  const artistName = currentUserData?.stageName || 'artist';
+  const filename = `${artistName.toLowerCase().replace(/\s+/g, '-')}-tour-poster.png`;
+
+  const { downloadPoster } = await import('./poster-generator.js');
+  downloadPoster(currentPosterCanvas, filename);
+
+  console.log('[POSTER] Downloaded:', filename);
+}
+</file>
+
+<file path="src/modules/calendar/calendar-service.js">
+/**
+ * calendar-service.js
+ * Data operations voor artist gigs/events
+ * Handles Firestore queries voor events collectie
+ */
+
+import { db } from '../../services/firebase.js';
+import {
+  collection,
+  addDoc,
+  doc,
+  getDoc,
+  getDocs,
+  updateDoc,
+  deleteDoc,
+  query,
+  where,
+  orderBy,
+  limit,
+  serverTimestamp,
+  Timestamp
+} from 'firebase/firestore';
+
+/**
+ * Event types
+ */
+export const EVENT_TYPES = {
+  GIG: 'gig',
+  OPEN_MIC: 'open-mic',
+  SLAM: 'slam',
+  WORKSHOP: 'workshop',
+  FEATURE: 'feature',
+  SHOWCASE: 'showcase',
+  SLAM_FINALE: 'slam-finale'
+};
+
+/**
+ * Event type labels (NL)
+ */
+export const EVENT_TYPE_LABELS = {
+  'gig': 'Optreden',
+  'open-mic': 'Open Mic',
+  'slam': 'Poetry Slam',
+  'workshop': 'Workshop',
+  'feature': 'Feature',
+  'showcase': 'Showcase',
+  'slam-finale': 'Slam Finale'
+};
+
+/**
+ * Voeg een nieuw event toe
+ * @param {object} eventData - Event gegevens
+ * @param {string} eventData.artistId - UID van de artiest
+ * @param {string} eventData.artistName - Stage name van de artiest
+ * @param {Date} eventData.date - Datum van het event
+ * @param {string} eventData.city - Stad
+ * @param {string} eventData.venue - Venue naam
+ * @param {string} eventData.type - Event type (gig, open-mic, slam, workshop, feature)
+ * @param {string} [eventData.link] - Optionele link naar tickets/info
+ * @param {string} [eventData.artistProfilePicUrl] - Profielfoto URL voor snelle weergave
+ * @returns {Promise<string>} Event ID
+ */
+export async function addEvent(eventData) {
+  try {
+    const { artistId, artistName, date, city, venue, type, link, artistProfilePicUrl } = eventData;
+
+    if (!artistId || !artistName || !date || !city || !venue || !type) {
+      throw new Error('Missing required fields: artistId, artistName, date, city, venue, type');
+    }
+
+    // Valideer event type
+    if (!Object.values(EVENT_TYPES).includes(type)) {
+      throw new Error(`Invalid event type: ${type}`);
+    }
+
+    const eventDoc = {
+      artistId,
+      artistName,
+      artistProfilePicUrl: artistProfilePicUrl || '',
+      date: Timestamp.fromDate(new Date(date)),
+      city: city.trim(),
+      venue: venue.trim(),
+      type,
+      link: link?.trim() || '',
+      supporters: [],
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp()
+    };
+
+    const docRef = await addDoc(collection(db, 'events'), eventDoc);
+    console.log('[CALENDAR] Event added:', docRef.id);
+    return docRef.id;
+
+  } catch (error) {
+    console.error('[CALENDAR] Error adding event:', error);
+    throw error;
+  }
+}
+
+/**
+ * Haal events op voor een specifieke artiest
+ * @param {string} artistId - UID van de artiest
+ * @param {object} options - Query opties
+ * @param {boolean} [options.upcomingOnly=true] - Alleen toekomstige events
+ * @param {number} [options.limitCount=10] - Maximum aantal events
+ * @returns {Promise<Array>} Array van events
+ */
+export async function getArtistEvents(artistId, options = {}) {
+  try {
+    const { upcomingOnly = true, limitCount = 10 } = options;
+
+    const eventsRef = collection(db, 'events');
+    let q;
+
+    if (upcomingOnly) {
+      const now = Timestamp.fromDate(new Date());
+      q = query(
+        eventsRef,
+        where('artistId', '==', artistId),
+        where('date', '>=', now),
+        orderBy('date', 'asc'),
+        limit(limitCount)
+      );
+    } else {
+      q = query(
+        eventsRef,
+        where('artistId', '==', artistId),
+        orderBy('date', 'desc'),
+        limit(limitCount)
+      );
+    }
+
+    const snapshot = await getDocs(q);
+    const events = [];
+
+    snapshot.forEach(doc => {
+      events.push({
+        id: doc.id,
+        ...doc.data(),
+        date: doc.data().date?.toDate() || null
+      });
+    });
+
+    console.log(`[CALENDAR] Fetched ${events.length} events for artist ${artistId}`);
+    return events;
+
+  } catch (error) {
+    console.error('[CALENDAR] Error fetching artist events:', error);
+    return [];
+  }
+}
+
+/**
+ * Haal alle upcoming events op (voor community map)
+ * @param {object} options - Query opties
+ * @param {number} [options.limitCount=50] - Maximum aantal events
+ * @param {number} [options.daysAhead=90] - Hoeveel dagen vooruit
+ * @returns {Promise<Array>} Array van events
+ */
+export async function getAllUpcomingEvents(options = {}) {
+  try {
+    const { limitCount = 50, daysAhead = 90 } = options;
+
+    // Start van vandaag (00:00:00) om events van vandaag ook op te halen
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+
+    const futureDate = new Date();
+    futureDate.setDate(futureDate.getDate() + daysAhead);
+
+    const eventsRef = collection(db, 'events');
+    const q = query(
+      eventsRef,
+      where('date', '>=', Timestamp.fromDate(now)),
+      where('date', '<=', Timestamp.fromDate(futureDate)),
+      orderBy('date', 'asc'),
+      limit(limitCount)
+    );
+
+    const snapshot = await getDocs(q);
+    const events = [];
+
+    snapshot.forEach(doc => {
+      events.push({
+        id: doc.id,
+        ...doc.data(),
+        date: doc.data().date?.toDate() || null
+      });
+    });
+
+    console.log(`[CALENDAR] Fetched ${events.length} upcoming events`);
+    return events;
+
+  } catch (error) {
+    console.error('[CALENDAR] Error fetching all events:', error);
+    return [];
+  }
+}
+
+/**
+ * Haal een specifiek event op
+ * @param {string} eventId - Event ID
+ * @returns {Promise<object|null>} Event object of null
+ */
+export async function getEvent(eventId) {
+  try {
+    const eventRef = doc(db, 'events', eventId);
+    const eventSnap = await getDoc(eventRef);
+
+    if (!eventSnap.exists()) {
+      return null;
+    }
+
+    const data = eventSnap.data();
+    return {
+      id: eventSnap.id,
+      ...data,
+      date: data.date?.toDate() || null
+    };
+
+  } catch (error) {
+    console.error('[CALENDAR] Error fetching event:', error);
+    return null;
+  }
+}
+
+/**
+ * Update een event
+ * @param {string} eventId - Event ID
+ * @param {object} updates - Velden om te updaten
+ * @returns {Promise<void>}
+ */
+export async function updateEvent(eventId, updates) {
+  try {
+    const eventRef = doc(db, 'events', eventId);
+
+    const updateData = { ...updates, updatedAt: serverTimestamp() };
+
+    // Convert date to Timestamp if provided
+    if (updates.date) {
+      updateData.date = Timestamp.fromDate(new Date(updates.date));
+    }
+
+    await updateDoc(eventRef, updateData);
+    console.log('[CALENDAR] Event updated:', eventId);
+
+  } catch (error) {
+    console.error('[CALENDAR] Error updating event:', error);
+    throw error;
+  }
+}
+
+/**
+ * Verwijder een event
+ * @param {string} eventId - Event ID
+ * @returns {Promise<void>}
+ */
+export async function deleteEvent(eventId) {
+  try {
+    const eventRef = doc(db, 'events', eventId);
+    await deleteDoc(eventRef);
+    console.log('[CALENDAR] Event deleted:', eventId);
+
+  } catch (error) {
+    console.error('[CALENDAR] Error deleting event:', error);
+    throw error;
+  }
+}
+
+/**
+ * Voeg supporter toe aan event
+ * @param {string} eventId - Event ID
+ * @param {string} supporterId - UID van de supporter
+ * @returns {Promise<void>}
+ */
+export async function addSupporter(eventId, supporterId) {
+  try {
+    const eventRef = doc(db, 'events', eventId);
+    const eventSnap = await getDoc(eventRef);
+
+    if (!eventSnap.exists()) {
+      throw new Error('Event not found');
+    }
+
+    const supporters = eventSnap.data().supporters || [];
+
+    if (!supporters.includes(supporterId)) {
+      supporters.push(supporterId);
+      await updateDoc(eventRef, {
+        supporters,
+        updatedAt: serverTimestamp()
+      });
+      console.log('[CALENDAR] Supporter added to event:', eventId);
+    }
+
+  } catch (error) {
+    console.error('[CALENDAR] Error adding supporter:', error);
+    throw error;
+  }
+}
+
+/**
+ * Verwijder supporter van event
+ * @param {string} eventId - Event ID
+ * @param {string} supporterId - UID van de supporter
+ * @returns {Promise<void>}
+ */
+export async function removeSupporter(eventId, supporterId) {
+  try {
+    const eventRef = doc(db, 'events', eventId);
+    const eventSnap = await getDoc(eventRef);
+
+    if (!eventSnap.exists()) {
+      throw new Error('Event not found');
+    }
+
+    const supporters = (eventSnap.data().supporters || []).filter(id => id !== supporterId);
+
+    await updateDoc(eventRef, {
+      supporters,
+      updatedAt: serverTimestamp()
+    });
+    console.log('[CALENDAR] Supporter removed from event:', eventId);
+
+  } catch (error) {
+    console.error('[CALENDAR] Error removing supporter:', error);
+    throw error;
+  }
+}
+
+/**
+ * Check of een artiest events heeft op een specifieke datum
+ * Nuttig voor beschikbaarheidscheck
+ * @param {string} artistId - UID van de artiest
+ * @param {Date} date - Datum om te checken
+ * @returns {Promise<boolean>} True als er events zijn op die datum
+ */
+export async function hasEventOnDate(artistId, date) {
+  try {
+    const startOfDay = new Date(date);
+    startOfDay.setHours(0, 0, 0, 0);
+
+    const endOfDay = new Date(date);
+    endOfDay.setHours(23, 59, 59, 999);
+
+    const eventsRef = collection(db, 'events');
+    const q = query(
+      eventsRef,
+      where('artistId', '==', artistId),
+      where('date', '>=', Timestamp.fromDate(startOfDay)),
+      where('date', '<=', Timestamp.fromDate(endOfDay)),
+      limit(1)
+    );
+
+    const snapshot = await getDocs(q);
+    return !snapshot.empty;
+
+  } catch (error) {
+    console.error('[CALENDAR] Error checking date availability:', error);
+    return false;
+  }
+}
+
+/**
+ * Format datum voor weergave
+ * @param {Date} date - Datum object
+ * @returns {string} Geformatteerde datum string
+ */
+export function formatEventDate(date) {
+  if (!date) return '';
+
+  const options = {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric'
+  };
+
+  return date.toLocaleDateString('nl-BE', options);
+}
+
+/**
+ * Format korte datum (voor lijsten)
+ * @param {Date} date - Datum object
+ * @returns {string} Korte datum string
+ */
+export function formatShortDate(date) {
+  if (!date) return '';
+
+  const options = {
+    day: 'numeric',
+    month: 'short'
+  };
+
+  return date.toLocaleDateString('nl-BE', options);
+}
+
+/**
+ * Haal events op binnen een specifiek datumbereik
+ * @param {Date} startDate - Start datum
+ * @param {Date} endDate - Eind datum
+ * @param {object} options - Query opties
+ * @param {number} [options.limitCount=100] - Maximum aantal events
+ * @returns {Promise<Array>} Array van events gesorteerd op datum
+ */
+export async function getEventsForDateRange(startDate, endDate, options = {}) {
+  try {
+    const { limitCount = 100 } = options;
+
+    const eventsRef = collection(db, 'events');
+    const q = query(
+      eventsRef,
+      where('date', '>=', Timestamp.fromDate(new Date(startDate))),
+      where('date', '<=', Timestamp.fromDate(new Date(endDate))),
+      orderBy('date', 'asc'),
+      limit(limitCount)
+    );
+
+    const snapshot = await getDocs(q);
+    const events = [];
+
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      events.push({
+        id: doc.id,
+        ...data,
+        date: data.date?.toDate() || null,
+        // Ensure new fields have defaults
+        isClusterEvent: data.isClusterEvent || false,
+        eventName: data.eventName || null,
+        eventTime: data.eventTime || null,
+        participants: data.participants || [],
+        attendees: data.attendees || [],
+        attendeeCount: data.attendeeCount || 0,
+        coordinates: data.coordinates || null
+      });
+    });
+
+    console.log(`[CALENDAR] Fetched ${events.length} events for date range`);
+    return events;
+
+  } catch (error) {
+    console.error('[CALENDAR] Error fetching events for date range:', error);
+    return [];
+  }
+}
+
+/**
+ * Groepeer events per datum
+ * @param {Array} events - Array van events
+ * @returns {Map<string, Array>} Map met dateString als key en events array als value
+ */
+export function getEventsGroupedByDate(events) {
+  const grouped = new Map();
+
+  events.forEach(event => {
+    if (!event.date) return;
+
+    // Format date as YYYY-MM-DD
+    const dateString = event.date.toISOString().split('T')[0];
+
+    if (!grouped.has(dateString)) {
+      grouped.set(dateString, []);
+    }
+
+    grouped.get(dateString).push(event);
+  });
+
+  // Sort events within each date by time if available
+  grouped.forEach((dayEvents, dateString) => {
+    dayEvents.sort((a, b) => {
+      // If eventTime is available, sort by that
+      if (a.eventTime && b.eventTime) {
+        return a.eventTime.localeCompare(b.eventTime);
+      }
+      // Otherwise keep original order (by date from query)
+      return 0;
+    });
+  });
+
+  console.log(`[CALENDAR] Grouped ${events.length} events into ${grouped.size} dates`);
+  return grouped;
+}
+
+/**
+ * Haal event counts per datum op voor Date Tape heatmap
+ * @param {Date} startDate - Start datum
+ * @param {Date} endDate - Eind datum
+ * @returns {Promise<Object>} Object met dateString als keys en counts als values
+ */
+export async function getEventCountsPerDate(startDate, endDate) {
+  try {
+    const events = await getEventsForDateRange(startDate, endDate, { limitCount: 200 });
+    const counts = {};
+
+    events.forEach(event => {
+      if (!event.date) return;
+
+      // Use local date formatting instead of UTC
+      const eventDate = event.date instanceof Date ? event.date : event.date.toDate();
+      const year = eventDate.getFullYear();
+      const month = String(eventDate.getMonth() + 1).padStart(2, '0');
+      const day = String(eventDate.getDate()).padStart(2, '0');
+      const dateKey = `${year}-${month}-${day}`;
+
+      counts[dateKey] = (counts[dateKey] || 0) + 1;
+    });
+
+    console.log(`[CALENDAR] Event counts calculated for ${Object.keys(counts).length} dates`);
+    return counts;
+
+  } catch (error) {
+    console.error('[CALENDAR] Error getting event counts:', error);
+    return {};
+  }
+}
+
+/**
+ * Toggle "Ik ga ook" attendance voor een event
+ * @param {string} eventId - Event ID
+ * @param {string} userId - UID van de user
+ * @returns {Promise<boolean>} True als user nu attending is, false als removed
+ */
+export async function toggleAttendance(eventId, userId) {
+  try {
+    const eventRef = doc(db, 'events', eventId);
+    const eventSnap = await getDoc(eventRef);
+
+    if (!eventSnap.exists()) {
+      throw new Error('Event not found');
+    }
+
+    const data = eventSnap.data();
+    const attendees = data.attendees || [];
+    const isAttending = attendees.includes(userId);
+
+    let newAttendees;
+    let newCount;
+
+    if (isAttending) {
+      // Remove user from attendees
+      newAttendees = attendees.filter(id => id !== userId);
+      newCount = Math.max(0, (data.attendeeCount || 0) - 1);
+    } else {
+      // Add user to attendees
+      newAttendees = [...attendees, userId];
+      newCount = (data.attendeeCount || 0) + 1;
+    }
+
+    await updateDoc(eventRef, {
+      attendees: newAttendees,
+      attendeeCount: newCount
+    });
+
+    console.log(`[CALENDAR] Attendance toggled for event ${eventId}, user ${userId}: ${!isAttending}`);
+    return !isAttending;
+
+  } catch (error) {
+    console.error('[CALENDAR] Error toggling attendance:', error);
+    throw error;
+  }
+}
+
+/**
+ * Haal alle attendees op voor events van een artiest
+ * @param {string} artistId - UID van de artiest
+ * @returns {Promise<Array>} Array van {event, attendees} objecten
+ */
+export async function getAttendeeNotifications(artistId) {
+  try {
+    const eventsRef = collection(db, 'events');
+    const q = query(
+      eventsRef,
+      where('artistId', '==', artistId),
+      orderBy('date', 'asc')
+    );
+
+    const snapshot = await getDocs(q);
+    const notifications = [];
+
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      // FIX: Check of attendees bestaat EN niet leeg is EN niet alleen de artiest zelf bevat
+      const attendees = data.attendees || [];
+      // Filter de artiest zelf eruit
+      const otherAttendees = attendees.filter(uid => uid !== artistId);
+
+      if (otherAttendees.length > 0) {
+        notifications.push({
+          eventId: doc.id,
+          venue: data.venue,
+          city: data.city,
+          date: data.date?.toDate() || null,
+          attendees: otherAttendees,
+          attendeeCount: otherAttendees.length
+        });
+      }
+    });
+
+    return notifications;
+  } catch (error) {
+    console.error('[CALENDAR] Error fetching attendee notifications:', error);
+    return [];
+  }
+}
+
+/**
+ * Haal profiel info op voor een lijst van user IDs
+ * @param {Array} userIds - Array van user UIDs
+ * @returns {Promise<Array>} Array van user profiles
+ */
+export async function getAttendeeProfiles(userIds) {
+  if (!userIds || userIds.length === 0) return [];
+
+  try {
+    const profiles = [];
+
+    // Haal profielen op (check eerst artists, dan programmers)
+    for (const uid of userIds.slice(0, 20)) { // Max 20 om queries te beperken
+      // Probeer artist
+      let userDoc = await getDoc(doc(db, 'artists', uid));
+
+      if (!userDoc.exists()) {
+        // Probeer programmer
+        userDoc = await getDoc(doc(db, 'programmers', uid));
+      }
+
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        profiles.push({
+          uid: uid,
+          name: data.stageName || `${data.firstName || ''} ${data.lastName || ''}`.trim() || 'Anoniem',
+          profilePicUrl: data.profilePicUrl || null,
+          role: data.role || 'user'
+        });
+      } else {
+        profiles.push({
+          uid: uid,
+          name: 'Community lid',
+          profilePicUrl: null,
+          role: 'user'
+        });
+      }
+    }
+
+    return profiles;
+  } catch (error) {
+    console.error('[CALENDAR] Error fetching attendee profiles:', error);
+    return [];
+  }
+}
+
+/**
+ * Check of een user attending is voor een event
+ * @param {string} eventId - Event ID
+ * @param {string} userId - UID van de user
+ * @returns {Promise<boolean>} True als user attending is
+ */
+export async function isUserAttending(eventId, userId) {
+  try {
+    const event = await getEvent(eventId);
+    if (!event) return false;
+
+    const attendees = event.attendees || [];
+    return attendees.includes(userId);
+
+  } catch (error) {
+    console.error('[CALENDAR] Error checking attendance:', error);
+    return false;
+  }
+}
+</file>
+
+<file path="src/modules/calendar/calendar-ui.js">
+/**
+ * calendar-ui.js
+ * UI rendering voor artist gigs/events
+ * Apple-style widgets en modals
+ */
+
+import { EVENT_TYPE_LABELS, formatEventDate, formatShortDate } from './calendar-service.js';
+
+/**
+ * Format date as YYYY-MM-DD using local timezone (not UTC)
+ * @param {Date} date - Date object
+ * @returns {string} Date string in YYYY-MM-DD format
+ */
+function formatDateKey(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Render de "Upcoming Gigs" widget voor het artist dashboard
+ * @param {Array} events - Array van event objecten
+ * @param {boolean} isOwnProfile - Is dit het eigen profiel van de artiest?
+ * @returns {string} HTML string
+ */
+export function renderUpcomingGigsWidget(events = [], isOwnProfile = true) {
+  const hasEvents = events && events.length > 0;
+
+  return `
+    <div id="upcoming-gigs-widget" class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h3 class="text-xl font-bold text-gray-900 tracking-tight">Upcoming Gigs</h3>
+          <p class="text-sm text-gray-500 mt-1">${hasEvents ? `${events.length} optreden${events.length > 1 ? 's' : ''} gepland` : 'Geen geplande optredens'}</p>
+        </div>
+        ${isOwnProfile ? `
+          <button id="add-gig-btn" class="bg-indigo-600 text-white px-5 py-2.5 rounded-xl font-semibold hover:bg-indigo-700 transition-all shadow-sm hover:shadow flex items-center gap-2">
+            <i data-lucide="plus" class="w-4 h-4"></i>
+            <span>Add Gig</span>
+          </button>
+        ` : ''}
+      </div>
+
+      ${hasEvents ? renderGigsList(events, isOwnProfile) : renderEmptyGigsState(isOwnProfile)}
+
+      <!-- Tour Poster Generator -->
+      ${isOwnProfile ? `
+        <div id="poster-generator-container" class="mt-6 pt-6 border-t border-gray-100">
+          <!-- Poster button renders here -->
+        </div>
+      ` : ''}
+    </div>
+  `;
+}
+
+/**
+ * Render de lijst met gigs
+ * @param {Array} events - Array van events
+ * @param {boolean} isOwnProfile - Is eigen profiel?
+ * @returns {string} HTML string
+ */
+function renderGigsList(events, isOwnProfile) {
+  const gigsHtml = events.slice(0, 5).map(event => renderGigItem(event, isOwnProfile)).join('');
+
+  return `
+    <div class="space-y-3">
+      ${gigsHtml}
+    </div>
+    ${events.length > 5 ? `
+      <button id="view-all-gigs-btn" class="mt-4 w-full text-center text-indigo-600 font-medium hover:text-indigo-700 py-2">
+        Bekijk alle ${events.length} optredens
+      </button>
+    ` : ''}
+  `;
+}
+
+/**
+ * Render een enkel gig item
+ * @param {object} event - Event object
+ * @param {boolean} isOwnProfile - Is eigen profiel?
+ * @returns {string} HTML string
+ */
+function renderGigItem(event, isOwnProfile) {
+  const date = event.date ? new Date(event.date) : null;
+  const dayNum = date ? date.getDate() : '--';
+  const monthShort = date ? date.toLocaleDateString('nl-BE', { month: 'short' }).toUpperCase() : '---';
+  const typeLabel = EVENT_TYPE_LABELS[event.type] || event.type;
+  const typeBadgeColor = getTypeBadgeColor(event.type);
+
+  return `
+    <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors group" data-event-id="${event.id}">
+      <!-- Date Block -->
+      <div class="flex-shrink-0 w-14 h-14 bg-white rounded-xl shadow-sm flex flex-col items-center justify-center border border-gray-100">
+        <span class="text-lg font-bold text-gray-900 leading-none">${dayNum}</span>
+        <span class="text-xs font-medium text-gray-500 uppercase">${monthShort}</span>
+      </div>
+
+      <!-- Event Info -->
+      <div class="flex-1 min-w-0">
+        <div class="flex items-center gap-2 mb-1">
+          <h4 class="font-semibold text-gray-900 truncate">${event.venue || 'TBA'}</h4>
+          <span class="flex-shrink-0 px-2 py-0.5 text-xs font-medium rounded-full ${typeBadgeColor}">${typeLabel}</span>
+        </div>
+        <p class="text-sm text-gray-500 flex items-center gap-1">
+          <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+          ${event.city || 'Locatie TBA'}
+        </p>
+      </div>
+
+      <!-- Actions -->
+      <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        ${event.link ? `
+          <a href="${event.link}" target="_blank" rel="noopener noreferrer" class="p-2 text-gray-400 hover:text-indigo-600 hover:bg-white rounded-lg transition-colors" title="Open link">
+            <i data-lucide="external-link" class="w-4 h-4"></i>
+          </a>
+        ` : ''}
+        ${isOwnProfile ? `
+          <button class="edit-gig-btn p-2 text-gray-400 hover:text-indigo-600 hover:bg-white rounded-lg transition-colors" data-event-id="${event.id}" title="Bewerk">
+            <i data-lucide="pencil" class="w-4 h-4"></i>
+          </button>
+          <button class="delete-gig-btn p-2 text-gray-400 hover:text-red-500 hover:bg-white rounded-lg transition-colors" data-event-id="${event.id}" title="Verwijder">
+            <i data-lucide="trash-2" class="w-4 h-4"></i>
+          </button>
+        ` : ''}
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Render lege staat voor gigs widget
+ * @param {boolean} isOwnProfile - Is eigen profiel?
+ * @returns {string} HTML string
+ */
+function renderEmptyGigsState(isOwnProfile) {
+  if (isOwnProfile) {
+    return `
+      <div class="text-center py-8">
+        <div class="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="calendar-plus" class="w-8 h-8 text-indigo-400"></i>
+        </div>
+        <h4 class="font-semibold text-gray-900 mb-2">Nog geen optredens gepland</h4>
+        <p class="text-sm text-gray-500 mb-4">Laat de wereld weten waar je te zien bent!</p>
+        <button id="add-first-gig-btn" class="bg-indigo-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-indigo-700 transition-all shadow-sm">
+          Voeg je eerste gig toe
+        </button>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="text-center py-8">
+      <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="calendar-x" class="w-8 h-8 text-gray-400"></i>
+      </div>
+      <p class="text-sm text-gray-500">Geen aankomende optredens</p>
+    </div>
+  `;
+}
+
+/**
+ * Render de "See [Artist] Live" sectie voor publieke profielen
+ * @param {Array} events - Array van events
+ * @param {string} artistName - Naam van de artiest
+ * @returns {string} HTML string
+ */
+export function renderPublicGigsSection(events = [], artistName = 'deze artiest') {
+  if (!events || events.length === 0) {
+    return '';
+  }
+
+  const upcomingEvents = events.slice(0, 3);
+
+  return `
+    <div class="mt-8">
+      <h3 class="text-lg font-bold text-gray-900 mb-4">See ${artistName} Live</h3>
+      <div class="space-y-3">
+        ${upcomingEvents.map(event => renderPublicGigItem(event)).join('')}
+      </div>
+      ${events.length > 3 ? `
+        <p class="text-sm text-gray-500 mt-3 text-center">+ ${events.length - 3} meer optredens</p>
+      ` : ''}
+    </div>
+  `;
+}
+
+/**
+ * Render een gig item voor publieke weergave
+ * @param {object} event - Event object
+ * @returns {string} HTML string
+ */
+function renderPublicGigItem(event) {
+  const date = event.date ? new Date(event.date) : null;
+  const formattedDate = date ? formatEventDate(date) : 'Datum TBA';
+  const typeLabel = EVENT_TYPE_LABELS[event.type] || event.type;
+
+  return `
+    <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+      <div class="flex items-center gap-4">
+        <div class="text-center">
+          <p class="text-sm font-medium text-gray-900">${formattedDate}</p>
+        </div>
+        <div>
+          <p class="font-medium text-gray-900">${event.venue || 'TBA'}</p>
+          <p class="text-sm text-gray-500">${event.city || ''} • ${typeLabel}</p>
+        </div>
+      </div>
+      ${event.link ? `
+        <a href="${event.link}" target="_blank" rel="noopener noreferrer" class="px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors">
+          Tickets
+        </a>
+      ` : ''}
+    </div>
+  `;
+}
+
+/**
+ * Render de Add/Edit Gig Modal
+ * @param {object|null} event - Bestaand event voor edit, of null voor nieuw
+ * @returns {string} HTML string
+ */
+export function renderGigModal(event = null) {
+  const isEdit = event !== null;
+  const title = isEdit ? 'Bewerk Optreden' : 'Nieuw Optreden';
+  const submitText = isEdit ? 'Opslaan' : 'Toevoegen';
+
+  // Format date for input
+  const dateValue = event?.date ? new Date(event.date).toISOString().split('T')[0] : '';
+
+  return `
+    <div id="gig-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.5);">
+      <div class="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden">
+        <!-- Header -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-100">
+          <h2 class="text-xl font-bold text-gray-900">${title}</h2>
+          <button id="close-gig-modal" class="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-xl transition-colors">
+            <i data-lucide="x" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <!-- Form -->
+        <form id="gig-form" class="p-6 space-y-5">
+          ${isEdit ? `<input type="hidden" name="eventId" value="${event.id}">` : ''}
+
+          <!-- Date -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Datum *</label>
+            <input type="date" name="date" required value="${dateValue}"
+              class="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-colors">
+          </div>
+
+          <!-- City -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Stad *</label>
+            <input type="text" name="city" required value="${event?.city || ''}" placeholder="bijv. Gent, Amsterdam"
+              class="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-colors">
+          </div>
+
+          <!-- Venue -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Venue *</label>
+            <input type="text" name="venue" required value="${event?.venue || ''}" placeholder="bijv. De Centrale, Paradiso"
+              class="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-colors">
+          </div>
+
+          <!-- Type -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Type *</label>
+            <select name="type" required
+              class="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-gray-900 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-colors">
+              <option value="">Selecteer type...</option>
+              ${Object.entries(EVENT_TYPE_LABELS).map(([value, label]) => `
+                <option value="${value}" ${event?.type === value ? 'selected' : ''}>${label}</option>
+              `).join('')}
+            </select>
+          </div>
+
+          <!-- Link (optional) -->
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Link (optioneel)</label>
+            <input type="url" name="link" value="${event?.link || ''}" placeholder="https://tickets.example.com"
+              class="w-full bg-gray-50 border-0 rounded-xl px-4 py-3 text-gray-900 placeholder-gray-400 focus:ring-2 focus:ring-indigo-500 focus:bg-white transition-colors">
+          </div>
+
+          <!-- Buttons -->
+          <div class="flex gap-3 pt-4">
+            <button type="button" id="cancel-gig-btn" class="flex-1 px-6 py-3 bg-gray-100 text-gray-700 font-semibold rounded-xl hover:bg-gray-200 transition-colors">
+              Annuleren
+            </button>
+            <button type="submit" class="flex-1 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-colors shadow-sm">
+              ${submitText}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Render delete confirmation modal
+ * @param {string} eventId - Event ID
+ * @param {string} venueName - Venue naam voor bevestiging
+ * @returns {string} HTML string
+ */
+export function renderDeleteConfirmModal(eventId, venueName) {
+  return `
+    <div id="delete-gig-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4" style="background-color: rgba(0,0,0,0.5);">
+      <div class="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 text-center">
+        <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="trash-2" class="w-6 h-6 text-red-500"></i>
+        </div>
+        <h3 class="text-lg font-bold text-gray-900 mb-2">Optreden verwijderen?</h3>
+        <p class="text-sm text-gray-500 mb-6">Weet je zeker dat je "${venueName}" wilt verwijderen? Dit kan niet ongedaan worden gemaakt.</p>
+        <div class="flex gap-3">
+          <button id="cancel-delete-gig" class="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-colors">
+            Annuleren
+          </button>
+          <button id="confirm-delete-gig" data-event-id="${eventId}" class="flex-1 px-4 py-2.5 bg-red-500 text-white font-medium rounded-xl hover:bg-red-600 transition-colors">
+            Verwijderen
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Get badge color class based on event type
+ * @param {string} type - Event type
+ * @param {boolean} darkMode - Use dark mode colors
+ * @returns {string} Tailwind classes
+ */
+function getTypeBadgeColor(type, darkMode = false) {
+  if (darkMode) {
+    const colors = {
+      'slam': 'bg-purple-500 text-white',
+      'slam-finale': 'bg-purple-500 text-white',
+      'showcase': 'bg-gray-700 text-gray-200',
+      'gig': 'bg-gray-600 text-gray-200',
+      'open-mic': 'bg-green-600 text-white',
+      'workshop': 'bg-blue-600 text-white',
+      'feature': 'bg-pink-500 text-white'
+    };
+    return colors[type] || 'bg-gray-600 text-gray-200';
+  }
+
+  const colors = {
+    'gig': 'bg-indigo-100 text-indigo-700',
+    'open-mic': 'bg-green-100 text-green-700',
+    'slam': 'bg-orange-100 text-orange-700',
+    'slam-finale': 'bg-purple-100 text-purple-700',
+    'showcase': 'bg-gray-100 text-gray-700',
+    'workshop': 'bg-blue-100 text-blue-700',
+    'feature': 'bg-purple-100 text-purple-700'
+  };
+  return colors[type] || 'bg-gray-100 text-gray-700';
+}
+
+/**
+ * a) Render Date Tape - Horizontale datumkiezer
+ * @param {Date} selectedDate - Geselecteerde datum
+ * @param {Object} eventCounts - Object met dateString keys en count values
+ * @param {number} daysToShow - Aantal dagen om te tonen (default 14)
+ * @returns {string} HTML string
+ */
+export function renderDateTape(selectedDate, eventCounts = {}, daysToShow = 14) {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const selected = new Date(selectedDate);
+  selected.setHours(0, 0, 0, 0);
+
+  // Calculate start date (7 days before selected)
+  const startDate = new Date(selected);
+  startDate.setDate(startDate.getDate() - Math.floor(daysToShow / 2));
+
+  const days = [];
+  for (let i = 0; i < daysToShow; i++) {
+    const date = new Date(startDate);
+    date.setDate(date.getDate() + i);
+
+    const dateString = formatDateKey(date);
+    const isSelected = date.getTime() === selected.getTime();
+    const isToday = date.getTime() === today.getTime();
+    const eventCount = eventCounts[dateString] || 0;
+    const hasEvents = eventCount > 0;
+
+    const dayName = date.toLocaleDateString('nl-BE', { weekday: 'short' });
+    const dayNum = date.getDate();
+
+    days.push(`
+      <button
+        class="date-tape-day flex-shrink-0 flex flex-col items-center justify-center w-16 h-20 rounded-xl transition-all ${
+          isSelected
+            ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+            : 'bg-gray-50 text-gray-700 hover:bg-gray-100 border border-gray-200'
+        }"
+        data-date="${dateString}"
+      >
+        <span class="text-xs font-medium uppercase mb-1">${dayName}</span>
+        <span class="text-xl font-bold">${dayNum}</span>
+        ${hasEvents ? `
+          <div class="mt-1.5 w-1.5 h-1.5 rounded-full ${isToday ? 'bg-red-500' : 'bg-indigo-400'}"></div>
+        ` : isToday ? `
+          <div class="mt-1.5 w-1.5 h-1.5 rounded-full bg-red-500"></div>
+        ` : '<div class="h-3"></div>'}
+      </button>
+    `);
+  }
+
+  return `
+    <div class="date-tape-container sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b border-gray-200 px-4 py-4 shadow-sm">
+      <div class="flex gap-2 overflow-x-auto scrollbar-hide snap-x snap-mandatory" id="date-tape-scroll">
+        ${days.join('')}
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Render alleen de dagen voor de Date Tape
+ * @param {Date} selectedDate - Geselecteerde datum
+ * @param {Object} eventCounts - Object met datums als keys en counts als values
+ * @returns {string} HTML string van dagen
+ */
+export function renderDateTapeDays(selectedDate, eventCounts = {}) {
+  const days = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Genereer 14 dagen: 3 voor, geselecteerd, 10 na
+  const startDate = new Date(selectedDate);
+  startDate.setDate(startDate.getDate() - 3);
+
+  for (let i = 0; i < 14; i++) {
+    const date = new Date(startDate);
+    date.setDate(startDate.getDate() + i);
+
+    const dateStr = formatDateKey(date);
+    const isSelected = date.toDateString() === selectedDate.toDateString();
+    const isToday = date.toDateString() === today.toDateString();
+    const eventCount = eventCounts[dateStr] || 0;
+
+    const dayName = date.toLocaleDateString('nl-BE', { weekday: 'short' }).substring(0, 2);
+    const dayNum = date.getDate();
+
+    days.push(`
+      <button
+        class="date-tape-day flex-shrink-0 flex flex-col items-center justify-center w-14 h-16 rounded-xl transition-all ${
+          isSelected
+            ? 'bg-indigo-600 text-white shadow-md'
+            : 'bg-white border border-gray-200 text-gray-700 hover:border-indigo-300 hover:bg-indigo-50'
+        }"
+        data-date="${dateStr}"
+      >
+        <span class="text-xs font-medium uppercase ${isSelected ? 'text-indigo-200' : 'text-gray-500'}">${dayName}</span>
+        <span class="text-lg font-bold">${dayNum}</span>
+        <div class="flex gap-0.5 mt-0.5">
+          ${isToday ? `<span class="w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-white' : 'bg-red-500'}"></span>` : ''}
+          ${eventCount > 0 ? `<span class="w-1.5 h-1.5 rounded-full ${isSelected ? 'bg-indigo-200' : 'bg-indigo-500'}"></span>` : ''}
+        </div>
+      </button>
+    `);
+  }
+
+  return days.join('');
+}
+
+/**
+ * b) Render Cluster Card - Multi-artiest event
+ * @param {object} event - Event object
+ * @param {string} currentUserId - UID van de huidige user
+ * @returns {string} HTML string
+ */
+export function renderClusterCard(event, currentUserId = null) {
+  const date = event.date ? new Date(event.date) : null;
+  const formattedDate = date ? date.toLocaleDateString('nl-BE', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long'
+  }) : 'Datum TBA';
+
+  const typeLabel = EVENT_TYPE_LABELS[event.type] || event.type;
+  const typeBadgeColor = getTypeBadgeColor(event.type, false);
+
+  const eventName = event.eventName || event.venue || 'Event';
+  const participants = event.participants || [];
+  const visibleParticipants = participants.slice(0, 5);
+  const hiddenCount = Math.max(0, participants.length - 5);
+
+  const attendeeCount = event.attendeeCount || 0;
+  const isAttending = currentUserId && (event.attendees || []).includes(currentUserId);
+
+  return `
+    <div class="cluster-card bg-white border border-gray-200 rounded-3xl p-6 shadow-sm hover:shadow-md transition-all" data-event-id="${event.id}">
+      <!-- Header -->
+      <div class="flex items-start justify-between mb-4">
+        <div class="flex-1">
+          <h3 class="text-2xl font-bold text-gray-900 mb-2">${eventName}</h3>
+          <div class="flex items-center gap-2 text-gray-600 text-sm">
+            <i data-lucide="calendar" class="w-4 h-4"></i>
+            <span>${formattedDate}</span>
+            ${event.eventTime ? `<span>• ${event.eventTime}</span>` : ''}
+          </div>
+          <div class="flex items-center gap-2 text-gray-600 text-sm mt-1">
+            <i data-lucide="map-pin" class="w-4 h-4"></i>
+            <span>${event.city || 'Locatie TBA'}${event.venue ? ` • ${event.venue}` : ''}</span>
+          </div>
+        </div>
+        <span class="px-3 py-1.5 text-xs font-bold rounded-full ${typeBadgeColor}">${typeLabel}</span>
+      </div>
+
+      <!-- Participants -->
+      ${participants.length > 0 ? `
+        <div class="mb-6">
+          <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Line-up</p>
+          <div class="flex items-center gap-2">
+            <!-- Avatar Stack -->
+            <div class="flex -space-x-3">
+              ${visibleParticipants.map((p, idx) => `
+                <img
+                  src="${p.artistProfilePicUrl || '/default-avatar.png'}"
+                  alt="${p.artistName}"
+                  class="w-10 h-10 rounded-full border-2 border-white object-cover hover:z-10 hover:scale-110 transition-transform cursor-pointer shadow-sm"
+                  title="${p.artistName}"
+                  style="z-index: ${10 - idx}"
+                >
+              `).join('')}
+              ${hiddenCount > 0 ? `
+                <div class="w-10 h-10 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center shadow-sm">
+                  <span class="text-xs font-bold text-gray-600">+${hiddenCount}</span>
+                </div>
+              ` : ''}
+            </div>
+            <span class="text-sm text-gray-600">${participants.length} artiest${participants.length > 1 ? 'en' : ''}</span>
+          </div>
+        </div>
+      ` : ''}
+
+      <!-- Actions -->
+      <div class="flex gap-3">
+        ${event.link ? `
+          <a href="${event.link}" target="_blank" rel="noopener noreferrer"
+            class="flex-1 px-5 py-3 bg-white border-2 border-indigo-600 text-indigo-600 font-semibold rounded-xl hover:bg-indigo-600 hover:text-white transition-all text-center">
+            Tickets
+          </a>
+        ` : ''}
+        <button
+          class="attend-event-btn px-5 py-2.5 font-semibold rounded-xl transition-all ${
+            isAttending
+              ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-sm'
+              : 'bg-indigo-50 border-2 border-indigo-600 text-indigo-600 hover:bg-indigo-600 hover:text-white'
+          }"
+          data-event-id="${event.id}"
+        >
+          ${isAttending ? '✓ ' : ''}Ik ga ook${attendeeCount > 0 ? ` (${attendeeCount})` : ''}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * c) Render Solo Gig Card - Enkele artiest optreden
+ * @param {object} event - Event object
+ * @param {string} currentUserId - UID van de huidige user
+ * @returns {string} HTML string
+ */
+export function renderSoloGigCard(event, currentUserId = null) {
+  const date = event.date ? new Date(event.date) : null;
+  const dayNum = date ? date.getDate() : '--';
+  const monthShort = date ? date.toLocaleDateString('nl-BE', { month: 'short' }).toUpperCase() : '';
+
+  const typeLabel = EVENT_TYPE_LABELS[event.type] || event.type;
+  const typeBadgeColor = getTypeBadgeColor(event.type, false);
+
+  const attendeeCount = event.attendeeCount || 0;
+  const isAttending = currentUserId && (event.attendees || []).includes(currentUserId);
+
+  return `
+    <div class="solo-gig-card bg-white border border-gray-200 rounded-2xl p-4 hover:shadow-md transition-all cursor-pointer" data-event-id="${event.id}">
+      <div class="flex items-center gap-4">
+        <!-- Date Block -->
+        <div class="flex-shrink-0 w-14 h-14 bg-indigo-50 border border-indigo-200 rounded-xl flex flex-col items-center justify-center">
+          <span class="text-lg font-bold text-indigo-600 leading-none">${dayNum}</span>
+          <span class="text-xs font-medium text-indigo-500 uppercase">${monthShort}</span>
+        </div>
+
+        <!-- Artist Info -->
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+          ${event.artistProfilePicUrl ? `
+            <img src="${event.artistProfilePicUrl}" alt="${event.artistName}"
+              class="w-10 h-10 rounded-full object-cover border-2 border-gray-100 shadow-sm">
+          ` : `
+            <div class="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center">
+              <i data-lucide="user" class="w-5 h-5 text-gray-400"></i>
+            </div>
+          `}
+
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 mb-1">
+              <h4 class="font-semibold text-gray-900 truncate">${event.artistName || 'Artiest'}</h4>
+              <span class="flex-shrink-0 px-2 py-0.5 text-xs font-medium rounded-full ${typeBadgeColor}">${typeLabel}</span>
+            </div>
+            <p class="text-sm text-gray-500 truncate">
+              ${event.venue || 'Venue TBA'} • ${event.city || 'Locatie TBA'}
+            </p>
+          </div>
+        </div>
+
+        <!-- Chevron -->
+        <div class="flex-shrink-0">
+          <i data-lucide="chevron-right" class="w-5 h-5 text-gray-400"></i>
+        </div>
+      </div>
+
+      <!-- Attend Button -->
+      <div class="mt-4 pt-4 border-t border-gray-100 flex justify-end">
+        <button
+          class="attend-event-btn px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+            isAttending
+              ? 'bg-indigo-600 text-white'
+              : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'
+          }"
+          data-event-id="${event.id}"
+        >
+          ${isAttending ? '✓ ' : '👋 '}Ik ga ook${attendeeCount > 0 ? ` (${attendeeCount})` : ''}
+        </button>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Render maandkalender grid
+ * @param {Date} selectedDate - Geselecteerde datum
+ * @param {Object} eventCounts - Object met datums en event counts
+ * @returns {string} HTML string
+ */
+export function renderMonthCalendar(selectedDate, eventCounts = {}) {
+  const year = selectedDate.getFullYear();
+  const month = selectedDate.getMonth();
+
+  // Maand en jaar header
+  const monthName = selectedDate.toLocaleDateString('nl-BE', { month: 'long', year: 'numeric' });
+  const capitalizedMonth = monthName.charAt(0).toUpperCase() + monthName.slice(1);
+
+  // Eerste dag van de maand en aantal dagen
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month + 1, 0);
+  const daysInMonth = lastDay.getDate();
+
+  // Dag van de week waarop maand begint (0 = zondag, 1 = maandag, etc.)
+  // Converteer naar maandag = 0
+  let startDay = firstDay.getDay() - 1;
+  if (startDay < 0) startDay = 6;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // Bouw kalender grid
+  let daysHtml = '';
+
+  // Lege cellen voor dagen voor de eerste
+  for (let i = 0; i < startDay; i++) {
+    daysHtml += '<div class="w-8 h-8"></div>';
+  }
+
+  // Dagen van de maand
+  for (let day = 1; day <= daysInMonth; day++) {
+    const date = new Date(year, month, day);
+    const dateStr = formatDateKey(date);
+    const isSelected = date.toDateString() === selectedDate.toDateString();
+    const isToday = date.toDateString() === today.toDateString();
+    const hasEvents = eventCounts[dateStr] > 0;
+
+    let classes = 'w-8 h-8 flex items-center justify-center text-sm rounded-lg cursor-pointer transition-colors relative';
+
+    if (isSelected) {
+      classes += ' bg-indigo-600 text-white font-semibold';
+    } else if (isToday) {
+      classes += ' bg-indigo-100 text-indigo-700 font-semibold';
+    } else {
+      classes += ' text-gray-700 hover:bg-gray-100';
+    }
+
+    daysHtml += `
+      <button class="calendar-day ${classes}" data-date="${dateStr}">
+        ${day}
+        ${hasEvents ? `<span class="absolute bottom-0.5 left-1/2 -translate-x-1/2 w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-indigo-500'}"></span>` : ''}
+      </button>
+    `;
+  }
+
+  return `
+    <div class="bg-white border border-gray-200 rounded-2xl p-4 shadow-sm mb-4">
+      <!-- Month Navigation -->
+      <div class="flex items-center justify-between mb-4">
+        <button id="month-prev" class="p-1 rounded-lg hover:bg-gray-100 transition-colors">
+          <i data-lucide="chevron-left" class="w-5 h-5 text-gray-600"></i>
+        </button>
+        <span class="font-semibold text-gray-900">${capitalizedMonth}</span>
+        <button id="month-next" class="p-1 rounded-lg hover:bg-gray-100 transition-colors">
+          <i data-lucide="chevron-right" class="w-5 h-5 text-gray-600"></i>
+        </button>
+      </div>
+
+      <!-- Weekday Headers -->
+      <div class="grid grid-cols-7 gap-1 mb-2">
+        <div class="w-8 h-6 flex items-center justify-center text-xs font-medium text-gray-500">Ma</div>
+        <div class="w-8 h-6 flex items-center justify-center text-xs font-medium text-gray-500">Di</div>
+        <div class="w-8 h-6 flex items-center justify-center text-xs font-medium text-gray-500">Wo</div>
+        <div class="w-8 h-6 flex items-center justify-center text-xs font-medium text-gray-500">Do</div>
+        <div class="w-8 h-6 flex items-center justify-center text-xs font-medium text-gray-500">Vr</div>
+        <div class="w-8 h-6 flex items-center justify-center text-xs font-medium text-gray-500">Za</div>
+        <div class="w-8 h-6 flex items-center justify-center text-xs font-medium text-gray-500">Zo</div>
+      </div>
+
+      <!-- Days Grid -->
+      <div class="grid grid-cols-7 gap-1">
+        ${daysHtml}
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * d) Render Agenda Filters (desktop sidebar)
+ * @param {Object} activeFilters - Actieve filters { types: [], region: 'all' }
+ * @param {Date} selectedDate - Geselecteerde datum voor month calendar
+ * @param {Object} eventCounts - Event counts per datum
+ * @returns {string} HTML string
+ */
+export function renderAgendaFilters(activeFilters = { types: [], region: 'all' }, selectedDate = new Date(), eventCounts = {}) {
+  // Ensure filters have default values
+  const filters = {
+    types: activeFilters?.types || [],
+    region: activeFilters?.region || 'all'
+  };
+
+  const monthCalendarHtml = renderMonthCalendar(selectedDate, eventCounts);
+
+  const eventTypes = [
+    { value: 'slam-finale', label: 'Slam Finales' },
+    { value: 'slam', label: 'Slams & Battles' },
+    { value: 'showcase', label: 'Showcases' },
+    { value: 'gig', label: 'Optredens' },
+    { value: 'open-mic', label: 'Open Mics' },
+    { value: 'workshop', label: 'Workshops' },
+    { value: 'feature', label: 'Features' }
+  ];
+
+  const regions = [
+    { value: 'all', label: 'Alle regio\'s' },
+    { value: 'vlaanderen', label: 'Vlaanderen' },
+    { value: 'nederland', label: 'Nederland' },
+    { value: 'brussel', label: 'Brussel' }
+  ];
+
+  return `
+    ${monthCalendarHtml}
+    <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+      <h3 class="text-lg font-bold text-gray-900 mb-4">Filters</h3>
+
+      <!-- Event Type Checkboxes -->
+      <div class="mb-6">
+        <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Type Event</p>
+        <div class="space-y-2">
+          ${eventTypes.map(type => `
+            <label class="flex items-center gap-3 cursor-pointer group">
+              <input
+                type="checkbox"
+                name="event-type"
+                value="${type.value}"
+                ${filters.types.includes(type.value) ? 'checked' : ''}
+                class="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-0"
+              >
+              <span class="text-sm text-gray-700 group-hover:text-gray-900 transition-colors">${type.label}</span>
+            </label>
+          `).join('')}
+        </div>
+      </div>
+
+      <!-- Region Dropdown -->
+      <div>
+        <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Regio</p>
+        <select
+          name="region-filter"
+          class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2.5 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+        >
+          ${regions.map(region => `
+            <option value="${region.value}" ${filters.region === region.value ? 'selected' : ''}>
+              ${region.label}
+            </option>
+          `).join('')}
+        </select>
+      </div>
+
+      <!-- Clear Filters -->
+      <button id="clear-filters-btn" class="mt-4 w-full px-4 py-2 text-sm text-gray-500 hover:text-gray-900 transition-colors">
+        Filters wissen
+      </button>
+    </div>
+  `;
+}
+
+/**
+ * Render attendee notificaties voor artiest's gigs pagina
+ * @param {Array} notifications - Array van event notifications met attendee profiles
+ * @returns {string} HTML string
+ */
+export function renderAttendeeNotifications(notifications = []) {
+  if (!notifications || notifications.length === 0) {
+    return '';
+  }
+
+  const totalAttendees = notifications.reduce((sum, n) => sum + n.attendeeCount, 0);
+
+  return `
+    <div class="bg-indigo-50 border border-indigo-100 rounded-2xl p-4 mb-6">
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center">
+          <i data-lucide="users" class="w-5 h-5 text-indigo-600"></i>
+        </div>
+        <div>
+          <h3 class="font-semibold text-gray-900">${totalAttendees} ${totalAttendees === 1 ? 'persoon komt' : 'mensen komen'} naar je shows!</h3>
+        </div>
+      </div>
+
+      <div class="space-y-3">
+        ${notifications.map(n => renderNotificationItem(n)).join('')}
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * Render een enkele notificatie item met expandable attendees
+ */
+function renderNotificationItem(notification) {
+  const dateStr = notification.date
+    ? notification.date.toLocaleDateString('nl-BE', { day: 'numeric', month: 'short' })
+    : 'TBA';
+
+  const attendeeAvatars = (notification.profiles || []).slice(0, 5).map(profile => {
+    if (profile.profilePicUrl) {
+      return `<img src="${profile.profilePicUrl}" alt="${profile.name}" class="w-8 h-8 rounded-full border-2 border-white object-cover" title="${profile.name}">`;
+    }
+    return `<div class="w-8 h-8 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center" title="${profile.name}">
+      <span class="text-xs font-medium text-gray-600">${profile.name.charAt(0).toUpperCase()}</span>
+    </div>`;
+  }).join('');
+
+  const extraCount = notification.attendeeCount - 5;
+  const extraBadge = extraCount > 0
+    ? `<div class="w-8 h-8 rounded-full border-2 border-white bg-indigo-100 flex items-center justify-center">
+        <span class="text-xs font-medium text-indigo-600">+${extraCount}</span>
+      </div>`
+    : '';
+
+  return `
+    <div class="bg-white rounded-xl p-3 shadow-sm">
+      <div class="flex items-center justify-between mb-2">
+        <div>
+          <span class="font-medium text-gray-900">${notification.venue}</span>
+          <span class="text-sm text-gray-500 ml-2">${dateStr}</span>
+        </div>
+        <span class="text-sm font-semibold text-indigo-600">${notification.attendeeCount} 👋</span>
+      </div>
+
+      <!-- Attendee Avatars -->
+      <div class="flex items-center">
+        <div class="flex -space-x-2">
+          ${attendeeAvatars}
+          ${extraBadge}
+        </div>
+        ${notification.profiles && notification.profiles.length > 0 ? `
+          <button class="toggle-attendees-btn ml-3 text-xs text-indigo-600 hover:text-indigo-800 font-medium" data-event-id="${notification.eventId}">
+            Bekijk namen
+          </button>
+        ` : ''}
+      </div>
+
+      <!-- Expanded names (hidden by default) -->
+      <div id="attendees-list-${notification.eventId}" class="hidden mt-3 pt-3 border-t border-gray-100">
+        <p class="text-xs text-gray-500 mb-2">Wie komen er:</p>
+        <div class="space-y-1">
+          ${(notification.profiles || []).map(p => `
+            <div class="flex items-center gap-2">
+              ${p.profilePicUrl
+                ? `<img src="${p.profilePicUrl}" class="w-6 h-6 rounded-full object-cover">`
+                : `<div class="w-6 h-6 rounded-full bg-gray-200 flex items-center justify-center">
+                    <span class="text-xs text-gray-600">${p.name.charAt(0)}</span>
+                  </div>`
+              }
+              <span class="text-sm text-gray-700">${p.name}</span>
+              <span class="text-xs text-gray-400">${p.role === 'programmer' ? '(Programmeur)' : p.role === 'artist' ? '(Artiest)' : ''}</span>
+            </div>
+          `).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * e) Render Agenda Layout - Volledige layout container
+ * @param {boolean} isMobile - Is mobile viewport
+ * @returns {string} HTML string
+ */
+export function renderAgendaLayout(isMobile = false) {
+  if (isMobile) {
+    return `
+      <div class="agenda-mobile-layout min-h-screen bg-white pb-20">
+        <!-- Date Tape wordt hier geïnjecteerd -->
+        <div id="agenda-date-tape"></div>
+
+        <!-- Events List -->
+        <div id="agenda-events-list" class="p-4 space-y-4">
+          <!-- Events worden hier geïnjecteerd -->
+          <div class="flex justify-center py-12">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+          </div>
+        </div>
+
+        <!-- Map Toggle FAB -->
+        <button id="toggle-map-view" class="fixed bottom-24 right-4 w-14 h-14 bg-indigo-600 text-white rounded-full shadow-lg hover:bg-indigo-700 transition-all flex items-center justify-center z-20">
+          <i data-lucide="map" class="w-6 h-6"></i>
+        </button>
+      </div>
+    `;
+  }
+
+  // Desktop 3-column layout
+  return `
+    <div class="agenda-desktop-layout min-h-screen bg-white">
+      <div class="flex gap-6 p-6 max-w-[1800px] mx-auto">
+        <!-- Left Sidebar: Calendar + Filters -->
+        <aside class="w-72 flex-shrink-0 space-y-6">
+          <!-- Mini Calendar placeholder -->
+          <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">Kalender</h3>
+            <p class="text-sm text-gray-500">Maandkalender komt hier...</p>
+          </div>
+
+          <!-- Filters -->
+          <div id="agenda-filters"></div>
+        </aside>
+
+        <!-- Middle: Date Tape + Events -->
+        <main class="flex-1 min-w-0 space-y-6">
+          <!-- Date Tape -->
+          <div id="agenda-date-tape"></div>
+
+          <!-- Events List -->
+          <div id="agenda-events-list" class="space-y-4">
+            <div class="flex justify-center py-12">
+              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+            </div>
+          </div>
+        </main>
+
+        <!-- Right Sidebar: Map -->
+        <aside class="w-96 flex-shrink-0">
+          <div class="sticky top-6 bg-white border border-gray-200 rounded-2xl p-6 h-[calc(100vh-3rem)] shadow-sm">
+            <h3 class="text-lg font-bold text-gray-900 mb-4">Kaart</h3>
+            <div class="flex items-center justify-center h-full text-gray-400">
+              <p class="text-sm">Kaart integratie komt later...</p>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  `;
+}
 </file>
 
 <file path="src/modules/dashboard/dashboard-service.js">
@@ -4775,6 +8551,113 @@ export function initTranslations() {
 
 </file>
 
+<file path="firestore.rules">
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. Gebruikersprofielen (basisbeveiliging)
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // 2. Programmeurs (Data voor dashboards)
+    match /programmers/{userId} {
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // 3. Artiesten (Profielen voor de zoekfunctie)
+    match /artists/{userId} {
+      // FIXED: Alleen ingelogde users kunnen artists zien
+      allow read: if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // 4. Conversations (Chat-functionaliteit)
+    match /conversations/{conversationId} {
+      // Lezen: alleen als je een participant bent
+      allow read: if request.auth != null && 
+                     request.auth.uid in resource.data.participants;
+      
+      // Aanmaken: alleen als je jezelf toevoegt als participant
+      allow create: if request.auth != null && 
+                       request.auth.uid in request.resource.data.participants;
+      
+      // Bijwerken: alleen participants (voor lastMessage updates)
+      allow update: if request.auth != null && 
+                       request.auth.uid in resource.data.participants;
+      
+      // Messages subcollectie
+      match /messages/{messageId} {
+        // Lezen: alleen als je participant bent van de parent conversation
+        allow read: if request.auth != null && 
+                       request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants;
+        
+        // Aanmaken: alleen als je participant bent EN de sender
+        allow create: if request.auth != null && 
+                         request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participants &&
+                         request.auth.uid == request.resource.data.senderId;
+      }
+    }
+
+    // 5. Aanbevelingen (Recommendations)
+    match /recommendations/{recommendationId} {
+      // Iedereen die ingelogd is mag aanbevelingen lezen
+      allow read: if request.auth != null;
+
+      // Alleen programmers mogen aanbevelingen aanmaken
+      allow create: if request.auth != null
+                    && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'programmer'
+                    && request.resource.data.programmerId == request.auth.uid
+                    && request.resource.data.isApproved == true;
+
+      // Alleen de auteur mag zijn aanbeveling verwijderen
+      allow delete: if request.auth != null
+                    && resource.data.programmerId == request.auth.uid;
+
+      // Bewerken is niet toegestaan
+      allow update: if false;
+    }
+
+    // 6. Events/Gigs collectie
+    match /events/{eventId} {
+      // Iedereen die ingelogd is kan events lezen
+      allow read: if request.auth != null;
+
+      // Alleen de eigenaar (artiest) kan events aanmaken
+      allow create: if request.auth != null
+        && request.resource.data.artistId == request.auth.uid;
+
+      // Eigenaar mag alles updaten, anderen alleen attendees
+      allow update: if request.auth != null
+        && (resource.data.artistId == request.auth.uid
+            || (request.resource.data.diff(resource.data).affectedKeys().hasOnly(['attendees', 'attendeeCount'])));
+
+      // Alleen eigenaar mag verwijderen
+      allow delete: if request.auth != null
+        && resource.data.artistId == request.auth.uid;
+    }
+
+    // 7. Mail collectie (voor email triggers) - blokkeren
+    match /mail/{docId} {
+      allow read, write: if false;
+    }
+    
+    // 8. Templates collectie - blokkeren
+    match /templates/{docId} {
+      allow read, write: if false;
+    }
+
+    // Blokkeer alle andere toegang
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
+</file>
+
 <file path="MOBILE-UI-IMPROVEMENTS.md">
 # Mobile UI Verbeteringen - Implementatie Overzicht
 
@@ -5386,6 +9269,43 @@ normalizeAllGenres()
   });
 </file>
 
+<file path="package.json">
+{
+  "name": "spoken-word-database",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:staging": "node scripts/validate-env.cjs staging && vite build --mode staging",
+    "build:prod": "node scripts/validate-env.cjs production && vite build --mode production",
+    "preview": "vite preview",
+    "deploy": "npm run build && node deploy.js",
+    
+    "// --- NIEUWE VEILIGHEIDS SCRIPTS ---": "",
+    "check:staging": "if grep -q 'VITE_APP_ENV=staging' .env.staging; then echo '✅ Environment is Staging'; else echo '❌ FOUT: Verkeerde env file!'; exit 1; fi",
+    "check:prod": "if grep -q 'VITE_APP_ENV=production' .env.production; then echo '✅ Environment is Production'; else echo '❌ FOUT: Verkeerde env file!'; exit 1; fi",
+    
+    "// --- AUTOMATED DEPLOYMENT (Bespaart AI Tokens) ---": "",
+    "release:staging": "npm run check:staging && npm run build:staging && firebase deploy --only hosting --project ddd-spark",
+    "release:prod": "npm run check:prod && npm run build:prod && firebase deploy --only hosting --project dans-dichter-db"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.19",
+    "ftp": "^0.3.10",
+    "ftp-deploy": "^2.4.7",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4",
+    "vite": "^5.0.0"
+  },
+  "dependencies": {
+    "firebase": "^10.7.0",
+    "firebase-admin": "^13.5.0"
+  }
+}
+</file>
+
 <file path="REFACTOR_SUMMARY.md">
 # Dashboard Modularization & Apple Styling - Refactor Summary
 
@@ -5920,48 +9840,6 @@ else
   echo "   Please save the downloaded key with this exact filename"
   exit 1
 fi
-</file>
-
-<file path="tailwind.config.js">
-/** @type {import('tailwindcss').Config} */
-export default {
-  content: [
-    "./index.html",
-    "./*.js",
-    "./src/**/*.js"
-  ],
-  safelist: [
-    // Purple colors (design system)
-    'bg-purple-50',
-    'bg-purple-100',
-    'bg-purple-200',
-    'bg-purple-500',
-    'bg-purple-600',
-    'bg-purple-700',
-    'bg-purple-800',
-    'text-purple-500',
-    'text-purple-600',
-    'text-purple-700',
-    'text-purple-800',
-    'border-purple-200',
-    'border-purple-500',
-    'border-purple-700',
-    'hover:bg-purple-50',
-    'hover:bg-purple-700',
-    'hover:bg-purple-800',
-    'hover:text-purple-600',
-    'hover:text-purple-800',
-    // Green colors (badges)
-    'bg-green-50',
-    'bg-green-100',
-    'text-green-700',
-    'border-green-200',
-  ],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
-}
 </file>
 
 <file path="src/modules/dashboard/dashboard-controller.js">
@@ -7112,40 +10990,163 @@ async function handleProgrammerProfileSubmit(e) {
 }
 </file>
 
-<file path="package.json">
+<file path="firestore.indexes.json">
 {
-  "name": "spoken-word-database",
-  "private": true,
-  "version": "0.0.0",
-  "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "build:staging": "node scripts/validate-env.cjs staging && vite build --mode staging",
-    "build:prod": "node scripts/validate-env.cjs production && vite build --mode production",
-    "preview": "vite preview",
-    "deploy": "npm run build && node deploy.js",
-    
-    "// --- NIEUWE VEILIGHEIDS SCRIPTS ---": "",
-    "check:staging": "if grep -q 'VITE_APP_ENV=staging' .env.staging; then echo '✅ Environment is Staging'; else echo '❌ FOUT: Verkeerde env file!'; exit 1; fi",
-    "check:prod": "if grep -q 'VITE_APP_ENV=production' .env.production; then echo '✅ Environment is Production'; else echo '❌ FOUT: Verkeerde env file!'; exit 1; fi",
-    
-    "// --- AUTOMATED DEPLOYMENT (Bespaart AI Tokens) ---": "",
-    "release:staging": "npm run check:staging && npm run build:staging && firebase deploy --only hosting --project ddd-spark",
-    "release:prod": "npm run check:prod && npm run build:prod && firebase deploy --only hosting --project dans-dichter-db"
+  "indexes": [
+    {
+      "collectionGroup": "conversations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "participants",
+          "arrayConfig": "CONTAINS"
+        },
+        {
+          "fieldPath": "lastMessageAt",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "recommendations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "artistId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "isApproved",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "DESCENDING"
+        },
+        {
+          "fieldPath": "__name__",
+          "order": "DESCENDING"
+        }
+      ],
+      "density": "SPARSE_ALL"
+    },
+    {
+      "collectionGroup": "events",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "artistId",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "date",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
+</file>
+
+<file path="tailwind.config.js">
+/** @type {import('tailwindcss').Config} */
+export default {
+  content: [
+    "./index.html",
+    "./*.js",
+    "./src/**/*.js"
+  ],
+  safelist: [
+    // Purple colors (design system)
+    'bg-purple-50',
+    'bg-purple-100',
+    'bg-purple-200',
+    'bg-purple-300',
+    'bg-purple-400',
+    'bg-purple-500',
+    'bg-purple-600',
+    'bg-purple-700',
+    'bg-purple-800',
+    'text-purple-300',
+    'text-purple-400',
+    'text-purple-500',
+    'text-purple-600',
+    'text-purple-700',
+    'text-purple-800',
+    'border-purple-200',
+    'border-purple-500',
+    'border-purple-700',
+    'hover:bg-purple-50',
+    'hover:bg-purple-500',
+    'hover:bg-purple-700',
+    'hover:bg-purple-800',
+    'hover:text-purple-600',
+    'hover:text-purple-800',
+    'hover:text-white',
+    // Green colors (badges)
+    'bg-green-50',
+    'bg-green-100',
+    'bg-green-600',
+    'text-green-700',
+    'border-green-200',
+    // Pink colors
+    'bg-pink-500',
+    // Gray dark mode colors
+    'bg-gray-50',
+    'bg-gray-100',
+    'bg-gray-200',
+    'bg-gray-600',
+    'bg-gray-700',
+    'bg-gray-800',
+    'bg-gray-900',
+    'bg-gray-950',
+    'text-gray-200',
+    'text-gray-300',
+    'text-gray-400',
+    'text-gray-500',
+    'border-gray-700',
+    'border-gray-800',
+    'hover:bg-gray-700',
+    'hover:bg-gray-800',
+    // Blue colors
+    'bg-blue-600',
+  ],
+  theme: {
+    extend: {
+      backdropBlur: {
+        xs: '2px',
+      },
+    },
   },
-  "devDependencies": {
-    "autoprefixer": "^10.4.19",
-    "ftp": "^0.3.10",
-    "ftp-deploy": "^2.4.7",
-    "postcss": "^8.4.38",
-    "tailwindcss": "^3.4.4",
-    "vite": "^5.0.0"
-  },
-  "dependencies": {
-    "firebase": "^10.7.0",
-    "firebase-admin": "^13.5.0"
-  }
+  plugins: [
+    function ({ addUtilities }) {
+      addUtilities({
+        '.scrollbar-hide': {
+          /* Firefox */
+          'scrollbar-width': 'none',
+          /* Safari and Chrome */
+          '&::-webkit-scrollbar': {
+            display: 'none'
+          }
+        },
+        '.snap-x': {
+          'scroll-snap-type': 'x mandatory',
+        },
+        '.snap-mandatory': {
+          'scroll-snap-type': 'x mandatory',
+        },
+        '.snap-start': {
+          'scroll-snap-align': 'start',
+        }
+      })
+    }
+  ],
 }
 </file>
 
@@ -7940,6 +11941,37 @@ select[multiple] {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border-width: 0;
+}
+
+/* Custom Map Markers */
+.custom-map-marker {
+  background: transparent;
+  border: none;
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+.custom-map-marker > div {
+  pointer-events: auto;
+}
+
+.custom-map-popup .leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  padding: 0;
+}
+
+.custom-map-popup .leaflet-popup-content {
+  margin: 12px;
+}
+
+.custom-map-popup .leaflet-popup-tip {
+  background: white;
+}
+
+/* Map container */
+#community-map {
+  border-radius: 16px;
+  overflow: hidden;
 }
 </file>
 
@@ -9925,6 +13957,8 @@ import { loadRecommendations, openRecommendationModal } from '../recommendations
 import { getStore } from '../../utils/store.js';
 import { showErrorToast } from '../../ui/toast.js';
 import { forceSearchResultsVisible, hideProfileSectionsForSearch } from './search-visibility-fix.js';
+import { loadArtistEventsForProfile } from '../calendar/calendar-controller.js';
+import { renderPublicGigsSection } from '../calendar/calendar-ui.js';
 
 /**
  * Setup artist search functionality (SECURED)
@@ -10627,6 +14661,9 @@ export async function showArtistDetail(artistId, pushHistory = true) {
     // Load recommendations for this artist
     loadRecommendations(artistId);
 
+    // Load and render artist gigs
+    loadAndRenderArtistGigs(artistId, artist.stageName || artist.firstName);
+
     // Setup "Write Recommendation" button (only for programmers)
     const writeRecommendationBtn = document.getElementById('write-recommendation-btn');
     if (writeRecommendationBtn) {
@@ -10687,6 +14724,67 @@ function showSearchView() {
   document.getElementById('artist-detail-view').style.display = 'none';
   document.getElementById('programmer-dashboard').style.display = 'block';
   window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/**
+ * Load and render artist gigs in the public profile view
+ * @param {string} artistId - Artist UID
+ * @param {string} artistName - Artist name for display
+ */
+async function loadAndRenderArtistGigs(artistId, artistName) {
+  try {
+    // Remove existing gigs sections before loading new ones
+    document.querySelectorAll('#artist-gigs-section, #artist-gigs-section-mobile').forEach(el => el.remove());
+
+    // Load artist events
+    const events = await loadArtistEventsForProfile(artistId);
+
+    if (!events || events.length === 0) {
+      console.log('[GIGS] No events found for artist:', artistId);
+      return;
+    }
+
+    // Find a good place to inject the gigs section (after bio/pitch or recommendations)
+    const detailPitch = document.getElementById('detail-pitch');
+    const mobilePitch = document.getElementById('mobile-detail-pitch');
+    const recommendationsSection = document.getElementById('detail-recommendations');
+
+    const gigsHtml = renderPublicGigsSection(events, artistName);
+
+    // Inject into desktop view (after pitch, before recommendations)
+    if (detailPitch && detailPitch.parentElement) {
+      const gigsContainer = document.createElement('div');
+      gigsContainer.id = 'artist-gigs-section';
+      gigsContainer.className = 'mt-8';
+      gigsContainer.innerHTML = gigsHtml;
+
+      // Insert after the pitch parent container
+      if (recommendationsSection) {
+        recommendationsSection.parentElement.insertBefore(gigsContainer, recommendationsSection);
+      } else {
+        detailPitch.parentElement.appendChild(gigsContainer);
+      }
+    }
+
+    // Inject into mobile view if it exists
+    if (mobilePitch && mobilePitch.parentElement) {
+      const mobileGigsContainer = document.createElement('div');
+      mobileGigsContainer.id = 'mobile-artist-gigs-section';
+      mobileGigsContainer.className = 'mt-8';
+      mobileGigsContainer.innerHTML = gigsHtml;
+      mobilePitch.parentElement.appendChild(mobileGigsContainer);
+    }
+
+    console.log('[GIGS] Rendered', events.length, 'events for artist:', artistId);
+
+    // Re-init Lucide icons
+    if (window.lucide) {
+      setTimeout(() => window.lucide.createIcons(), 100);
+    }
+
+  } catch (error) {
+    console.error('[GIGS] Error loading/rendering artist gigs:', error);
+  }
 }
 
 /**
@@ -11079,6 +15177,9 @@ function clearAllFilters() {
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
     <!-- Tailwind CSS -->
     <link rel="stylesheet" href="/style.css">
 </head>
@@ -11293,6 +15394,9 @@ function clearAllFilters() {
 
     <!-- Scripts -->
     <script type="module" src="/main.js"></script>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
 
     <!-- Initialize Lucide Icons -->
     <script>
@@ -11545,199 +15649,6 @@ async function restoreNavigation() {
 
 // Start de applicatie zodra de HTML-pagina is geladen
 document.addEventListener('DOMContentLoaded', initApp);
-</file>
-
-<file path="src/modules/navigation/navigation.js">
-/**
- * navigation.js
- * Centralized navigation component that renders both desktop and mobile navigation.
- * This ensures consistent navigation state across all views.
- */
-
-import { getStore } from '../../utils/store.js';
-
-/**
- * Renders the desktop top navigation bar
- */
-export function renderDesktopNav() {
-  const container = document.getElementById('desktop-nav-container');
-  if (!container) {
-    console.warn('Desktop nav container not found');
-    return;
-  }
-
-  const currentUserData = getStore('currentUserData');
-
-  // Get profile picture URL or generate placeholder
-  let profilePicUrl = 'https://placehold.co/40x40';
-  if (currentUserData?.profilePicUrl) {
-    profilePicUrl = currentUserData.profilePicUrl;
-  } else if (currentUserData) {
-    const initial = currentUserData.firstName?.charAt(0) || currentUserData.stageName?.charAt(0) || 'U';
-    profilePicUrl = `https://placehold.co/40x40/e0e7ff/6366f1?text=${encodeURIComponent(initial)}`;
-  }
-
-  // Only show search for programmers
-  const isProgrammer = currentUserData?.role === 'programmer';
-
-  container.innerHTML = `
-    <nav id="desktop-top-nav" class="hidden md:block bg-white border-b border-gray-200 sticky top-0 z-50">
-      <div class="max-w-7xl mx-auto px-6 py-4">
-        <div class="flex items-center justify-between">
-          <!-- Logo -->
-          <div class="flex items-center space-x-8">
-            <h1 class="text-xl font-bold text-gray-900 tracking-tight">
-              SPOKEN WORD PLATFORM
-            </h1>
-          </div>
-
-          <!-- Menu Items -->
-          <div class="flex items-center space-x-8">
-            ${isProgrammer ? `<button id="desktop-nav-search" class="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
-              Zoeken
-            </button>` : ''}
-            <button id="desktop-nav-profile" class="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
-              Profiel
-            </button>
-            <button id="desktop-nav-messages" class="relative text-gray-700 hover:text-indigo-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
-              Berichten
-              <span id="messages-badge-desktop" class="notification-badge hidden">0</span>
-            </button>
-
-            <!-- Profile Menu Dropdown -->
-            <div class="relative">
-              <button id="desktop-profile-btn" class="flex items-center space-x-2 text-gray-700 hover:text-indigo-600">
-                <img id="desktop-profile-pic" src="${profilePicUrl}" class="h-8 w-8 rounded-full object-cover" style="max-width: 32px; max-height: 32px;" alt="Profile">
-                <i data-lucide="chevron-down" class="h-4 w-4"></i>
-              </button>
-
-              <!-- Dropdown Menu (hidden by default) -->
-              <div id="desktop-profile-dropdown" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-200">
-                <button id="desktop-account-settings" class="block w-full text-left px-4 py-2.5 text-gray-700 hover:bg-gray-100 font-medium">
-                  Account Instellingen
-                </button>
-                <hr class="my-1 border-gray-200">
-                <button id="desktop-logout" class="block w-full text-left px-4 py-2.5 text-red-600 hover:bg-red-50 font-medium">
-                  Logout
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </nav>
-  `;
-
-  // Re-initialize Lucide icons
-  if (window.lucide) {
-    setTimeout(() => lucide.createIcons(), 50);
-  }
-}
-
-/**
- * Renders the mobile bottom navigation bar
- */
-export function renderMobileNav() {
-  const container = document.getElementById('mobile-nav-container');
-  if (!container) {
-    console.warn('Mobile nav container not found');
-    return;
-  }
-
-  const currentUserData = getStore('currentUserData');
-
-  // Only show search for programmers
-  const isProgrammer = currentUserData?.role === 'programmer';
-
-  container.innerHTML = `
-    <nav id="bottom-nav" class="bottom-nav">
-      ${isProgrammer ? `<button class="bottom-nav-item active" data-nav="search">
-        <i data-lucide="search" class="bottom-nav-icon"></i>
-        <span class="bottom-nav-label">Zoeken</span>
-      </button>` : ''}
-      <button class="bottom-nav-item" data-nav="messages">
-        <i data-lucide="message-circle" class="bottom-nav-icon"></i>
-        <span class="bottom-nav-label">Berichten</span>
-      </button>
-      <button class="bottom-nav-item" data-nav="profile">
-        <i data-lucide="user" class="bottom-nav-icon"></i>
-        <span class="bottom-nav-label">Profiel</span>
-      </button>
-      <button class="bottom-nav-item" data-nav="settings">
-        <i data-lucide="settings" class="bottom-nav-icon"></i>
-        <span class="bottom-nav-label">Instellingen</span>
-      </button>
-    </nav>
-  `;
-
-  // Re-initialize Lucide icons
-  if (window.lucide) {
-    setTimeout(() => lucide.createIcons(), 50);
-  }
-}
-
-/**
- * Updates the active state of mobile bottom navigation
- * @param {string} activeNav - The navigation item to mark as active ('search', 'messages', 'profile')
- */
-export function updateMobileNavActive(activeNav) {
-  const bottomNav = document.getElementById('bottom-nav');
-  if (!bottomNav) return;
-
-  const allItems = bottomNav.querySelectorAll('.bottom-nav-item');
-  allItems.forEach(item => {
-    if (item.dataset.nav === activeNav) {
-      item.classList.add('active');
-    } else {
-      item.classList.remove('active');
-    }
-  });
-}
-
-/**
- * Updates the desktop navigation based on current user state
- * Refreshes profile picture
- */
-export function updateDesktopNav() {
-  const currentUserData = getStore('currentUserData');
-  if (!currentUserData) return;
-
-  // Update profile picture
-  const profilePic = document.getElementById('desktop-profile-pic');
-  if (profilePic) {
-    if (currentUserData.profilePicUrl) {
-      profilePic.src = currentUserData.profilePicUrl;
-    } else {
-      const initial = currentUserData.firstName?.charAt(0) || currentUserData.stageName?.charAt(0) || 'U';
-      profilePic.src = `https://placehold.co/40x40/e0e7ff/6366f1?text=${encodeURIComponent(initial)}`;
-    }
-  }
-}
-
-/**
- * Shows or hides navigation based on authentication state
- * @param {boolean} isAuthenticated - Whether the user is logged in
- */
-export function setNavigationVisibility(isAuthenticated) {
-  const desktopContainer = document.getElementById('desktop-nav-container');
-  const mobileContainer = document.getElementById('mobile-nav-container');
-
-  if (isAuthenticated) {
-    // Show navigation
-    if (desktopContainer) desktopContainer.classList.remove('hidden');
-    if (mobileContainer) mobileContainer.classList.remove('hidden');
-  } else {
-    // Hide navigation AND clear contents
-    if (desktopContainer) {
-      desktopContainer.classList.add('hidden');
-      desktopContainer.innerHTML = ''; // Clear nav HTML
-    }
-    if (mobileContainer) {
-      mobileContainer.classList.add('hidden');
-      mobileContainer.innerHTML = ''; // Clear nav HTML
-    }
-  }
-}
 </file>
 
 <file path="src/modules/search/search-data.js">
@@ -12195,6 +16106,222 @@ export async function loadArtistsData(filters = {}) {
     }
 
     throw error;
+  }
+}
+</file>
+
+<file path="src/modules/navigation/navigation.js">
+/**
+ * navigation.js
+ * Centralized navigation component that renders both desktop and mobile navigation.
+ * This ensures consistent navigation state across all views.
+ */
+
+import { getStore } from '../../utils/store.js';
+
+/**
+ * Renders the desktop top navigation bar
+ */
+export function renderDesktopNav() {
+  const container = document.getElementById('desktop-nav-container');
+  if (!container) {
+    console.warn('Desktop nav container not found');
+    return;
+  }
+
+  const currentUserData = getStore('currentUserData');
+
+  // Get profile picture URL or generate placeholder
+  let profilePicUrl = 'https://placehold.co/40x40';
+  if (currentUserData?.profilePicUrl) {
+    profilePicUrl = currentUserData.profilePicUrl;
+  } else if (currentUserData) {
+    const initial = currentUserData.firstName?.charAt(0) || currentUserData.stageName?.charAt(0) || 'U';
+    profilePicUrl = `https://placehold.co/40x40/e0e7ff/6366f1?text=${encodeURIComponent(initial)}`;
+  }
+
+  // Only show search for programmers
+  const isProgrammer = currentUserData?.role === 'programmer';
+  const isArtist = currentUserData?.role === 'artist';
+
+  container.innerHTML = `
+    <nav id="desktop-top-nav" class="hidden md:block bg-white border-b border-gray-200 sticky top-0 z-50">
+      <div class="max-w-7xl mx-auto px-6 py-4">
+        <div class="flex items-center justify-between">
+          <!-- Logo -->
+          <div class="flex items-center space-x-8">
+            <h1 class="text-xl font-bold text-gray-900 tracking-tight">
+              SPOKEN WORD PLATFORM
+            </h1>
+          </div>
+
+          <!-- Menu Items -->
+          <div class="flex items-center space-x-8">
+            ${isProgrammer ? `<button id="desktop-nav-search" class="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+              Zoeken
+            </button>` : ''}
+            ${isProgrammer ? `<button id="desktop-nav-agenda" class="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+              Agenda
+            </button>` : ''}
+            <button id="desktop-nav-profile" class="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+              Profiel
+            </button>
+            ${isArtist ? `<button id="desktop-nav-gigs" class="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+              Gigs
+            </button>` : ''}
+            ${isArtist ? `<button id="desktop-nav-events" class="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+              Evenementen
+            </button>` : ''}
+            <button id="desktop-nav-messages" class="relative text-gray-700 hover:text-indigo-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+              Berichten
+              <span id="messages-badge-desktop" class="notification-badge hidden">0</span>
+            </button>
+
+            <!-- Profile Menu Dropdown -->
+            <div class="relative">
+              <button id="desktop-profile-btn" class="flex items-center space-x-2 text-gray-700 hover:text-indigo-600">
+                <img id="desktop-profile-pic" src="${profilePicUrl}" class="h-8 w-8 rounded-full object-cover" style="max-width: 32px; max-height: 32px;" alt="Profile">
+                <i data-lucide="chevron-down" class="h-4 w-4"></i>
+              </button>
+
+              <!-- Dropdown Menu (hidden by default) -->
+              <div id="desktop-profile-dropdown" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-200">
+                <button id="desktop-account-settings" class="block w-full text-left px-4 py-2.5 text-gray-700 hover:bg-gray-100 font-medium">
+                  Account Instellingen
+                </button>
+                <hr class="my-1 border-gray-200">
+                <button id="desktop-logout" class="block w-full text-left px-4 py-2.5 text-red-600 hover:bg-red-50 font-medium">
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+  `;
+
+  // Re-initialize Lucide icons
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 50);
+  }
+}
+
+/**
+ * Renders the mobile bottom navigation bar
+ */
+export function renderMobileNav() {
+  const container = document.getElementById('mobile-nav-container');
+  if (!container) {
+    console.warn('Mobile nav container not found');
+    return;
+  }
+
+  const currentUserData = getStore('currentUserData');
+
+  // Only show search for programmers
+  const isProgrammer = currentUserData?.role === 'programmer';
+  const isArtist = currentUserData?.role === 'artist';
+
+  container.innerHTML = `
+    <nav id="bottom-nav" class="bottom-nav">
+      ${isProgrammer ? `<button class="bottom-nav-item active" data-nav="search">
+        <i data-lucide="search" class="bottom-nav-icon"></i>
+        <span class="bottom-nav-label">Zoeken</span>
+      </button>` : ''}
+      ${isProgrammer ? `<button class="bottom-nav-item" data-nav="agenda">
+        <i data-lucide="calendar-days" class="bottom-nav-icon"></i>
+        <span class="bottom-nav-label">Agenda</span>
+      </button>` : ''}
+      ${isArtist ? `<button class="bottom-nav-item" data-nav="gigs">
+        <i data-lucide="calendar" class="bottom-nav-icon"></i>
+        <span class="bottom-nav-label">Gigs</span>
+      </button>` : ''}
+      ${isArtist ? `<button class="bottom-nav-item" data-nav="events">
+        <i data-lucide="calendar-days" class="bottom-nav-icon"></i>
+        <span class="bottom-nav-label">Events</span>
+      </button>` : ''}
+      <button class="bottom-nav-item" data-nav="messages">
+        <i data-lucide="message-circle" class="bottom-nav-icon"></i>
+        <span class="bottom-nav-label">Berichten</span>
+      </button>
+      <button class="bottom-nav-item" data-nav="profile">
+        <i data-lucide="user" class="bottom-nav-icon"></i>
+        <span class="bottom-nav-label">Profiel</span>
+      </button>
+      <button class="bottom-nav-item" data-nav="settings">
+        <i data-lucide="settings" class="bottom-nav-icon"></i>
+        <span class="bottom-nav-label">Instellingen</span>
+      </button>
+    </nav>
+  `;
+
+  // Re-initialize Lucide icons
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 50);
+  }
+}
+
+/**
+ * Updates the active state of mobile bottom navigation
+ * @param {string} activeNav - The navigation item to mark as active ('search', 'messages', 'profile')
+ */
+export function updateMobileNavActive(activeNav) {
+  const bottomNav = document.getElementById('bottom-nav');
+  if (!bottomNav) return;
+
+  const allItems = bottomNav.querySelectorAll('.bottom-nav-item');
+  allItems.forEach(item => {
+    if (item.dataset.nav === activeNav) {
+      item.classList.add('active');
+    } else {
+      item.classList.remove('active');
+    }
+  });
+}
+
+/**
+ * Updates the desktop navigation based on current user state
+ * Refreshes profile picture
+ */
+export function updateDesktopNav() {
+  const currentUserData = getStore('currentUserData');
+  if (!currentUserData) return;
+
+  // Update profile picture
+  const profilePic = document.getElementById('desktop-profile-pic');
+  if (profilePic) {
+    if (currentUserData.profilePicUrl) {
+      profilePic.src = currentUserData.profilePicUrl;
+    } else {
+      const initial = currentUserData.firstName?.charAt(0) || currentUserData.stageName?.charAt(0) || 'U';
+      profilePic.src = `https://placehold.co/40x40/e0e7ff/6366f1?text=${encodeURIComponent(initial)}`;
+    }
+  }
+}
+
+/**
+ * Shows or hides navigation based on authentication state
+ * @param {boolean} isAuthenticated - Whether the user is logged in
+ */
+export function setNavigationVisibility(isAuthenticated) {
+  const desktopContainer = document.getElementById('desktop-nav-container');
+  const mobileContainer = document.getElementById('mobile-nav-container');
+
+  if (isAuthenticated) {
+    // Show navigation
+    if (desktopContainer) desktopContainer.classList.remove('hidden');
+    if (mobileContainer) mobileContainer.classList.remove('hidden');
+  } else {
+    // Hide navigation AND clear contents
+    if (desktopContainer) {
+      desktopContainer.classList.add('hidden');
+      desktopContainer.innerHTML = ''; // Clear nav HTML
+    }
+    if (mobileContainer) {
+      mobileContainer.classList.add('hidden');
+      mobileContainer.innerHTML = ''; // Clear nav HTML
+    }
   }
 }
 </file>
@@ -15657,15 +19784,22 @@ export function initNavigation() {
  * Setup bottom navigation with event delegation
  */
 function setupBottomNavigation() {
-  const bottomNav = document.getElementById('bottom-nav');
-  if (!bottomNav) return;
-
-  // Use event delegation on the bottom nav container
-  bottomNav.addEventListener('click', (e) => {
-    const navItem = e.target.closest('.bottom-nav-item');
+  // Use event delegation on document.body so it works even when bottom-nav is re-rendered
+  document.body.addEventListener('click', (e) => {
+    const navItem = e.target.closest('.bottom-nav-item, [data-nav]');
     if (!navItem) return;
 
+    // Only handle if it's actually in the bottom nav
+    const bottomNav = document.getElementById('bottom-nav');
+    if (!bottomNav || !bottomNav.contains(navItem)) return;
+
     const navAction = navItem.dataset.nav;
+    if (!navAction) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    console.log('[NAV] Mobile nav clicked:', navAction);
 
     // Update active state
     updateBottomNavActive(navAction);
@@ -15688,6 +19822,21 @@ function setupBottomNavigation() {
         break;
       case 'settings':
         showAccountSettings(); // Updates hash internally
+        break;
+      case 'gigs':
+        import('../modules/calendar/calendar-views.js').then(module => {
+          module.showGigsPage();
+        });
+        break;
+      case 'agenda':
+        import('../modules/calendar/calendar-views.js').then(module => {
+          module.showAgendaPage();
+        });
+        break;
+      case 'events':
+        import('../modules/calendar/calendar-views.js').then(module => {
+          module.showEventsPage();
+        });
         break;
     }
 
@@ -15737,6 +19886,30 @@ function setupDesktopNavigation() {
     // Desktop Messages
     if (e.target.closest('#desktop-nav-messages')) {
       showMessages(); // Updates hash internally
+      return;
+    }
+
+    // Desktop Gigs (for artists)
+    if (e.target.closest('#desktop-nav-gigs')) {
+      import('../modules/calendar/calendar-views.js').then(module => {
+        module.showGigsPage();
+      });
+      return;
+    }
+
+    // Desktop Agenda (for programmers)
+    if (e.target.closest('#desktop-nav-agenda')) {
+      import('../modules/calendar/calendar-views.js').then(module => {
+        module.showAgendaPage();
+      });
+      return;
+    }
+
+    // Desktop Events (for artists)
+    if (e.target.closest('#desktop-nav-events')) {
+      import('../modules/calendar/calendar-views.js').then(module => {
+        module.showEventsPage();
+      });
       return;
     }
 

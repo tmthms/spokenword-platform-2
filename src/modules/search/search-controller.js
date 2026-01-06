@@ -785,55 +785,49 @@ function showSearchView() {
  * @param {string} artistName - Artist name for display
  */
 async function loadAndRenderArtistGigs(artistId, artistName) {
-  try {
-    // Remove existing gigs sections before loading new ones
-    document.querySelectorAll('#artist-gigs-section, #artist-gigs-section-mobile').forEach(el => el.remove());
+  const container = document.getElementById('detail-gigs-list');
+  if (!container) {
+    console.warn('[GIGS] Container not found');
+    return;
+  }
 
-    // Load artist events
+  try {
     const events = await loadArtistEventsForProfile(artistId);
 
     if (!events || events.length === 0) {
-      console.log('[GIGS] No events found for artist:', artistId);
+      container.innerHTML = `
+        <p style="color: #9ca3af; font-size: 14px; text-align: center; padding: 16px 0;">
+          No upcoming gigs
+        </p>
+      `;
       return;
     }
 
-    // Find a good place to inject the gigs section (after bio/pitch or recommendations)
-    const detailPitch = document.getElementById('detail-pitch');
-    const mobilePitch = document.getElementById('mobile-detail-pitch');
-    const recommendationsSection = document.getElementById('detail-recommendations');
+    // Show max 3 gigs in sidebar
+    const displayEvents = events.slice(0, 3);
 
-    const gigsHtml = renderPublicGigsSection(events, artistName);
+    container.innerHTML = displayEvents.map(event => {
+      const date = event.date?.toDate ? event.date.toDate() : new Date(event.date);
+      const formattedDate = date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
 
-    // Inject into desktop view (after pitch, before recommendations)
-    if (detailPitch && detailPitch.parentElement) {
-      const gigsContainer = document.createElement('div');
-      gigsContainer.id = 'artist-gigs-section';
-      gigsContainer.className = 'mt-8';
-      gigsContainer.innerHTML = gigsHtml;
+      return `
+        <div style="background: #f9fafb; border-radius: 12px; padding: 12px; border-left: 3px solid #805ad5;">
+          <p style="font-size: 14px; font-weight: 600; color: #1a1a2e; margin-bottom: 4px;">${event.title || 'Untitled Event'}</p>
+          <p style="font-size: 13px; color: #6b7280;">${formattedDate} • ${event.location || 'Location TBD'}</p>
+        </div>
+      `;
+    }).join('');
 
-      // Insert after the pitch parent container
-      if (recommendationsSection) {
-        recommendationsSection.parentElement.insertBefore(gigsContainer, recommendationsSection);
-      } else {
-        detailPitch.parentElement.appendChild(gigsContainer);
-      }
+    // Add "more" indicator if there are more events
+    if (events.length > 3) {
+      container.innerHTML += `
+        <p style="font-size: 13px; color: #805ad5; text-align: center; margin-top: 8px;">
+          + ${events.length - 3} more gigs
+        </p>
+      `;
     }
 
-    // Inject into mobile view if it exists
-    if (mobilePitch && mobilePitch.parentElement) {
-      const mobileGigsContainer = document.createElement('div');
-      mobileGigsContainer.id = 'mobile-artist-gigs-section';
-      mobileGigsContainer.className = 'mt-8';
-      mobileGigsContainer.innerHTML = gigsHtml;
-      mobilePitch.parentElement.appendChild(mobileGigsContainer);
-    }
-
-    console.log('[GIGS] Rendered', events.length, 'events for artist:', artistId);
-
-    // Re-init Lucide icons
-    if (window.lucide) {
-      setTimeout(() => window.lucide.createIcons(), 100);
-    }
+    console.log('[GIGS] Rendered', displayEvents.length, 'of', events.length, 'gigs');
 
   } catch (error) {
     console.error('[GIGS] Error loading/rendering artist gigs:', error);
