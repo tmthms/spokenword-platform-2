@@ -1,24 +1,23 @@
 /**
  * seed-cms-data.js
- * Script to seed CMS data in Firestore
+ * Script to seed CMS data in Firestore using Firebase Admin SDK
  * Run with: node seed-cms-data.js
  */
 
-import { initializeApp } from 'firebase/app';
-import { getFirestore, doc, setDoc } from 'firebase/firestore';
+import admin from 'firebase-admin';
+import { readFileSync } from 'fs';
 
-// Firebase config (same as in your app)
-const firebaseConfig = {
-  apiKey: "AIzaSyBJPi3YT2iYz1rQf4TnMb6c7WPrOK7J2hY",
-  authDomain: "ddd-spark.firebaseapp.com",
-  projectId: "ddd-spark",
-  storageBucket: "ddd-spark.firebasestorage.app",
-  messagingSenderId: "878863421870",
-  appId: "1:878863421870:web:e3a91c3e0c0e1f0e8c7e3a"
-};
+// Load service account key
+const serviceAccount = JSON.parse(
+  readFileSync('./serviceAccountKey-staging.json', 'utf8')
+);
 
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+// Initialize Firebase Admin
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount)
+});
+
+const db = admin.firestore();
 
 /**
  * Dutch content
@@ -272,19 +271,19 @@ async function seedCMSData() {
     console.log('🌱 Seeding CMS data...');
 
     // Create content_nl
-    await setDoc(doc(db, 'cms', 'content_nl'), content_nl);
+    await db.collection('cms').doc('content_nl').set(content_nl);
     console.log('✓ Created cms/content_nl');
 
     // Create content_en
-    await setDoc(doc(db, 'cms', 'content_en'), content_en);
+    await db.collection('cms').doc('content_en').set(content_en);
     console.log('✓ Created cms/content_en');
 
     // Create styles
-    await setDoc(doc(db, 'cms', 'styles'), styles);
+    await db.collection('cms').doc('styles').set(styles);
     console.log('✓ Created cms/styles');
 
     // Create email_templates
-    await setDoc(doc(db, 'cms', 'email_templates'), email_templates);
+    await db.collection('cms').doc('email_templates').set(email_templates);
     console.log('✓ Created cms/email_templates');
 
     console.log('✅ CMS data seeded successfully!');
