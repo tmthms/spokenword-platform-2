@@ -55,12 +55,12 @@ export function renderProgrammerDashboard() {
                  class="w-36 h-36 rounded-full flex items-center justify-center"
                  style="background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 100%); border: 4px solid #8b5cf6;">
               <span id="programmer-avatar-initial-desktop" class="text-5xl font-bold text-white">P</span>
+              <img id="programmer-overview-pic-desktop"
+                   src=""
+                   alt="Profile"
+                   class="w-36 h-36 rounded-full object-cover"
+                   style="border: 4px solid #8b5cf6; max-width: 144px; max-height: 144px; display: none; position: absolute;">
             </div>
-            <img id="programmer-overview-pic-desktop"
-                 src=""
-                 alt="Profile"
-                 class="w-36 h-36 rounded-full object-cover"
-                 style="border: 4px solid #8b5cf6; max-width: 144px; max-height: 144px; display: none;">
           </div>
 
           <!-- Info Section -->
@@ -138,12 +138,12 @@ export function renderProgrammerDashboard() {
                class="w-28 h-28 rounded-full flex items-center justify-center"
                style="background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 100%); border: 4px solid #8b5cf6;">
             <span id="programmer-avatar-initial-mobile" class="text-4xl font-bold text-white">P</span>
+            <img id="programmer-overview-pic-mobile"
+                 src=""
+                 alt="Profile"
+                 class="w-28 h-28 rounded-full object-cover"
+                 style="border: 4px solid #8b5cf6; max-width: 112px; max-height: 112px; display: none; position: absolute;">
           </div>
-          <img id="programmer-overview-pic-mobile"
-               src=""
-               alt="Profile"
-               class="w-28 h-28 rounded-full object-cover"
-               style="border: 4px solid #8b5cf6; max-width: 112px; max-height: 112px; display: none;">
         </div>
 
         <h2 id="programmer-overview-name-mobile" class="text-2xl font-bold text-gray-900 text-center mb-1">Tim Thomaesz</h2>
