@@ -39,12 +39,13 @@ import { initTranslations } from './src/utils/translations.js';
 import { setupRecommendations } from './src/modules/recommendations/recommendations.js';
 import { setupUserSettings } from './src/modules/settings/user-settings.js';
 import { renderDesktopNav, renderMobileNav } from './src/modules/navigation/navigation.js';
+import { initCMS } from './src/services/cms-service.js';
 
 /**
  * initApp
  * De hoofdfunctie die de hele applicatie initialiseert.
  */
-function initApp() {
+async function initApp() {
   try {
     console.log("=".repeat(60));
     console.log("🚀 Starting application initialization...");
@@ -56,6 +57,9 @@ function initApp() {
 
     // Initialize translations (default to Dutch)
     initTranslations();
+
+    // Initialize CMS (load content, styles, email templates)
+    await initCMS('nl');
 
     // Render navigation components (will be hidden until user logs in)
     renderDesktopNav();
@@ -168,6 +172,12 @@ function setupBrowserNavigation() {
 
       case 'account-settings':
         showAccountSettings();
+        break;
+
+      case 'cms':
+        const uiModuleCMS = await import('./src/ui/ui.js');
+        const { showCMSDashboard: showCMS } = await import('./src/modules/cms/cms-dashboard.js');
+        showCMS();
         break;
 
       case 'dashboard':

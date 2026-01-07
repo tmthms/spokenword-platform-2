@@ -16,6 +16,7 @@ import { renderArtistSearch } from '../modules/search/search-ui.js';
 import { loadConversations } from '../modules/messaging/messaging-controller.js';
 import { populateProgrammerEditor, renderProgrammerProfileEditor, setupProfileFormHandlers } from '../modules/programmer/programmer-profile.js';
 import { setNavigationVisibility, updateDesktopNav, updateMobileNavActive } from '../modules/navigation/navigation.js';
+import { showCMSDashboard, isAdmin } from '../modules/cms/cms-dashboard.js';
 
 // Importeer de view renderers
 import {
@@ -1540,3 +1541,6 @@ export async function showArtistEditProfile() {
   }
 }
 
+
+// Re-export CMS dashboard
+export { showCMSDashboard, isAdmin } from '../modules/cms/cms-dashboard.js';
