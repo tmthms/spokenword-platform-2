@@ -122,6 +122,13 @@ export async function displayConversations(conversations, currentUserId) {
   // Render mobile (no inline event listeners - handled by event delegation)
   if (mobileList) {
     mobileList.innerHTML = cardsHTML;
+    mobileList.classList.remove('hidden');
+    mobileList.style.display = 'block';
+  }
+
+  // Hide mobile empty state if we have conversations
+  if (mobileEmptyEl) {
+    mobileEmptyEl.style.display = conversations.length === 0 ? 'block' : 'none';
   }
 }
 
