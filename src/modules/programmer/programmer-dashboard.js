@@ -20,11 +20,24 @@ import { showEditProfile, showPublicProfile } from '../../ui/ui.js';
  * DESKTOP: New compact card layout matching mockup
  * MOBILE: Original layout preserved (unchanged)
  */
-export function renderProgrammerDashboard() {
+export function renderProgrammerDashboard(options = {}) {
+  const { searchModeOnly = false } = options;
   const container = document.getElementById('programmer-dashboard');
 
   if (!container) {
     console.warn("Programmer dashboard container not found");
+    return;
+  }
+
+  // If search mode only, render minimal container
+  if (searchModeOnly) {
+    container.innerHTML = `
+      <div id="programmer-profile-desktop" class="hidden"></div>
+      <div id="programmer-profile-mobile" class="hidden"></div>
+      <div id="programmer-profile-editor" class="hidden"></div>
+      <div id="artist-search-section" class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100" style="min-height: 400px;"></div>
+    `;
+    console.log("Programmer dashboard HTML rendered (search mode only)");
     return;
   }
 

@@ -528,7 +528,7 @@ export function showSearchOnly() {
 
   // Import programmer dashboard
   import('../modules/programmer/programmer-dashboard.js').then(dashboardModule => {
-    dashboardModule.renderProgrammerDashboard();
+    dashboardModule.renderProgrammerDashboard({ searchModeOnly: true });
 
     // HIDE profile sections by adding class to programmer-dashboard
     if (programmerDashboard) {
