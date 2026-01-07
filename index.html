@@ -343,6 +343,15 @@
         .search-mode #programmer-profile-mobile {
             display: none !important;
         }
+
+        /* Force hide profile on search page */
+        #programmer-profile-desktop.search-hidden,
+        #programmer-profile-mobile.search-hidden {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            overflow: hidden !important;
+        }
     </style>
 
     <!-- Lucide Icons -->
