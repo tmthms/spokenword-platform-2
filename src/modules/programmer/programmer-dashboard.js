@@ -42,140 +42,175 @@ export function renderProgrammerDashboard() {
         </div>
     </div>
 
-    <!-- ========== PROGRAMMER PROFILE OVERVIEW ========== -->
-    <div id="programmer-profile-overview" class="mb-6">
+    <!-- ========== PROGRAMMER PROFILE - DESKTOP (>= md) ========== -->
+    <div class="hidden md:block">
 
-        <!-- ===== MOBILE VIEW (< md) - ORIGINAL UNCHANGED ===== -->
-        <div class="block md:hidden bg-white p-10 rounded-3xl shadow-sm border border-gray-100">
-            <div class="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
-                <h3 class="text-3xl font-bold text-gray-900 tracking-tight">Your Profile</h3>
-                <button id="edit-programmer-profile-btn-mobile" class="bg-indigo-600 text-white px-6 py-3 rounded-2xl font-semibold hover:bg-indigo-700 transition-all shadow-sm hover:shadow">
-                    Edit Profile
-                </button>
+      <!-- Profile Header Card -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-6">
+        <div class="flex items-center gap-8">
+
+          <!-- Large Circular Avatar -->
+          <div class="flex-shrink-0">
+            <div id="programmer-avatar-placeholder-desktop"
+                 class="w-36 h-36 rounded-full flex items-center justify-center"
+                 style="background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 100%); border: 4px solid #8b5cf6;">
+              <span id="programmer-avatar-initial-desktop" class="text-5xl font-bold text-white">P</span>
             </div>
-            <div class="grid grid-cols-1 gap-10">
-                <div class="flex justify-center">
-                    <img id="programmer-overview-pic-mobile" src="https://placehold.co/200x200/e0e7ff/6366f1?text=P" alt="Profile" class="w-52 h-52 object-cover rounded-3xl shadow-lg border border-gray-100">
-                </div>
-                <div class="space-y-5">
-                    <div class="pb-5 border-b border-gray-50 text-center">
-                        <h4 id="programmer-overview-name-mobile" class="text-4xl font-bold text-gray-900 tracking-tight mb-2">Programmer Name</h4>
-                        <p id="programmer-overview-org-mobile" class="text-2xl text-indigo-600 font-semibold">Organization Name</p>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4 text-sm">
-                        <div class="bg-gray-50 p-3 rounded-xl">
-                            <span class="block text-xs font-semibold text-gray-500 mb-1">EMAIL</span>
-                            <span id="programmer-overview-email-mobile" class="font-medium text-gray-900">email@example.com</span>
-                        </div>
-                        <div class="bg-gray-50 p-3 rounded-xl">
-                            <span class="block text-xs font-semibold text-gray-500 mb-1">PHONE</span>
-                            <span id="programmer-overview-phone-mobile" class="font-medium text-gray-900">Phone</span>
-                        </div>
-                        <div class="col-span-2 bg-gray-50 p-3 rounded-xl">
-                            <span class="block text-xs font-semibold text-gray-500 mb-1">WEBSITE</span>
-                            <a id="programmer-overview-website-mobile" href="#" target="_blank" class="font-medium text-indigo-600 hover:text-indigo-800 transition-colors">Website</a>
-                        </div>
-                    </div>
-                    <div class="bg-gray-50 p-4 rounded-xl">
-                        <p class="text-xs font-semibold text-gray-500 mb-2">ABOUT ORGANIZATION</p>
-                        <p id="programmer-overview-about-mobile" class="text-gray-700 leading-relaxed">Organization description here</p>
-                    </div>
-                </div>
+            <img id="programmer-overview-pic-desktop"
+                 src=""
+                 alt="Profile"
+                 class="hidden w-36 h-36 rounded-full object-cover"
+                 style="border: 4px solid #8b5cf6; max-width: 144px; max-height: 144px;">
+          </div>
+
+          <!-- Info Section -->
+          <div class="flex-grow">
+            <h2 id="programmer-overview-name-desktop" class="text-3xl font-bold text-gray-900 mb-1">Tim Thomaesz</h2>
+            <p id="programmer-overview-org-desktop" class="text-lg mb-3" style="color: #7c3aed;">ddd</p>
+
+            <!-- Verified Badge -->
+            <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium mb-5"
+                 style="background-color: #10b981; color: white;">
+              <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+              </svg>
+              <span>Verified Programmer</span>
             </div>
+
+            <!-- Action Buttons -->
+            <div class="flex items-center gap-3">
+              <button id="edit-programmer-profile-btn"
+                      class="px-6 py-2.5 rounded-lg font-semibold text-sm text-white transition-all"
+                      style="background-color: #3b82f6;">
+                Edit Profile
+              </button>
+              <button id="view-public-profile-btn"
+                      class="px-6 py-2.5 rounded-lg font-semibold text-sm transition-all bg-white"
+                      style="color: #3b82f6; border: 2px solid #3b82f6;">
+                View Public Profile
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Two Column Cards -->
+      <div class="grid grid-cols-2 gap-6">
+        <!-- Contact Information Card -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <h3 class="text-xl font-bold text-gray-900 mb-4">Contact Information</h3>
+          <div class="space-y-4">
+            <div class="flex items-center gap-3 pb-3 border-b border-gray-100">
+              <svg class="w-5 h-5 flex-shrink-0" style="color: #7c3aed;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+              </svg>
+              <span id="programmer-overview-email-desktop" class="text-gray-700">programmer1@test.com</span>
+            </div>
+            <div class="flex items-center gap-3 pb-3 border-b border-gray-100">
+              <svg class="w-5 h-5 flex-shrink-0" style="color: #7c3aed;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+              </svg>
+              <span id="programmer-overview-phone-desktop" class="text-gray-500">Not specified</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <svg class="w-5 h-5 flex-shrink-0" style="color: #7c3aed;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+              </svg>
+              <a id="programmer-overview-website-desktop" href="#" target="_blank" class="text-gray-500">Not specified</a>
+            </div>
+          </div>
         </div>
 
-        <!-- ===== DESKTOP VIEW (>= md) - MOCKUP MATCHED ===== -->
-        <div class="hidden md:block bg-white rounded-2xl shadow-sm border border-gray-100">
-            <div class="p-8">
-                <div class="flex items-start gap-8">
-
-                    <!-- Left: Avatar (square with rounded corners) -->
-                    <div class="flex-shrink-0">
-                        <div id="programmer-avatar-placeholder" class="w-32 h-32 rounded-2xl flex items-center justify-center border-2"
-                             style="background-color: #c4b5fd; border-color: #a78bfa;">
-                            <span id="programmer-avatar-initial" class="text-5xl font-bold" style="color: #7c3aed;">P</span>
-                        </div>
-                        <img id="programmer-overview-pic-desktop"
-                             src=""
-                             alt="Profile"
-                             class="hidden w-32 h-32 rounded-2xl object-cover border-2"
-                             style="border-color: #a78bfa; max-width: 128px; max-height: 128px;">
-                    </div>
-
-                    <!-- Right: Info -->
-                    <div class="flex-grow">
-                        <!-- Row 1: Name + Badge -->
-                        <div class="flex items-start justify-between mb-1">
-                            <div>
-                                <h2 id="programmer-overview-name-desktop" class="text-3xl font-bold" style="color: #7c3aed;">Tim Thomaesz</h2>
-                                <p id="programmer-overview-org-desktop" class="text-lg text-gray-600">Dans Dichter Dans</p>
-                            </div>
-                            <div class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border"
-                                 style="background-color: #f0fdf4; color: #15803d; border-color: #bbf7d0;">
-                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                </svg>
-                                <span>Verified Programmer</span>
-                            </div>
-                        </div>
-
-                        <!-- Row 2: Contact Info (single line with icons) -->
-                        <div class="flex items-center gap-6 text-sm text-gray-600 mt-4 mb-6">
-                            <div class="flex items-center gap-2">
-                                <svg class="w-4 h-4" style="color: #7c3aed;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                                </svg>
-                                <span id="programmer-overview-email-desktop">programmer1@test.com</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <svg class="w-4 h-4" style="color: #7c3aed;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                                </svg>
-                                <span id="programmer-overview-phone-desktop">+31612345671</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <svg class="w-4 h-4" style="color: #7c3aed;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
-                                </svg>
-                                <a id="programmer-overview-website-desktop" href="#" target="_blank" style="color: #7c3aed;">eventco.nl</a>
-                            </div>
-                        </div>
-
-                        <!-- Row 3: Action Buttons (dark filled) -->
-                        <div class="flex items-center gap-3">
-                            <button id="edit-programmer-profile-btn"
-                                    class="px-6 py-2.5 rounded-lg font-semibold text-sm transition-all"
-                                    style="background-color: #1f2937; color: white;">
-                                Edit Profile
-                            </button>
-                            <button id="view-public-profile-btn"
-                                    class="px-6 py-2.5 rounded-lg font-semibold text-sm transition-all"
-                                    style="background-color: #1f2937; color: white;">
-                                View Public Profile
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <!-- About Organization Card -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+          <h3 class="text-xl font-bold text-gray-900 mb-4">About Organization</h3>
+          <p id="programmer-overview-about-desktop" class="text-gray-600 leading-relaxed">No description available</p>
         </div>
+      </div>
     </div>
 
-    <!-- About Organization Card (Desktop only) -->
-    <div id="programmer-about-card" class="hidden md:block bg-white rounded-2xl shadow-sm border border-gray-100 mb-6 p-6">
-        <h3 class="text-xl font-bold text-gray-900 mb-3">About Organization</h3>
-        <p id="programmer-overview-about-desktop" class="text-gray-600 leading-relaxed">Organization description here</p>
+    <!-- ========== PROGRAMMER PROFILE - MOBILE (< md) ========== -->
+    <div class="block md:hidden">
+      <!-- Profile Card -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4">
+        <div class="flex justify-center mb-4">
+          <div id="programmer-avatar-placeholder-mobile"
+               class="w-28 h-28 rounded-full flex items-center justify-center"
+               style="background: linear-gradient(135deg, #c4b5fd 0%, #a78bfa 100%); border: 4px solid #8b5cf6;">
+            <span id="programmer-avatar-initial-mobile" class="text-4xl font-bold text-white">P</span>
+          </div>
+          <img id="programmer-overview-pic-mobile"
+               src=""
+               alt="Profile"
+               class="hidden w-28 h-28 rounded-full object-cover"
+               style="border: 4px solid #8b5cf6; max-width: 112px; max-height: 112px;">
+        </div>
+
+        <h2 id="programmer-overview-name-mobile" class="text-2xl font-bold text-gray-900 text-center mb-1">Tim Thomaesz</h2>
+        <p id="programmer-overview-org-mobile" class="text-base text-center mb-3" style="color: #7c3aed;">ddd</p>
+
+        <div class="flex justify-center mb-5">
+          <div class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium"
+               style="background-color: #10b981; color: white;">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+            </svg>
+            <span>Verified Programmer</span>
+          </div>
+        </div>
+
+        <div class="space-y-3">
+          <button id="edit-programmer-profile-btn-mobile"
+                  class="w-full py-3 rounded-xl font-semibold text-white transition-all"
+                  style="background-color: #3b82f6;">
+            Edit Profile
+          </button>
+          <button id="view-public-profile-btn-mobile"
+                  class="w-full py-3 rounded-xl font-semibold transition-all bg-white"
+                  style="color: #3b82f6; border: 2px solid #3b82f6;">
+            View Public Profile
+          </button>
+        </div>
+      </div>
+
+      <!-- Contact Information Card -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">Contact Information</h3>
+        <div class="space-y-4">
+          <div class="flex items-center gap-3 pb-3 border-b border-gray-100">
+            <svg class="w-5 h-5 flex-shrink-0" style="color: #7c3aed;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+            </svg>
+            <span id="programmer-overview-email-mobile" class="text-gray-700">programmer1@test.com</span>
+          </div>
+          <div class="flex items-center gap-3 pb-3 border-b border-gray-100">
+            <svg class="w-5 h-5 flex-shrink-0" style="color: #7c3aed;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
+            </svg>
+            <span id="programmer-overview-phone-mobile" class="text-gray-500">Not specified</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <svg class="w-5 h-5 flex-shrink-0" style="color: #7c3aed;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9"></path>
+            </svg>
+            <a id="programmer-overview-website-mobile" href="#" target="_blank" class="text-gray-500">Not specified</a>
+          </div>
+        </div>
+      </div>
+
+      <!-- About Organization Card -->
+      <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+        <h3 class="text-lg font-bold text-gray-900 mb-4">About Organization</h3>
+        <p id="programmer-overview-about-mobile" class="text-gray-600 leading-relaxed">No description available</p>
+      </div>
     </div>
 
-    <!-- Programmer Profile Editor -->
+    <!-- Hidden sections -->
     <div id="programmer-profile-editor" class="hidden"></div>
-
-    <!-- Search Section -->
-    <div id="artist-search-section" class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100" style="min-height: 400px;"></div>
-
-    <div class="text-center py-4 text-xs text-gray-400">v2.3 [29-12-2025]</div>
+    <div id="artist-search-section" class="hidden"></div>
   `;
 
-  console.log("Programmer dashboard HTML rendered");
+  console.log("Programmer dashboard HTML rendered (wireframe layout)");
 }
 
 /**
