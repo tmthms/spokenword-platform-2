@@ -495,8 +495,7 @@ export function showDashboard() {
 }
 
 /**
- * Shows ONLY the search view (hides profile sections)
- * Used when clicking "Zoeken" in navigation
+ * Shows the search page (completely separate view)
  */
 export function showSearchOnly() {
   const currentUserData = getStore('currentUserData');
@@ -507,59 +506,13 @@ export function showSearchOnly() {
     return;
   }
 
-  console.log('[UI] Showing search-only view');
+  console.log('[UI] Showing search page (separate view)');
 
-  // Render the dashboard container structure
-  showPage('dashboard-view');
+  // Render completely separate search view
+  import('./view-renderers.js').then(viewModule => {
+    viewModule.renderSearchPage();
 
-  // Get containers
-  const artistDashboard = document.getElementById('artist-dashboard');
-  const programmerDashboard = document.getElementById('programmer-dashboard');
-
-  // Hide artist dashboard
-  if (artistDashboard) {
-    artistDashboard.style.display = 'none';
-  }
-
-  // Show programmer dashboard container (needed for search section)
-  if (programmerDashboard) {
-    programmerDashboard.style.display = 'block';
-  }
-
-  // Import programmer dashboard
-  import('../modules/programmer/programmer-dashboard.js').then(dashboardModule => {
-    dashboardModule.renderProgrammerDashboard();
-
-    // Set search mode flag on container
-    if (programmerDashboard) {
-      programmerDashboard.dataset.mode = 'search';
-    }
-
-    // Function to hide profile sections
-    const hideProfileSections = () => {
-      const container = document.getElementById('programmer-dashboard');
-      if (container && container.dataset.mode === 'search') {
-        const desktopProfile = document.getElementById('programmer-profile-desktop');
-        const mobileProfile = document.getElementById('programmer-profile-mobile');
-
-        if (desktopProfile) desktopProfile.style.setProperty('display', 'none', 'important');
-        if (mobileProfile) mobileProfile.style.setProperty('display', 'none', 'important');
-      }
-    };
-
-    // Hide immediately and repeatedly for first 500ms
-    hideProfileSections();
-    const interval = setInterval(hideProfileSections, 50);
-    setTimeout(() => clearInterval(interval), 500);
-
-    // SHOW search section
-    const searchSection = document.getElementById('artist-search-section');
-    if (searchSection) {
-      searchSection.style.display = 'block';
-      searchSection.classList.remove('hidden');
-    }
-
-    // Import and setup search
+    // Import and setup search (uses #artist-search-section which exists in renderSearchPage)
     import('../modules/search/search-ui.js').then(searchUiModule => {
       searchUiModule.renderArtistSearch();
 

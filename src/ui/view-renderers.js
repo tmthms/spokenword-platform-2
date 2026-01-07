@@ -1260,3 +1260,19 @@ export function renderPublicProfilePage() {
   `;
 }
 
+/**
+ * Renders the Search Page (completely separate from profile)
+ */
+export function renderSearchPage() {
+  const appContent = document.getElementById('app-content');
+
+  appContent.innerHTML = `
+    <div id="search-view" style="min-height: 100vh; background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 50%, #ede9fe 100%);">
+      <div class="max-w-7xl mx-auto px-4 py-6">
+        <!-- Use same ID so renderArtistSearch() works without changes -->
+        <div id="artist-search-section" class="bg-white p-4 md:p-6 rounded-2xl shadow-sm border border-gray-100" style="min-height: 400px;"></div>
+      </div>
+    </div>
+  `;
+}
+
