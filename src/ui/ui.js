@@ -530,22 +530,27 @@ export function showSearchOnly() {
   import('../modules/programmer/programmer-dashboard.js').then(dashboardModule => {
     dashboardModule.renderProgrammerDashboard();
 
-    // Force hide profile sections immediately after render
-    setTimeout(() => {
-      const desktopProfile = document.getElementById('programmer-profile-desktop');
-      const mobileProfile = document.getElementById('programmer-profile-mobile');
+    // Set search mode flag on container
+    if (programmerDashboard) {
+      programmerDashboard.dataset.mode = 'search';
+    }
 
-      if (desktopProfile) {
-        desktopProfile.style.display = 'none';
-        desktopProfile.style.setProperty('display', 'none', 'important');
-      }
-      if (mobileProfile) {
-        mobileProfile.style.display = 'none';
-        mobileProfile.style.setProperty('display', 'none', 'important');
-      }
+    // Function to hide profile sections
+    const hideProfileSections = () => {
+      const container = document.getElementById('programmer-dashboard');
+      if (container && container.dataset.mode === 'search') {
+        const desktopProfile = document.getElementById('programmer-profile-desktop');
+        const mobileProfile = document.getElementById('programmer-profile-mobile');
 
-      console.log('[SEARCH] Profile sections hidden:', { desktopProfile, mobileProfile });
-    }, 50);
+        if (desktopProfile) desktopProfile.style.setProperty('display', 'none', 'important');
+        if (mobileProfile) mobileProfile.style.setProperty('display', 'none', 'important');
+      }
+    };
+
+    // Hide immediately and repeatedly for first 500ms
+    hideProfileSections();
+    const interval = setInterval(hideProfileSections, 50);
+    setTimeout(() => clearInterval(interval), 500);
 
     // SHOW search section
     const searchSection = document.getElementById('artist-search-section');
@@ -617,6 +622,11 @@ export function showProgrammerProfile() {
   // Show programmer dashboard
   if (programmerDashboard) {
     programmerDashboard.style.display = 'block';
+  }
+
+  // Clear search mode flag
+  if (programmerDashboard) {
+    programmerDashboard.dataset.mode = 'profile';
   }
 
   // Remove search-mode class to show profile sections
