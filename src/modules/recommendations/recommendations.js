@@ -197,14 +197,19 @@ async function handleRecommendationSubmit(e) {
  * @param {string} artistId - The artist's user ID
  */
 export async function loadRecommendations(artistId) {
-  const container = document.getElementById('detail-recommendations-list');
+  // Desktop container
+  const desktopContainer = document.getElementById('detail-recommendations-list');
+  const desktopViewAllBtn = document.getElementById('view-all-recommendations-btn');
 
-  if (!container) {
-    console.warn('[RECOMMENDATIONS] Container not found');
-    return [];
-  }
+  // Mobile containers
+  const mobileContainer = document.getElementById('mobile-detail-recommendations');
+  const mobileViewAllBtn = document.getElementById('mobile-view-all-recommendations-btn');
+  const mobileWriteBtn = document.getElementById('mobile-write-recommendation-btn');
 
-  container.innerHTML = '<p style="color: #9ca3af; font-size: 14px;">Loading...</p>';
+  // Set loading state
+  const loadingHTML = '<p style="color: #9ca3af; font-size: 14px;">Loading...</p>';
+  if (desktopContainer) desktopContainer.innerHTML = loadingHTML;
+  if (mobileContainer) mobileContainer.innerHTML = loadingHTML;
 
   try {
     const recommendationsRef = collection(db, 'recommendations');
@@ -221,25 +226,31 @@ export async function loadRecommendations(artistId) {
       recommendations.push({ id: doc.id, ...doc.data() });
     });
 
+    // Store for modal
+    window._allRecommendations = recommendations;
+    window._currentArtistId = artistId;
+
+    const emptyHTML = `
+      <p style="color: #9ca3af; font-size: 14px; text-align: center; padding: 16px 0;">
+        No recommendations yet
+      </p>
+    `;
+
     if (recommendations.length === 0) {
-      container.innerHTML = `
-        <p style="color: #9ca3af; font-size: 14px; text-align: center; padding: 16px 0;">
-          No recommendations yet
-        </p>
-      `;
-      // Hide "View All" button when no recommendations
-      const viewAllBtn = document.getElementById('view-all-recommendations-btn');
-      if (viewAllBtn) viewAllBtn.style.display = 'none';
+      if (desktopContainer) desktopContainer.innerHTML = emptyHTML;
+      if (mobileContainer) mobileContainer.innerHTML = emptyHTML;
+      if (desktopViewAllBtn) desktopViewAllBtn.style.display = 'none';
+      if (mobileViewAllBtn) mobileViewAllBtn.style.display = 'none';
       return recommendations;
     }
 
-    // Show max 3 in sidebar
+    // Show max 3 in preview
     const displayRecs = recommendations.slice(0, 3);
 
-    container.innerHTML = displayRecs.map(rec => {
+    const previewHTML = displayRecs.map(rec => {
       const date = rec.createdAt?.toDate ? rec.createdAt.toDate() : new Date();
       const formattedDate = date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: 'numeric' });
-      const shortText = rec.text.length > 100 ? rec.text.substring(0, 100) + '...' : rec.text;
+      const shortText = rec.text && rec.text.length > 100 ? rec.text.substring(0, 100) + '...' : (rec.text || '');
 
       return `
         <div style="background: #f9fafb; border-radius: 12px; padding: 12px;">
@@ -252,23 +263,31 @@ export async function loadRecommendations(artistId) {
       `;
     }).join('');
 
-    // Update "View All" button text with count
-    const viewAllBtn = document.getElementById('view-all-recommendations-btn');
-    if (viewAllBtn) {
-      viewAllBtn.style.display = 'block';
-      viewAllBtn.textContent = `View All ${recommendations.length} Recommendations`;
+    // Update desktop
+    if (desktopContainer) desktopContainer.innerHTML = previewHTML;
+
+    // Update mobile
+    if (mobileContainer) mobileContainer.innerHTML = previewHTML;
+
+    // Update buttons
+    const btnText = `View All ${recommendations.length} Recommendations`;
+    if (desktopViewAllBtn) {
+      desktopViewAllBtn.style.display = 'block';
+      desktopViewAllBtn.textContent = btnText;
+    }
+    if (mobileViewAllBtn) {
+      mobileViewAllBtn.style.display = 'block';
+      mobileViewAllBtn.textContent = btnText;
     }
 
-    // Store all recommendations for modal (we'll use this in Deel 2)
-    window._allRecommendations = recommendations;
-    window._currentArtistId = artistId;
-
-    console.log('[RECOMMENDATIONS] Loaded', recommendations.length, 'total,', displayRecs.length, 'displayed');
+    console.log('[RECOMMENDATIONS] Loaded', recommendations.length, 'for desktop and mobile');
     return recommendations;
 
   } catch (error) {
     console.error('[RECOMMENDATIONS] Error:', error);
-    container.innerHTML = `<p style="color: #ef4444; font-size: 14px;">Error loading recommendations</p>`;
+    const errorHTML = '<p style="color: #ef4444; font-size: 14px;">Error loading recommendations</p>';
+    if (desktopContainer) desktopContainer.innerHTML = errorHTML;
+    if (mobileContainer) mobileContainer.innerHTML = errorHTML;
     return [];
   }
 }
