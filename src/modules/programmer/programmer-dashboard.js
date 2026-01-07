@@ -59,8 +59,8 @@ export function renderProgrammerDashboard() {
             <img id="programmer-overview-pic-desktop"
                  src=""
                  alt="Profile"
-                 class="hidden w-36 h-36 rounded-full object-cover"
-                 style="border: 4px solid #8b5cf6; max-width: 144px; max-height: 144px;">
+                 class="w-36 h-36 rounded-full object-cover"
+                 style="border: 4px solid #8b5cf6; max-width: 144px; max-height: 144px; display: none;">
           </div>
 
           <!-- Info Section -->
@@ -142,8 +142,8 @@ export function renderProgrammerDashboard() {
           <img id="programmer-overview-pic-mobile"
                src=""
                alt="Profile"
-               class="hidden w-28 h-28 rounded-full object-cover"
-               style="border: 4px solid #8b5cf6; max-width: 112px; max-height: 112px;">
+               class="w-28 h-28 rounded-full object-cover"
+               style="border: 4px solid #8b5cf6; max-width: 112px; max-height: 112px; display: none;">
         </div>
 
         <h2 id="programmer-overview-name-mobile" class="text-2xl font-bold text-gray-900 text-center mb-1">Tim Thomaesz</h2>

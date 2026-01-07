@@ -509,21 +509,8 @@ export function showSearchOnly() {
 
   console.log('[UI] Showing search-only view');
 
-  // Ensure navigation is visible FIRST
-  setNavigationVisibility(true);
-  import('../modules/navigation/navigation.js').then(navModule => {
-    navModule.renderDesktopNav();
-    navModule.renderMobileNav();
-    if (window.lucide) {
-      setTimeout(() => lucide.createIcons(), 50);
-    }
-  });
-
   // Render the dashboard container structure
-  showPage('dashboard-view', false);
-
-  // Update URL
-  window.history.pushState({ view: 'search' }, '', '#search');
+  showPage('dashboard-view');
 
   // Get containers
   const artistDashboard = document.getElementById('artist-dashboard');
@@ -543,40 +530,49 @@ export function showSearchOnly() {
   import('../modules/programmer/programmer-dashboard.js').then(dashboardModule => {
     dashboardModule.renderProgrammerDashboard();
 
-    // HIDE all profile sections
+    // HIDE the entire desktop and mobile profile sections
+    const desktopProfile = programmerDashboard.querySelector('.hidden.md\\:block');
+    const mobileProfile = programmerDashboard.querySelector('.block.md\\:hidden');
+
+    if (desktopProfile) desktopProfile.style.display = 'none';
+    if (mobileProfile) mobileProfile.style.display = 'none';
+
+    // Also hide by ID for safety
     const sectionsToHide = [
-      'programmer-profile-overview',
-      'programmer-public-preview',
-      'programmer-profile-editor',
-      'programmer-about-card',
-      'programmer-pending-view'
+      'programmer-pending-view',
+      'programmer-profile-editor'
     ];
 
     sectionsToHide.forEach(id => {
       const el = document.getElementById(id);
-      if (el) {
-        el.style.display = 'none';
-      }
+      if (el) el.style.display = 'none';
     });
 
     // SHOW search section
     const searchSection = document.getElementById('artist-search-section');
     if (searchSection) {
       searchSection.style.display = 'block';
+      searchSection.classList.remove('hidden');
     }
 
-    // Import search UI (renderArtistSearch is in search-ui.js)
+    // Import and setup search
     import('../modules/search/search-ui.js').then(searchUiModule => {
       searchUiModule.renderArtistSearch();
 
-      // Import search controller (setupArtistSearch and loadArtists are in search-controller.js)
       import('../modules/search/search-controller.js').then(searchControllerModule => {
         searchControllerModule.setupArtistSearch();
         searchControllerModule.loadArtists();
       });
     });
-
   });
+
+  // Update URL
+  window.history.pushState({ view: 'search' }, '', '#search');
+
+  // Re-initialize icons
+  if (window.lucide) {
+    setTimeout(() => lucide.createIcons(), 100);
+  }
 }
 
 /**
