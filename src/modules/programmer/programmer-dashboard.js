@@ -13,6 +13,7 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { doc, updateDoc } from "firebase/firestore";
 import { db } from '../../services/firebase.js';
 import { setLanguage } from '../../utils/translations.js';
+import { showEditProfile, showPublicProfile } from '../../ui/ui.js';
 
 /**
  * Renders the programmer dashboard HTML structure
@@ -959,11 +960,7 @@ function setupEditProfileButton() {
       e.preventDefault();
       e.stopPropagation();
       console.log("[PROGRAMMER DASHBOARD] Edit profile button clicked");
-
-      // Navigate to edit profile page
-      import('../../ui/ui.js').then(module => {
-        module.showEditProfile();
-      });
+      showEditProfile();
     }
 
     // Handle View Public Profile button
@@ -972,11 +969,7 @@ function setupEditProfileButton() {
       e.preventDefault();
       e.stopPropagation();
       console.log("[PROGRAMMER DASHBOARD] View public profile clicked");
-
-      // Navigate to public profile page
-      import('../../ui/ui.js').then(module => {
-        module.showPublicProfile();
-      });
+      showPublicProfile();
     }
   });
 
