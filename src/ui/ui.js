@@ -528,23 +528,24 @@ export function showSearchOnly() {
 
   // Import programmer dashboard
   import('../modules/programmer/programmer-dashboard.js').then(dashboardModule => {
-    dashboardModule.renderProgrammerDashboard({ searchModeOnly: true });
+    dashboardModule.renderProgrammerDashboard();
 
-    // HIDE profile sections by adding class to programmer-dashboard
-    if (programmerDashboard) {
-      programmerDashboard.classList.add('search-mode');
-    }
+    // Force hide profile sections immediately after render
+    setTimeout(() => {
+      const desktopProfile = document.getElementById('programmer-profile-desktop');
+      const mobileProfile = document.getElementById('programmer-profile-mobile');
 
-    // Also hide by ID for safety
-    const sectionsToHide = [
-      'programmer-pending-view',
-      'programmer-profile-editor'
-    ];
+      if (desktopProfile) {
+        desktopProfile.style.display = 'none';
+        desktopProfile.style.setProperty('display', 'none', 'important');
+      }
+      if (mobileProfile) {
+        mobileProfile.style.display = 'none';
+        mobileProfile.style.setProperty('display', 'none', 'important');
+      }
 
-    sectionsToHide.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) el.style.display = 'none';
-    });
+      console.log('[SEARCH] Profile sections hidden:', { desktopProfile, mobileProfile });
+    }, 50);
 
     // SHOW search section
     const searchSection = document.getElementById('artist-search-section');
