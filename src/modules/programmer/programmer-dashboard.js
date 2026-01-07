@@ -43,7 +43,7 @@ export function renderProgrammerDashboard() {
     </div>
 
     <!-- ========== PROGRAMMER PROFILE - DESKTOP (>= md) ========== -->
-    <div class="hidden md:block">
+    <div id="programmer-profile-desktop" class="hidden md:block">
 
       <!-- Profile Header Card -->
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-6">
@@ -130,7 +130,7 @@ export function renderProgrammerDashboard() {
     </div>
 
     <!-- ========== PROGRAMMER PROFILE - MOBILE (< md) ========== -->
-    <div class="block md:hidden">
+    <div id="programmer-profile-mobile" class="block md:hidden">
       <!-- Profile Card -->
       <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-4">
         <div class="flex justify-center mb-4">

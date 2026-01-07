@@ -530,9 +530,9 @@ export function showSearchOnly() {
   import('../modules/programmer/programmer-dashboard.js').then(dashboardModule => {
     dashboardModule.renderProgrammerDashboard();
 
-    // HIDE the entire desktop and mobile profile sections
-    const desktopProfile = programmerDashboard.querySelector('.hidden.md\\:block');
-    const mobileProfile = programmerDashboard.querySelector('.block.md\\:hidden');
+    // HIDE the entire desktop and mobile profile sections by ID
+    const desktopProfile = document.getElementById('programmer-profile-desktop');
+    const mobileProfile = document.getElementById('programmer-profile-mobile');
 
     if (desktopProfile) desktopProfile.style.display = 'none';
     if (mobileProfile) mobileProfile.style.display = 'none';
