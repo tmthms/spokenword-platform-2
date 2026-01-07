@@ -530,12 +530,10 @@ export function showSearchOnly() {
   import('../modules/programmer/programmer-dashboard.js').then(dashboardModule => {
     dashboardModule.renderProgrammerDashboard();
 
-    // HIDE the entire desktop and mobile profile sections by ID
-    const desktopProfile = document.getElementById('programmer-profile-desktop');
-    const mobileProfile = document.getElementById('programmer-profile-mobile');
-
-    if (desktopProfile) desktopProfile.style.display = 'none';
-    if (mobileProfile) mobileProfile.style.display = 'none';
+    // HIDE profile sections by adding class to programmer-dashboard
+    if (programmerDashboard) {
+      programmerDashboard.classList.add('search-mode');
+    }
 
     // Also hide by ID for safety
     const sectionsToHide = [
@@ -618,6 +616,11 @@ export function showProgrammerProfile() {
   // Show programmer dashboard
   if (programmerDashboard) {
     programmerDashboard.style.display = 'block';
+  }
+
+  // Remove search-mode class to show profile sections
+  if (programmerDashboard) {
+    programmerDashboard.classList.remove('search-mode');
   }
 
   // Import, render and setup
