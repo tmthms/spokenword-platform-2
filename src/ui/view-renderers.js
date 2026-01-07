@@ -5,6 +5,7 @@
  */
 
 import { getStore } from '../utils/store.js';
+import { getCMSText } from '../services/cms-service.js';
 
 /**
  * Renders the Home/Welcome view
@@ -23,9 +24,9 @@ export function renderHome() {
             </svg>
           </div>
           <h1 class="text-4xl font-bold text-gray-900 mb-3 tracking-tight">
-            SPOKEN WORD<br/>PLATFORM
+            ${getCMSText('home.hero.title', 'SPOKEN WORD PLATFORM')}
           </h1>
-          <p class="text-lg text-gray-600 mb-2">Find Your Voice.</p>
+          <p class="text-lg text-gray-600 mb-2">${getCMSText('home.hero.subtitle', 'Find Your Voice.')}</p>
           <p class="text-lg text-indigo-600 font-semibold">Book Your Artist.</p>
         </div>
 
@@ -84,24 +85,24 @@ export function renderLogin() {
     <div id="login-view" class="min-h-screen flex items-center justify-center px-6 py-12">
       <div class="w-full max-w-sm">
         <div class="text-center mb-8">
-          <h2 class="text-3xl font-bold text-gray-900 mb-2">Welkom terug</h2>
+          <h2 class="text-3xl font-bold text-gray-900 mb-2">${getCMSText('auth.login.title', 'Welkom terug')}</h2>
           <p class="text-gray-600">Log in op je account</p>
         </div>
 
         <form id="login-form" class="space-y-4">
           <div>
-            <label for="login-email" class="block text-sm font-semibold text-gray-700 mb-2">Email</label>
+            <label for="login-email" class="block text-sm font-semibold text-gray-700 mb-2">${getCMSText('auth.login.email', 'Email')}</label>
             <input id="login-email" name="email" type="email" autocomplete="email" required
               class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
           </div>
           <div>
-            <label for="login-password" class="block text-sm font-semibold text-gray-700 mb-2">Wachtwoord</label>
+            <label for="login-password" class="block text-sm font-semibold text-gray-700 mb-2">${getCMSText('auth.login.password', 'Wachtwoord')}</label>
             <input id="login-password" name="password" type="password" autocomplete="current-password" required
               class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
           </div>
           <button type="submit" id="login-submit-btn"
             class="w-full py-3 px-4 rounded-xl text-base font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors mt-6">
-            Inloggen
+            ${getCMSText('auth.login.button', 'Inloggen')}
           </button>
           <p id="login-error" class="text-red-500 text-sm mt-2 text-center"></p>
         </form>

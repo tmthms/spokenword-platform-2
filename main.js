@@ -35,7 +35,6 @@ import { getStore } from './src/utils/store.js';
 import { setupProgrammerProfile } from './src/modules/programmer/programmer-profile.js';
 // ✅ setupArtistSearch moved to ui.js (imported there)
 import { setupMessaging } from './src/modules/messaging/messaging-controller.js';
-import { initTranslations } from './src/utils/translations.js';
 import { setupRecommendations } from './src/modules/recommendations/recommendations.js';
 import { setupUserSettings } from './src/modules/settings/user-settings.js';
 import { renderDesktopNav, renderMobileNav } from './src/modules/navigation/navigation.js';
@@ -54,9 +53,6 @@ async function initApp() {
     // Setup global form handlers first (before any UI rendering)
     // This ensures login/signup forms work regardless of when they're rendered
     setupGlobalFormHandlers();
-
-    // Initialize translations (default to Dutch)
-    initTranslations();
 
     // Initialize CMS (load content, styles, email templates)
     await initCMS('nl');
