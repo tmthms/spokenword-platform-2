@@ -651,121 +651,174 @@ export function renderDashboard() {
         <div class="artist-detail-pattern" style="min-height: 100vh; padding: 24px;">
           <div style="max-width: 1400px; margin: 0 auto;">
 
-            <!-- Back Button (beide layouts) -->
-            <button id="back-to-search-btn" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 16px; background: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 500; color: #4a4a68; cursor: pointer; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+            <!-- Back Button (desktop only) -->
+            <button id="back-to-search-btn" class="hidden lg:inline-flex" style="align-items: center; gap: 8px; padding: 10px 16px; background: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 500; color: #4a4a68; cursor: pointer; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
               <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
               Terug naar zoeken
             </button>
 
             <!-- ==================== MOBILE LAYOUT ==================== -->
-            <div id="mobile-artist-detail" class="lg:hidden" style="padding: 0 0 100px;">
+            <div id="mobile-artist-detail" class="lg:hidden" style="padding-bottom: 100px;">
 
-              <!-- Profile Photo -->
-              <div style="display: flex; justify-content: center; margin-bottom: 20px;">
-                <div style="width: 140px; height: 140px; border-radius: 50%; overflow: hidden; border: 3px solid #1a1a2e;">
-                  <img id="mobile-detail-photo" src="" alt="Artist" style="width: 100%; height: 100%; object-fit: cover; background: #f3f4f6;">
+              <!-- Fixed Navigation Menu -->
+              <nav id="mobile-profile-nav" style="position: fixed; top: 56px; left: 0; right: 0; z-index: 40; background: white; border-bottom: 1px solid #e5e7eb; box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: top 0.2s ease-out; display: none;">
+                <div style="display: flex; gap: 8px; overflow-x: auto; padding: 12px 16px; -webkit-overflow-scrolling: touch;" class="scrollbar-hide">
+                  <button class="mobile-nav-pill active" data-section="profile-section" style="flex-shrink: 0; padding: 8px 16px; background: #805ad5; color: white; border: none; border-radius: 20px; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer;">
+                    Profiel
+                  </button>
+                  <button class="mobile-nav-pill" data-section="gigs-section" style="flex-shrink: 0; padding: 8px 16px; background: #f3f4f6; color: #4b5563; border: none; border-radius: 20px; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer;">
+                    Gigs
+                  </button>
+                  <button class="mobile-nav-pill" data-section="recommendations-section" style="flex-shrink: 0; padding: 8px 16px; background: #f3f4f6; color: #4b5563; border: none; border-radius: 20px; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer;">
+                    Recommendations
+                  </button>
+                  <button class="mobile-nav-pill" data-section="contact-section" style="flex-shrink: 0; padding: 8px 16px; background: #f3f4f6; color: #4b5563; border: none; border-radius: 20px; font-size: 14px; font-weight: 600; white-space: nowrap; cursor: pointer;">
+                    Contact
+                  </button>
                 </div>
-              </div>
+              </nav>
 
-              <!-- Name -->
-              <h1 id="mobile-detail-name" style="font-size: 28px; font-weight: 700; color: #1a1a2e; text-align: center; margin-bottom: 16px;">Artist Name</h1>
+              <!-- Spacer for fixed nav -->
+              <div id="mobile-nav-spacer" style="height: 52px;"></div>
 
-              <!-- Meta Info -->
-              <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
-                <div style="display: flex; align-items: center; gap: 10px; color: #4a4a68; font-size: 15px;">
-                  <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                  <span id="mobile-detail-age">-- years old</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 10px; color: #4a4a68; font-size: 15px;">
-                  <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
-                  <span id="mobile-detail-gender">Gender</span>
-                </div>
-                <div style="display: flex; align-items: center; gap: 10px; color: #4a4a68; font-size: 15px;">
-                  <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
-                  <span id="mobile-detail-location">Location</span>
-                </div>
-              </div>
+              <!-- Content Container -->
+              <div style="padding: 20px 16px;">
 
-              <!-- Genres -->
-              <div style="margin-bottom: 20px;">
-                <p style="font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 10px;">Genres</p>
-                <div id="mobile-detail-genres" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
-              </div>
+                <!-- SECTION: Profile -->
+                <section id="mobile-profile-section" style="scroll-margin-top: 60px;">
 
-              <!-- Languages -->
-              <div style="margin-bottom: 24px;">
-                <p style="font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 10px;">Languages</p>
-                <div id="mobile-detail-languages" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
-              </div>
-
-              <!-- Themes -->
-              <div style="margin-bottom: 20px;">
-                <p style="font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 10px;">Themes</p>
-                <div id="mobile-detail-themes-full" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                  <span style="color: #9ca3af; font-size: 14px;">Geen themes</span>
-                </div>
-              </div>
-
-              <!-- Vibe -->
-              <div style="margin-bottom: 20px;">
-                <p style="font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 10px;">Vibe</p>
-                <div id="mobile-detail-vibe-full" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                  <span style="color: #9ca3af; font-size: 14px;">Geen vibe</span>
-                </div>
-              </div>
-
-              <!-- Diensten -->
-              <div style="margin-bottom: 24px;">
-                <p style="font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 10px;">Diensten</p>
-                <div id="mobile-detail-formats-full" style="display: flex; flex-wrap: wrap; gap: 8px;">
-                  <span style="color: #9ca3af; font-size: 14px;">Geen diensten</span>
-                </div>
-              </div>
-
-              <!-- Send Message Button -->
-              <button id="mobile-send-message-btn"
-                      style="width: 100%; padding: 14px; background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%); color: white; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 24px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
-                Send Message
-              </button>
-
-              <!-- Biography -->
-              <div style="margin-bottom: 20px;">
-                <h2 style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 10px;">Biography</h2>
-                <p id="mobile-detail-bio" style="font-size: 15px; color: #4a4a68; line-height: 1.6;">No biography available.</p>
-              </div>
-
-              <!-- Pitch -->
-              <div style="margin-bottom: 24px;">
-                <h2 style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 10px;">Pitch</h2>
-                <p id="mobile-detail-pitch" style="font-size: 15px; color: #4a4a68; line-height: 1.6;">No pitch available.</p>
-              </div>
-
-              <!-- Contact Information -->
-              <div style="margin-bottom: 24px;">
-                <h2 style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px;">Contact Information</h2>
-                <div style="display: flex; flex-direction: column; gap: 10px;">
-                  <div id="mobile-detail-email-container" style="display: flex; align-items: center; gap: 10px;">
-                    <svg width="18" height="18" fill="none" stroke="#4a4a68" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
-                    <a id="mobile-detail-email" href="#" style="font-size: 15px; color: #4a4a68; text-decoration: none;">email@example.com</a>
+                  <!-- Profile Photo -->
+                  <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                    <div style="width: 140px; height: 140px; border-radius: 50%; overflow: hidden; border: 3px solid #805ad5;">
+                      <img id="mobile-detail-photo" src="" alt="Artist" style="width: 100%; height: 100%; object-fit: cover; background: #f3f4f6;">
+                    </div>
                   </div>
-                  <div id="mobile-detail-phone-container" style="display: flex; align-items: center; gap: 10px;">
-                    <svg width="18" height="18" fill="none" stroke="#4a4a68" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
-                    <span id="mobile-detail-phone" style="font-size: 15px; color: #4a4a68;">+31 6 12345678</span>
+
+                  <!-- Name -->
+                  <h1 id="mobile-detail-name" style="font-size: 28px; font-weight: 700; color: #1a1a2e; text-align: center; margin-bottom: 16px;">Artist Name</h1>
+
+                  <!-- Meta Info -->
+                  <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
+                    <div style="display: flex; align-items: center; gap: 10px; color: #4a4a68; font-size: 15px;">
+                      <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                      <span id="mobile-detail-age">-- years old</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; color: #4a4a68; font-size: 15px;">
+                      <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                      <span id="mobile-detail-gender">Gender</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; color: #4a4a68; font-size: 15px;">
+                      <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                      <span id="mobile-detail-location">Location</span>
+                    </div>
                   </div>
-                </div>
-              </div>
 
-              <!-- Recommendations -->
-              <div>
-                <h2 style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Recommendations</h2>
-                <button id="mobile-write-recommendation-btn"
-                        style="width: 100%; padding: 14px; background: white; color: #1a1a2e; border: 2px solid #e5e7eb; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 16px;">
-                  Write Recommendation
-                </button>
-                <div id="mobile-detail-recommendations" style="display: flex; flex-direction: column; gap: 12px;"></div>
-              </div>
+                  <!-- Genres -->
+                  <div style="margin-bottom: 20px;">
+                    <p style="font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 10px;">Genres</p>
+                    <div id="mobile-detail-genres" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+                  </div>
 
+                  <!-- Languages -->
+                  <div style="margin-bottom: 20px;">
+                    <p style="font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 10px;">Languages</p>
+                    <div id="mobile-detail-languages" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+                  </div>
+
+                  <!-- Themes -->
+                  <div style="margin-bottom: 20px;">
+                    <p style="font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 10px;">Themes</p>
+                    <div id="mobile-detail-themes-full" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                      <span style="color: #9ca3af; font-size: 14px;">Geen themes</span>
+                    </div>
+                  </div>
+
+                  <!-- Vibe -->
+                  <div style="margin-bottom: 20px;">
+                    <p style="font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 10px;">Vibe</p>
+                    <div id="mobile-detail-vibe-full" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                      <span style="color: #9ca3af; font-size: 14px;">Geen vibe</span>
+                    </div>
+                  </div>
+
+                  <!-- Diensten -->
+                  <div style="margin-bottom: 20px;">
+                    <p style="font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 10px;">Diensten</p>
+                    <div id="mobile-detail-formats-full" style="display: flex; flex-wrap: wrap; gap: 8px;">
+                      <span style="color: #9ca3af; font-size: 14px;">Geen diensten</span>
+                    </div>
+                  </div>
+
+                  <!-- Bio -->
+                  <div style="margin-bottom: 20px;">
+                    <h2 style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 10px;">Bio</h2>
+                    <p id="mobile-detail-bio" style="font-size: 15px; color: #4a4a68; line-height: 1.6;"></p>
+                  </div>
+
+                  <!-- Pitch -->
+                  <div style="margin-bottom: 20px;">
+                    <h2 style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 10px;">Pitch</h2>
+                    <p id="mobile-detail-pitch" style="font-size: 15px; color: #4a4a68; line-height: 1.6;"></p>
+                  </div>
+
+                  <!-- Media Gallery -->
+                  <div style="margin-bottom: 20px;">
+                    <h2 style="font-size: 18px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px;">Media</h2>
+                    <div id="mobile-detail-media" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;"></div>
+                  </div>
+
+                </section>
+
+                <!-- SECTION: Gigs -->
+                <section id="mobile-gigs-section" style="scroll-margin-top: 60px; padding-top: 32px; border-top: 1px solid #e5e7eb; margin-top: 32px;">
+                  <h2 style="font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Upcoming Gigs</h2>
+                  <div id="mobile-detail-gigs" style="display: flex; flex-direction: column; gap: 12px;">
+                    <p style="color: #9ca3af; font-size: 14px;">Loading gigs...</p>
+                  </div>
+                </section>
+
+                <!-- SECTION: Recommendations -->
+                <section id="mobile-recommendations-section" style="scroll-margin-top: 60px; padding-top: 32px; border-top: 1px solid #e5e7eb; margin-top: 32px;">
+                  <h2 style="font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Recommendations</h2>
+
+                  <!-- Write Button (programmers only) -->
+                  <button id="mobile-write-recommendation-btn" style="width: 100%; padding: 14px; background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 16px; display: none;">
+                    Write a Recommendation
+                  </button>
+
+                  <!-- Recommendations List -->
+                  <div id="mobile-detail-recommendations" style="display: flex; flex-direction: column; gap: 12px;">
+                    <p style="color: #9ca3af; font-size: 14px;">Loading recommendations...</p>
+                  </div>
+
+                  <!-- View All Button -->
+                  <button id="mobile-view-all-recommendations-btn" style="width: 100%; margin-top: 16px; padding: 14px; background: white; color: #805ad5; border: 2px solid #805ad5; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; display: none;">
+                    View All Recommendations
+                  </button>
+                </section>
+
+                <!-- SECTION: Contact -->
+                <section id="mobile-contact-section" style="scroll-margin-top: 60px; padding-top: 32px; border-top: 1px solid #e5e7eb; margin-top: 32px;">
+                  <h2 style="font-size: 20px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Contact</h2>
+
+                  <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                    <div id="mobile-detail-email-container" style="display: flex; align-items: center; gap: 10px;">
+                      <svg width="18" height="18" fill="none" stroke="#4a4a68" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                      <a id="mobile-detail-email" href="#" style="font-size: 15px; color: #805ad5; text-decoration: none;"></a>
+                    </div>
+                    <div id="mobile-detail-phone-container" style="display: flex; align-items: center; gap: 10px;">
+                      <svg width="18" height="18" fill="none" stroke="#4a4a68" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                      <span id="mobile-detail-phone" style="font-size: 15px; color: #4a4a68;"></span>
+                    </div>
+                  </div>
+
+                  <!-- Send Message Button (programmers only) -->
+                  <button id="mobile-send-message-btn" style="width: 100%; padding: 14px; background: #1a1a2e; color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; display: none;">
+                    Send Message
+                  </button>
+                </section>
+
+              </div>
             </div>
 
             <!-- ==================== DESKTOP 3-COLUMN LAYOUT ==================== -->

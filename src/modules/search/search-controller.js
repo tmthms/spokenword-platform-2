@@ -40,15 +40,61 @@ export function setupArtistSearch() {
     });
   }
 
+  // Mobile clear filters button
+  const clearFiltersBtn = document.getElementById('mobile-clear-filters-btn');
+  if (clearFiltersBtn) {
+    clearFiltersBtn.addEventListener('click', async () => {
+      // Clear all genre checkboxes (mobile + desktop)
+      document.querySelectorAll('input[name="mobile-genre"]:checked, input[name="desktop-genre"]:checked').forEach(cb => {
+        cb.checked = false;
+        const label = cb.closest('.chip-label');
+        if (label) {
+          label.style.background = 'white';
+          label.style.borderColor = '#d1d5db';
+          const text = label.querySelector('.chip-text');
+          if (text) text.style.color = '#374151';
+        }
+      });
+
+      // Clear all text inputs
+      ['mobile-input-name', 'mobile-input-location', 'mobile-input-keywords',
+       'desktop-input-name', 'desktop-input-location', 'desktop-input-keywords'].forEach(id => {
+        const input = document.getElementById(id);
+        if (input) input.value = '';
+      });
+
+      // Reset filter pill styles
+      document.querySelectorAll('[data-action="toggle-filter"]').forEach(btn => {
+        btn.style.background = 'white';
+        btn.style.borderColor = '#e5e7eb';
+        btn.style.color = '#4a4a68';
+      });
+
+      // Hide open filter panels
+      ['filter-name', 'filter-location', 'filter-keywords', 'filter-genre'].forEach(id => {
+        const panel = document.getElementById(id);
+        if (panel) panel.style.display = 'none';
+      });
+
+      // Reset chevrons
+      const chevronGenre = document.getElementById('chevron-genre');
+      if (chevronGenre) chevronGenre.style.transform = 'rotate(0deg)';
+
+      console.log('[FILTERS] All filters cleared, reloading...');
+
+      // Fetch all artists without filters and render
+      try {
+        const artists = await loadArtistsData();
+        renderArtists(artists);
+        console.log('[FILTERS] Rendered', artists.length, 'artists');
+      } catch (err) {
+        console.error('[FILTERS] Error reloading:', err);
+      }
+    });
+  }
+
   // Setup mobile pill filters
   setupMobileFilterPills();
-
-  // Setup Clear Filters button
-  const clearFiltersBtn = document.getElementById('clear-filters-btn');
-  if (clearFiltersBtn) {
-    clearFiltersBtn.addEventListener('click', clearAllFilters);
-    console.log("[SETUP] Clear filters button listener added");
-  }
 
   // Setup search button
   const searchButton = document.getElementById('search-artists-btn');
@@ -793,52 +839,77 @@ function showSearchView() {
  * @param {string} artistName - Artist name for display
  */
 async function loadAndRenderArtistGigs(artistId, artistName) {
-  const container = document.getElementById('detail-gigs-list');
-  if (!container) {
-    console.warn('[GIGS] Container not found');
-    return;
-  }
+  // Desktop container
+  const desktopContainer = document.getElementById('detail-gigs-list');
+  // Mobile container
+  const mobileContainer = document.getElementById('mobile-detail-gigs');
+
+  const loadingHTML = '<p style="color: #9ca3af; font-size: 14px;">Loading gigs...</p>';
+  if (desktopContainer) desktopContainer.innerHTML = loadingHTML;
+  if (mobileContainer) mobileContainer.innerHTML = loadingHTML;
 
   try {
     const events = await loadArtistEventsForProfile(artistId);
 
+    const emptyHTML = `
+      <p style="color: #9ca3af; font-size: 14px; text-align: center; padding: 16px 0;">
+        No upcoming gigs
+      </p>
+    `;
+
     if (!events || events.length === 0) {
-      container.innerHTML = `
-        <p style="color: #9ca3af; font-size: 14px; text-align: center; padding: 16px 0;">
-          No upcoming gigs
-        </p>
-      `;
+      if (desktopContainer) desktopContainer.innerHTML = emptyHTML;
+      if (mobileContainer) mobileContainer.innerHTML = emptyHTML;
       return;
     }
 
-    // Show max 3 gigs in sidebar
-    const displayEvents = events.slice(0, 3);
+    // Desktop: max 3, Mobile: max 5
+    const desktopEvents = events.slice(0, 3);
+    const mobileEvents = events.slice(0, 5);
 
-    container.innerHTML = displayEvents.map(event => {
+    const renderGig = (event) => {
       const date = event.date?.toDate ? event.date.toDate() : new Date(event.date);
       const formattedDate = date.toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' });
 
       return `
-        <div style="background: #f9fafb; border-radius: 12px; padding: 12px; border-left: 3px solid #805ad5;">
-          <p style="font-size: 14px; font-weight: 600; color: #1a1a2e; margin-bottom: 4px;">${event.title || 'Untitled Event'}</p>
+        <div style="background: #f9fafb; border-radius: 12px; padding: 14px; border-left: 3px solid #805ad5;">
+          <p style="font-size: 15px; font-weight: 600; color: #1a1a2e; margin-bottom: 4px;">${event.title || 'Untitled Event'}</p>
           <p style="font-size: 13px; color: #6b7280;">${formattedDate} • ${event.location || 'Location TBD'}</p>
         </div>
       `;
-    }).join('');
+    };
 
-    // Add "more" indicator if there are more events
-    if (events.length > 3) {
-      container.innerHTML += `
-        <p style="font-size: 13px; color: #805ad5; text-align: center; margin-top: 8px;">
-          + ${events.length - 3} more gigs
-        </p>
-      `;
+    // Render desktop
+    if (desktopContainer) {
+      desktopContainer.innerHTML = desktopEvents.map(renderGig).join('');
+      if (events.length > 3) {
+        desktopContainer.innerHTML += `
+          <p style="font-size: 13px; color: #805ad5; text-align: center; margin-top: 8px;">
+            + ${events.length - 3} more gigs
+          </p>
+        `;
+      }
     }
 
-    console.log('[GIGS] Rendered', displayEvents.length, 'of', events.length, 'gigs');
+    // Render mobile
+    if (mobileContainer) {
+      mobileContainer.innerHTML = mobileEvents.map(renderGig).join('');
+      if (events.length > 5) {
+        mobileContainer.innerHTML += `
+          <p style="font-size: 13px; color: #805ad5; text-align: center; margin-top: 8px;">
+            + ${events.length - 5} more gigs
+          </p>
+        `;
+      }
+    }
+
+    console.log('[GIGS] Rendered for desktop and mobile');
 
   } catch (error) {
-    console.error('[GIGS] Error loading/rendering artist gigs:', error);
+    console.error('[GIGS] Error:', error);
+    const errorHTML = '<p style="color: #9ca3af; font-size: 14px;">Could not load gigs</p>';
+    if (desktopContainer) desktopContainer.innerHTML = errorHTML;
+    if (mobileContainer) mobileContainer.innerHTML = errorHTML;
   }
 }
 

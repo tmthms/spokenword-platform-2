@@ -48,7 +48,13 @@ export function renderArtistSearch() {
       <!-- ===================== MOBILE LAYOUT ===================== -->
       <div id="mobile-search-layout" style="display: ${isDesktop ? 'none' : 'block'};">
 
-        <h1 style="font-size: 24px; font-weight: 700; color: #1a1a2e; margin-bottom: 16px;">Zoeken</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+          <h1 style="font-size: 24px; font-weight: 700; color: #1a1a2e; margin: 0;">Zoeken</h1>
+          <button id="mobile-clear-filters-btn" type="button" style="padding: 8px 14px; background: none; border: 1px solid #e5e7eb; border-radius: 20px; font-size: 13px; font-weight: 500; color: #6b7280; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            Wis filters
+          </button>
+        </div>
 
         <!-- Filter Pills -->
         <div class="no-scrollbar" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 8px;">
@@ -81,6 +87,15 @@ export function renderArtistSearch() {
             <input type="text" id="mobile-input-location" placeholder="Stad of regio..."
                    style="flex: 1; padding: 12px 16px; background: #f9fafb; border-radius: 12px; border: none; font-size: 14px; outline: none;">
             <button data-action="apply-filter" data-target="location"
+                    style="width: 44px; height: 44px; background: #805ad5; color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 18px;">✓</button>
+          </div>
+        </div>
+
+        <div id="filter-keywords" style="display: none; background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(128,90,213,0.1);">
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="mobile-input-keywords" placeholder="bijv. slam, poetry, rap..."
+                   style="flex: 1; padding: 12px 16px; background: #f9fafb; border-radius: 12px; border: none; font-size: 14px; outline: none;">
+            <button data-action="apply-filter" data-target="keywords"
                     style="width: 44px; height: 44px; background: #805ad5; color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 18px;">✓</button>
           </div>
         </div>
@@ -271,15 +286,6 @@ export function renderArtistSearch() {
         </div>
 
         <!-- ===== END COLLAPSIBLE FILTER PANELS ===== -->
-
-        <div id="filter-keywords" style="display: none; background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(128,90,213,0.1);">
-          <div style="display: flex; gap: 8px;">
-            <input type="text" id="mobile-input-keywords" placeholder="bijv. slam, poetry, rap..."
-                   style="flex: 1; padding: 12px 16px; background: #f9fafb; border-radius: 12px; border: none; font-size: 14px; outline: none;">
-            <button data-action="apply-filter" data-target="keywords"
-                    style="width: 44px; height: 44px; background: #805ad5; color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 18px;">✓</button>
-          </div>
-        </div>
 
         <!-- Results -->
         <p id="mobile-results-count" style="color: #9ca3af; font-size: 14px; margin-bottom: 12px;">0 gevonden</p>
@@ -1492,7 +1498,9 @@ export function populateArtistDetail(artist) {
   // Resize listener
   const handleResize = () => {
     const nowDesktop = window.innerWidth >= 1024;
-    if (mobileLayout) mobileLayout.style.display = nowDesktop ? 'none' : 'block';
+    if (mobileLayout) {
+      mobileLayout.style.display = nowDesktop ? 'none' : 'block';
+    }
     if (desktopLayout) {
       desktopLayout.classList.remove('hidden');
       desktopLayout.style.display = nowDesktop ? 'grid' : 'none';
@@ -1501,7 +1509,201 @@ export function populateArtistDetail(artist) {
   window.removeEventListener('resize', handleResize);
   window.addEventListener('resize', handleResize);
 
+  // Setup mobile navigation
+  setupMobileProfileNav();
+
+  // Setup mobile recommendations buttons
+  const mobileWriteBtn = document.getElementById('mobile-write-recommendation-btn');
+  const mobileViewAllBtn = document.getElementById('mobile-view-all-recommendations-btn');
+
+  if (mobileWriteBtn) {
+    if (isUserProgrammer) {
+      mobileWriteBtn.style.display = 'block';
+      mobileWriteBtn.onclick = () => {
+        import('../recommendations/recommendations.js').then(module => {
+          module.openRecommendationModal(artist.id, artist);
+        });
+      };
+    } else {
+      mobileWriteBtn.style.display = 'none';
+    }
+  }
+
+  if (mobileViewAllBtn) {
+    mobileViewAllBtn.onclick = () => {
+      import('../recommendations/recommendations.js').then(module => {
+        module.openRecommendationsModal(artist.id, artist);
+      });
+    };
+  }
+
+  // Setup mobile send message button
+  const mobileSendBtn = document.getElementById('mobile-send-message-btn');
+  if (mobileSendBtn) {
+    if (isUserProgrammer) {
+      mobileSendBtn.style.display = 'block';
+      mobileSendBtn.onclick = () => {
+        import('../messaging/messaging-controller.js').then(module => {
+          module.openMessageModal(artist);
+        });
+      };
+    } else {
+      mobileSendBtn.style.display = 'none';
+    }
+  }
+
+  // Mobile media gallery
+  const mobileMediaContainer = document.getElementById('mobile-detail-media');
+  if (mobileMediaContainer) {
+    const mediaItems = [];
+
+    // Profile pic
+    if (artist.profilePicUrl) {
+      mediaItems.push(`
+        <div style="aspect-ratio: 1; border-radius: 8px; overflow: hidden;">
+          <img src="${artist.profilePicUrl}" alt="Profile" style="width: 100%; height: 100%; object-fit: cover;">
+        </div>
+      `);
+    }
+
+    // Gallery photos (max 5)
+    if (artist.galleryPhotos?.length > 0) {
+      artist.galleryPhotos.slice(0, 5).forEach(photo => {
+        mediaItems.push(`
+          <div style="aspect-ratio: 1; border-radius: 8px; overflow: hidden;">
+            <img src="${photo}" alt="Gallery" style="width: 100%; height: 100%; object-fit: cover;">
+          </div>
+        `);
+      });
+    }
+
+    if (mediaItems.length > 0) {
+      mobileMediaContainer.innerHTML = mediaItems.join('');
+    } else {
+      mobileMediaContainer.innerHTML = `
+        <p style="color: #9ca3af; font-size: 14px; grid-column: span 3; text-align: center;">No media available</p>
+      `;
+    }
+  }
+
+  console.log('[DETAIL] Mobile profile nav and buttons setup complete');
   console.log('[DETAIL] Artist detail populated successfully');
+}
+
+/**
+ * Setup mobile profile fixed navigation with smooth scroll-based positioning
+ */
+function setupMobileProfileNav() {
+  const nav = document.getElementById('mobile-profile-nav');
+  const spacer = document.getElementById('mobile-nav-spacer');
+
+  if (!nav) return;
+
+  // Update nav position based on scroll
+  const updateNavPosition = () => {
+    if (window.innerWidth >= 1024) {
+      nav.style.display = 'none';
+      if (spacer) spacer.style.height = '0px';
+      return;
+    }
+
+    nav.style.display = 'block';
+    if (spacer) spacer.style.height = '52px';
+
+    // Get actual header height dynamically
+    const header = document.querySelector('header') || document.getElementById('app-header') || document.querySelector('nav.fixed');
+    const headerHeight = header ? header.offsetHeight : 56;
+
+    const scrollY = window.scrollY;
+
+    // Calculate new top position
+    let newTop = headerHeight - scrollY;
+
+    // Clamp between 0 and headerHeight
+    if (newTop < 0) newTop = 0;
+    if (newTop > headerHeight) newTop = headerHeight;
+
+    nav.style.top = `${newTop}px`;
+
+    // Debug logging (remove after fixing)
+    if (scrollY < 100) {
+      console.log('[MOBILE NAV] Header height:', headerHeight, '| ScrollY:', scrollY, '| New top:', newTop);
+    }
+  };
+
+  // Initial setup
+  updateNavPosition();
+
+  // Pill click handlers
+  const pills = nav.querySelectorAll('.mobile-nav-pill');
+  const sections = {
+    'profile-section': document.getElementById('mobile-profile-section'),
+    'gigs-section': document.getElementById('mobile-gigs-section'),
+    'recommendations-section': document.getElementById('mobile-recommendations-section'),
+    'contact-section': document.getElementById('mobile-contact-section')
+  };
+
+  pills.forEach(pill => {
+    pill.addEventListener('click', () => {
+      const sectionId = pill.dataset.section;
+      const section = sections[sectionId];
+
+      if (section) {
+        section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        updateActivePill(pill);
+      }
+    });
+  });
+
+  // Scroll spy for active pill
+  function updateActivePillOnScroll() {
+    if (window.innerWidth >= 1024) return;
+
+    const scrollPos = window.scrollY + 70;
+    let currentSection = 'profile-section';
+
+    Object.entries(sections).forEach(([id, section]) => {
+      if (section && section.offsetTop <= scrollPos) {
+        currentSection = id;
+      }
+    });
+
+    const activePill = nav.querySelector(`[data-section="${currentSection}"]`);
+    if (activePill) updateActivePill(activePill);
+  }
+
+  // Update on scroll
+  let ticking = false;
+  window.addEventListener('scroll', () => {
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        updateNavPosition();
+        updateActivePillOnScroll();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  }, { passive: true });
+
+  // Update on resize
+  window.addEventListener('resize', updateNavPosition);
+
+  console.log('[MOBILE NAV] Dynamic fixed navigation setup complete');
+}
+
+/**
+ * Update active state of mobile nav pills
+ */
+function updateActivePill(activePill) {
+  document.querySelectorAll('.mobile-nav-pill').forEach(pill => {
+    if (pill === activePill) {
+      pill.style.background = '#805ad5';
+      pill.style.color = 'white';
+    } else {
+      pill.style.background = '#f3f4f6';
+      pill.style.color = '#4b5563';
+    }
+  });
 }
 
 function populateMediaGallery(artist) {
