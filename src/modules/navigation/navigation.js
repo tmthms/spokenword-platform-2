@@ -46,22 +46,22 @@ export function renderDesktopNav() {
           <!-- Menu Items -->
           <div class="flex items-center space-x-8">
             ${isProgrammer ? `<button id="desktop-nav-search" class="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
-              ${getCMSText('common.search', 'Zoeken')}
+              ${getCMSText('nav.search', 'Zoeken')}
             </button>` : ''}
             ${isProgrammer ? `<button id="desktop-nav-agenda" class="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
-              Agenda
+              ${getCMSText('nav.agenda', 'Agenda')}
             </button>` : ''}
             <button id="desktop-nav-profile" class="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
-              ${getCMSText('profile.edit', 'Profiel')}
+              ${getCMSText('nav.edit_profile', 'Profiel bewerken')}
             </button>
             ${isArtist ? `<button id="desktop-nav-gigs" class="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
-              Gigs
+              ${getCMSText('nav.gigs', 'Gigs')}
             </button>` : ''}
             ${isArtist ? `<button id="desktop-nav-events" class="text-gray-700 hover:text-purple-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
-              Evenementen
+              ${getCMSText('nav.events', 'Evenementen')}
             </button>` : ''}
             <button id="desktop-nav-messages" class="relative text-gray-700 hover:text-indigo-600 font-medium px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors">
-              ${getCMSText('messages.title', 'Berichten')}
+              ${getCMSText('nav.messages', 'Berichten')}
               <span id="messages-badge-desktop" class="notification-badge hidden">0</span>
             </button>
 
@@ -75,11 +75,11 @@ export function renderDesktopNav() {
               <!-- Dropdown Menu (hidden by default) -->
               <div id="desktop-profile-dropdown" class="hidden absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-200">
                 <button id="desktop-account-settings" class="block w-full text-left px-4 py-2.5 text-gray-700 hover:bg-gray-100 font-medium">
-                  Account Instellingen
+                  ${getCMSText('nav.settings', 'Instellingen')}
                 </button>
                 <hr class="my-1 border-gray-200">
                 <button id="desktop-logout" class="block w-full text-left px-4 py-2.5 text-red-600 hover:bg-red-50 font-medium">
-                  Logout
+                  ${getCMSText('nav.logout', 'Uitloggen')}
                 </button>
               </div>
             </div>
@@ -115,31 +115,31 @@ export function renderMobileNav() {
     <nav id="bottom-nav" class="bottom-nav">
       ${isProgrammer ? `<button class="bottom-nav-item active" data-nav="search">
         <i data-lucide="search" class="bottom-nav-icon"></i>
-        <span class="bottom-nav-label">${getCMSText('common.search', 'Zoeken')}</span>
+        <span class="bottom-nav-label">${getCMSText('nav.search', 'Zoeken')}</span>
       </button>` : ''}
       ${isProgrammer ? `<button class="bottom-nav-item" data-nav="agenda">
         <i data-lucide="calendar-days" class="bottom-nav-icon"></i>
-        <span class="bottom-nav-label">Agenda</span>
+        <span class="bottom-nav-label">${getCMSText('nav.agenda', 'Agenda')}</span>
       </button>` : ''}
       ${isArtist ? `<button class="bottom-nav-item" data-nav="gigs">
         <i data-lucide="calendar" class="bottom-nav-icon"></i>
-        <span class="bottom-nav-label">Gigs</span>
+        <span class="bottom-nav-label">${getCMSText('nav.gigs', 'Gigs')}</span>
       </button>` : ''}
       ${isArtist ? `<button class="bottom-nav-item" data-nav="events">
         <i data-lucide="calendar-days" class="bottom-nav-icon"></i>
-        <span class="bottom-nav-label">Events</span>
+        <span class="bottom-nav-label">${getCMSText('nav.events', 'Evenementen')}</span>
       </button>` : ''}
       <button class="bottom-nav-item" data-nav="messages">
         <i data-lucide="message-circle" class="bottom-nav-icon"></i>
-        <span class="bottom-nav-label">${getCMSText('messages.title', 'Berichten')}</span>
+        <span class="bottom-nav-label">${getCMSText('nav.messages', 'Berichten')}</span>
       </button>
       <button class="bottom-nav-item" data-nav="profile">
         <i data-lucide="user" class="bottom-nav-icon"></i>
-        <span class="bottom-nav-label">${getCMSText('profile.edit', 'Profiel')}</span>
+        <span class="bottom-nav-label">${getCMSText('nav.edit_profile', 'Profiel bewerken')}</span>
       </button>
       <button class="bottom-nav-item" data-nav="settings">
         <i data-lucide="settings" class="bottom-nav-icon"></i>
-        <span class="bottom-nav-label">Instellingen</span>
+        <span class="bottom-nav-label">${getCMSText('nav.settings', 'Instellingen')}</span>
       </button>
     </nav>
   `;

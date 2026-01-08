@@ -27,25 +27,25 @@ export function renderHome() {
             ${getCMSText('home.hero.title', 'SPOKEN WORD PLATFORM')}
           </h1>
           <p class="text-lg text-gray-600 mb-2">${getCMSText('home.hero.subtitle', 'Find Your Voice.')}</p>
-          <p class="text-lg text-indigo-600 font-semibold">Book Your Artist.</p>
+          <p class="text-lg text-indigo-600 font-semibold">${getCMSText('home.hero.tagline', 'Book Your Artist.')}</p>
         </div>
 
         <div class="space-y-3 max-w-sm mx-auto w-full px-6">
           <button id="home-cta-artist" class="btn-press w-full bg-indigo-600 text-white px-6 py-4 rounded-xl text-base font-semibold shadow-lg hover:bg-indigo-700 transition duration-200">
-            Ik ben een Artiest
+            ${getCMSText('home.hero.cta_artist', 'Ik ben een Artiest')}
           </button>
           <button id="home-cta-programmer" class="btn-press w-full bg-gray-900 text-white px-6 py-4 rounded-xl text-base font-semibold shadow-lg hover:bg-gray-800 transition duration-200">
-            Ik ben een Programmator
+            ${getCMSText('home.hero.cta_programmer', 'Ik ben een Programmator')}
           </button>
           <button id="home-login-btn" class="btn-press w-full bg-white text-gray-900 px-6 py-4 rounded-xl text-base font-semibold border border-gray-300 hover:bg-gray-50 transition duration-200">
-            Inloggen
+            ${getCMSText('home.hero.cta_login', 'Inloggen')}
           </button>
         </div>
       </div>
 
       <!-- Featured Artists Preview -->
       <div class="px-6 py-8 bg-white">
-        <h3 class="text-xl font-bold text-gray-900 mb-4">Featured Artists</h3>
+        <h3 class="text-xl font-bold text-gray-900 mb-4">${getCMSText('home.featured.title', 'Featured Artists')}</h3>
         <div class="space-y-4">
           <div class="flex items-center space-x-4 p-4 bg-gray-50 rounded-xl">
             <div class="w-16 h-16 bg-indigo-100 rounded-full flex-shrink-0"></div>
@@ -86,7 +86,7 @@ export function renderLogin() {
       <div class="w-full max-w-sm">
         <div class="text-center mb-8">
           <h2 class="text-3xl font-bold text-gray-900 mb-2">${getCMSText('auth.login.title', 'Welkom terug')}</h2>
-          <p class="text-gray-600">Log in op je account</p>
+          <p class="text-gray-600">${getCMSText('auth.login.subtitle', 'Log in op je account')}</p>
         </div>
 
         <form id="login-form" class="space-y-4">
@@ -109,7 +109,7 @@ export function renderLogin() {
 
         <div class="mt-6 text-center">
           <button id="back-to-home-from-login" class="text-indigo-600 text-sm font-medium hover:text-indigo-800 transition-colors">
-            ← Terug naar home
+            ${getCMSText('auth.login.back_home', '← Terug naar home')}
           </button>
         </div>
       </div>
@@ -154,23 +154,23 @@ export function renderArtistSignup() {
       <div class="px-6 py-8">
         <div class="mb-6">
           <button id="back-from-artist-signup" class="text-indigo-600 text-sm font-medium mb-4">
-            ← Terug
+            ${getCMSText('auth.artist_signup.back', '← Terug')}
           </button>
-          <h2 class="text-3xl font-bold text-gray-900 mb-2">Maak je Artiest Profiel</h2>
-          <p class="text-gray-600 text-sm">Vul zoveel mogelijk in. Je kunt later meer toevoegen.</p>
+          <h2 class="text-3xl font-bold text-gray-900 mb-2">${getCMSText('auth.artist_signup.title', 'Maak je Artiest Profiel')}</h2>
+          <p class="text-gray-600 text-sm">${getCMSText('auth.artist_signup.subtitle', 'Vul zoveel mogelijk in. Je kunt later meer toevoegen.')}</p>
         </div>
 
         <form id="artist-signup-form" class="space-y-6">
           <!-- Account Credentials -->
           <div class="bg-white p-6 rounded-xl shadow-sm">
-            <h3 class="text-lg font-bold mb-4 text-gray-900">Account Details</h3>
+            <h3 class="text-lg font-bold mb-4 text-gray-900">${getCMSText('auth.artist_signup.account_details', 'Account Details')}</h3>
             <div class="space-y-4">
               <div>
-                <label for="artist-email" class="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
+                <label for="artist-email" class="block text-sm font-semibold text-gray-700 mb-2">${getCMSText('auth.artist_signup.email', 'Email')} *</label>
                 <input id="artist-email" type="email" required class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
               </div>
               <div>
-                <label for="artist-password" class="block text-sm font-semibold text-gray-700 mb-2">Wachtwoord (min. 6 tekens) *</label>
+                <label for="artist-password" class="block text-sm font-semibold text-gray-700 mb-2">${getCMSText('auth.artist_signup.password', 'Wachtwoord (min. 6 tekens)')} *</label>
                 <input id="artist-password" type="password" required class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
               </div>
             </div>
@@ -178,53 +178,53 @@ export function renderArtistSignup() {
 
           <!-- Personal Details -->
           <div class="bg-white p-6 rounded-xl shadow-sm">
-            <h3 class="text-lg font-bold mb-4 text-gray-900">Persoonlijke Gegevens</h3>
+            <h3 class="text-lg font-bold mb-4 text-gray-900">${getCMSText('auth.artist_signup.personal_details', 'Persoonlijke Gegevens')}</h3>
             <div class="space-y-4">
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label for="artist-firstname" class="block text-sm font-semibold text-gray-700 mb-2">Voornaam *</label>
+                  <label for="artist-firstname" class="block text-sm font-semibold text-gray-700 mb-2">${getCMSText('auth.artist_signup.first_name', 'Voornaam')} *</label>
                   <input id="artist-firstname" type="text" required class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div>
-                  <label for="artist-lastname" class="block text-sm font-semibold text-gray-700 mb-2">Achternaam *</label>
+                  <label for="artist-lastname" class="block text-sm font-semibold text-gray-700 mb-2">${getCMSText('auth.artist_signup.last_name', 'Achternaam')} *</label>
                   <input id="artist-lastname" type="text" required class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
               </div>
               <div>
-                <label for="artist-stagename" class="block text-sm font-semibold text-gray-700 mb-2">Artiestennaam</label>
+                <label for="artist-stagename" class="block text-sm font-semibold text-gray-700 mb-2">${getCMSText('auth.artist_signup.stage_name', 'Artiestennaam')}</label>
                 <input id="artist-stagename" type="text" class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
               </div>
               <div>
-                <label for="artist-phone" class="block text-sm font-semibold text-gray-700 mb-2">Telefoon *</label>
+                <label for="artist-phone" class="block text-sm font-semibold text-gray-700 mb-2">${getCMSText('auth.artist_signup.phone', 'Telefoon')} *</label>
                 <input id="artist-phone" type="tel" required class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
               </div>
               <div>
-                <label for="artist-dob" class="block text-sm font-semibold text-gray-700 mb-2">Geboortedatum *</label>
+                <label for="artist-dob" class="block text-sm font-semibold text-gray-700 mb-2">${getCMSText('auth.artist_signup.birth_date', 'Geboortedatum')} *</label>
                 <input id="artist-dob" type="date" required class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
               </div>
               <div>
-                <label for="artist-gender" class="block text-sm font-semibold text-gray-700 mb-2">Geslacht *</label>
+                <label for="artist-gender" class="block text-sm font-semibold text-gray-700 mb-2">${getCMSText('auth.artist_signup.gender', 'Geslacht')} *</label>
                 <select id="artist-gender" required class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
-                  <option value="">Selecteer...</option>
+                  <option value="">${getCMSText('auth.artist_signup.gender_placeholder', 'Selecteer...')}</option>
                   <option value="f">Vrouw</option>
                   <option value="m">Man</option>
                   <option value="x">Anders / Wil niet zeggen</option>
                 </select>
               </div>
               <div>
-                <label for="artist-location" class="block text-sm font-semibold text-gray-700 mb-2">Locatie *</label>
-                <input id="artist-location" type="text" required placeholder="bijv. Amsterdam, Nederland" class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <label for="artist-location" class="block text-sm font-semibold text-gray-700 mb-2">${getCMSText('auth.artist_signup.location', 'Locatie')} *</label>
+                <input id="artist-location" type="text" required placeholder="${getCMSText('auth.artist_signup.location_placeholder', 'bijv. Amsterdam, Nederland')}" class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
               </div>
             </div>
           </div>
 
           <!-- Professional Details -->
           <div class="bg-white p-6 rounded-xl shadow-sm">
-            <h3 class="text-lg font-bold mb-4 text-gray-900">Professionele Details</h3>
+            <h3 class="text-lg font-bold mb-4 text-gray-900">${getCMSText('auth.artist_signup.professional_details', 'Professionele Details')}</h3>
 
             <!-- Genres -->
             <div class="mb-4">
-              <label class="block text-sm font-semibold text-gray-700 mb-3">Genres (selecteer meerdere) *</label>
+              <label class="block text-sm font-semibold text-gray-700 mb-3">${getCMSText('auth.artist_signup.genres_label', 'Genres (selecteer meerdere)')} *</label>
               <div class="space-y-2">
                 <label class="flex items-center space-x-3 p-3 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition">
                   <input type="checkbox" name="artist-genres" value="performance-poetry" class="h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500">
@@ -336,7 +336,7 @@ export function renderArtistSignup() {
 
           <button type="submit"
             class="btn-press w-full py-4 px-4 rounded-xl text-base font-semibold text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none">
-            Account Aanmaken
+            ${getCMSText('auth.artist_signup.button', 'Account Aanmaken')}
           </button>
           <p id="artist-signup-error" class="text-red-500 text-sm mt-2 text-center"></p>
         </form>
@@ -355,23 +355,23 @@ export function renderProgrammerSignup() {
       <div class="px-6 py-8">
         <div class="mb-6">
           <button id="back-from-programmer-signup" class="text-indigo-600 text-sm font-medium mb-4">
-            ← Terug
+            ${getCMSText('auth.programmer_signup.back', '← Terug')}
           </button>
-          <h2 class="text-3xl font-bold text-gray-900 mb-2">Maak je Programmator Account</h2>
-          <p class="text-gray-600 text-sm">Start je 7-daagse gratis proefperiode.</p>
+          <h2 class="text-3xl font-bold text-gray-900 mb-2">${getCMSText('auth.programmer_signup.title', 'Maak je Programmator Account')}</h2>
+          <p class="text-gray-600 text-sm">${getCMSText('auth.programmer_signup.subtitle', 'Start je 7-daagse gratis proefperiode.')}</p>
         </div>
 
         <form id="programmer-signup-form" class="space-y-6">
           <!-- Account Details -->
           <div class="bg-white p-6 rounded-xl shadow-sm">
-            <h3 class="text-lg font-bold mb-4 text-gray-900">Account Details</h3>
+            <h3 class="text-lg font-bold mb-4 text-gray-900">${getCMSText('auth.programmer_signup.account_details', 'Account Details')}</h3>
             <div class="space-y-4">
               <div>
-                <label for="prog-email" class="block text-sm font-semibold text-gray-700 mb-2">Email *</label>
+                <label for="prog-email" class="block text-sm font-semibold text-gray-700 mb-2">${getCMSText('auth.programmer_signup.email', 'Email')} *</label>
                 <input id="prog-email" type="email" required class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
               </div>
               <div>
-                <label for="prog-password" class="block text-sm font-semibold text-gray-700 mb-2">Wachtwoord (min. 6 tekens) *</label>
+                <label for="prog-password" class="block text-sm font-semibold text-gray-700 mb-2">${getCMSText('auth.programmer_signup.password', 'Wachtwoord (min. 6 tekens)')} *</label>
                 <input id="prog-password" type="password" required class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
               </div>
             </div>
@@ -379,32 +379,32 @@ export function renderProgrammerSignup() {
 
           <!-- Organization Details -->
           <div class="bg-white p-6 rounded-xl shadow-sm">
-            <h3 class="text-lg font-bold mb-4 text-gray-900">Organisatie Details</h3>
+            <h3 class="text-lg font-bold mb-4 text-gray-900">${getCMSText('auth.programmer_signup.organization_details', 'Organisatie Details')}</h3>
             <div class="space-y-4">
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label for="prog-firstname" class="block text-sm font-semibold text-gray-700 mb-2">Voornaam *</label>
+                  <label for="prog-firstname" class="block text-sm font-semibold text-gray-700 mb-2">${getCMSText('auth.programmer_signup.first_name', 'Voornaam')} *</label>
                   <input id="prog-firstname" type="text" required class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
                 <div>
-                  <label for="prog-lastname" class="block text-sm font-semibold text-gray-700 mb-2">Achternaam *</label>
+                  <label for="prog-lastname" class="block text-sm font-semibold text-gray-700 mb-2">${getCMSText('auth.programmer_signup.last_name', 'Achternaam')} *</label>
                   <input id="prog-lastname" type="text" required class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
                 </div>
               </div>
               <div>
-                <label for="prog-org-name" class="block text-sm font-semibold text-gray-700 mb-2">Organisatie Naam *</label>
+                <label for="prog-org-name" class="block text-sm font-semibold text-gray-700 mb-2">${getCMSText('auth.programmer_signup.organization_name', 'Organisatie Naam')} *</label>
                 <input id="prog-org-name" type="text" required class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
               </div>
               <div>
-                <label for="prog-phone" class="block text-sm font-semibold text-gray-700 mb-2">Telefoon *</label>
+                <label for="prog-phone" class="block text-sm font-semibold text-gray-700 mb-2">${getCMSText('auth.programmer_signup.phone', 'Telefoon')} *</label>
                 <input id="prog-phone" type="tel" required class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
               </div>
               <div>
-                <label for="prog-website" class="block text-sm font-semibold text-gray-700 mb-2">Website</label>
-                <input id="prog-website" type="url" placeholder="https://..." class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <label for="prog-website" class="block text-sm font-semibold text-gray-700 mb-2">${getCMSText('auth.programmer_signup.website', 'Website')}</label>
+                <input id="prog-website" type="url" placeholder="${getCMSText('auth.programmer_signup.website_placeholder', 'https://...')}" class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
               </div>
               <div>
-                <label for="prog-org-about" class="block text-sm font-semibold text-gray-700 mb-2">Over Organisatie</label>
+                <label for="prog-org-about" class="block text-sm font-semibold text-gray-700 mb-2">${getCMSText('auth.programmer_signup.about_organization', 'Over Organisatie')}</label>
                 <textarea id="prog-org-about" rows="3" class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
               </div>
             </div>
@@ -415,18 +415,18 @@ export function renderProgrammerSignup() {
             <div class="space-y-3">
               <label class="flex items-start space-x-3">
                 <input id="prog-notify-email" type="checkbox" checked class="h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500 mt-0.5">
-                <span class="text-sm text-gray-700">OK om email notificaties te ontvangen</span>
+                <span class="text-sm text-gray-700">${getCMSText('auth.programmer_signup.email_notifications', 'OK om email notificaties te ontvangen')}</span>
               </label>
               <label class="flex items-start space-x-3">
                 <input id="prog-terms" type="checkbox" required class="h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500 mt-0.5">
-                <span class="text-sm text-gray-700">Ik ga akkoord met de <a href="#" class="font-semibold text-indigo-600">Algemene Voorwaarden</a> *</span>
+                <span class="text-sm text-gray-700">${getCMSText('auth.programmer_signup.terms_agree', 'Ik ga akkoord met de')} <a href="#" class="font-semibold text-indigo-600">${getCMSText('auth.programmer_signup.terms_link', 'Algemene Voorwaarden')}</a> *</span>
               </label>
             </div>
           </div>
 
           <button type="submit"
             class="btn-press w-full py-4 px-4 rounded-xl text-base font-semibold text-white bg-gray-900 hover:bg-gray-800 focus:outline-none">
-            Start Gratis Proefperiode
+            ${getCMSText('auth.programmer_signup.button', 'Start Gratis Proefperiode')}
           </button>
           <p id="programmer-signup-error" class="text-red-500 text-sm mt-2 text-center"></p>
         </form>
