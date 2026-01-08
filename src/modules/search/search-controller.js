@@ -837,9 +837,37 @@ function showSearchView() {
     return;
   }
 
-  document.getElementById('artist-detail-view').style.display = 'none';
-  document.getElementById('programmer-dashboard').style.display = 'block';
+  // Hide artist detail view
+  const detailView = document.getElementById('artist-detail-view');
+  if (detailView) {
+    detailView.style.display = 'none';
+    detailView.classList.add('hidden');
+  }
+
+  // Show programmer dashboard
+  const dashboard = document.getElementById('programmer-dashboard');
+  if (dashboard) {
+    dashboard.style.display = 'block';
+    dashboard.classList.remove('hidden');
+  }
+
+  // Show search section explicitly
+  const searchSection = document.getElementById('artist-search-section');
+  if (searchSection) {
+    searchSection.style.display = 'block';
+    searchSection.style.opacity = '1';
+    searchSection.style.visibility = 'visible';
+    searchSection.classList.remove('hidden');
+  }
+
+  // Re-render search UI to ensure it's visible
+  renderArtistSearch();
+  setupArtistSearch();
+  setTimeout(() => loadArtists(), 100);
+
   window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  console.log('[NAV] Returned to search view');
 }
 
 /**
