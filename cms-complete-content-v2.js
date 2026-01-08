@@ -1,28 +1,14 @@
 /**
- * seed-cms-data.js
- * Script to seed CMS data in Firestore using Firebase Admin SDK
- * Run with: node seed-cms-data.js
+ * cms-complete-content.js
+ * 
+ * VOLLEDIGE CMS content gebaseerd op alle website screenshots.
+ * Bevat ALLE teksten die zichtbaar zijn voor gebruikers.
  */
 
-import admin from 'firebase-admin';
-import { readFileSync } from 'fs';
-
-// Load service account key
-const serviceAccount = JSON.parse(
-  readFileSync('./serviceAccountKey-staging.json', 'utf8')
-);
-
-// Initialize Firebase Admin
-admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount)
-});
-
-const db = admin.firestore();
-
-/**
- * Dutch content - Complete v2 based on screenshots
- */
-const content_nl = {
+export const cmsContentNL = {
+  // ============================================
+  // HOMEPAGE
+  // ============================================
   home: {
     hero: {
       title: 'SPOKEN WORD PLATFORM',
@@ -37,17 +23,26 @@ const content_nl = {
     }
   },
 
+  // ============================================
+  // NAVIGATIE
+  // ============================================
   nav: {
+    // Programmer nav
     search: 'Zoeken',
     agenda: 'Agenda',
     edit_profile: 'Profiel bewerken',
     messages: 'Berichten',
+    // Artist nav
     gigs: 'Gigs',
     events: 'Evenementen',
+    // Common
     logout: 'Uitloggen',
     settings: 'Instellingen'
   },
 
+  // ============================================
+  // LOGIN
+  // ============================================
   auth: {
     login: {
       title: 'Welkom terug',
@@ -58,15 +53,20 @@ const content_nl = {
       back_home: '← Terug naar home'
     },
 
+    // ============================================
+    // ARTIST SIGNUP
+    // ============================================
     artist_signup: {
       back: '← Terug',
       title: 'Maak je Artiest Profiel',
       subtitle: 'Vul zoveel mogelijk in. Je kunt later meer toevoegen.',
-
+      
+      // Account Details
       account_details: 'Account Details',
       email: 'Email',
       password: 'Wachtwoord (min. 6 tekens)',
-
+      
+      // Personal Details
       personal_details: 'Persoonlijke Gegevens',
       first_name: 'Voornaam',
       last_name: 'Achternaam',
@@ -78,7 +78,8 @@ const content_nl = {
       gender_placeholder: 'Selecteer...',
       location: 'Locatie',
       location_placeholder: 'bijv. Amsterdam, Nederland',
-
+      
+      // Professional Details
       professional_details: 'Professionele Details',
       genres_label: 'Genres (selecteer meerdere)',
       languages_label: 'Talen (selecteer meerdere)',
@@ -86,24 +87,31 @@ const content_nl = {
       bio: 'Bio',
       pitch: 'Pitch',
       pitch_placeholder: 'Korte samenvatting voor programmatoren',
-
+      
+      // Notifications & Terms
       email_notifications: 'OK om email notificaties te ontvangen',
       sms_notifications: 'OK om SMS notificaties te ontvangen',
       terms_agree: 'Ik ga akkoord met de',
       terms_link: 'Algemene Voorwaarden',
-
+      
+      // Submit
       button: 'Account Aanmaken'
     },
 
+    // ============================================
+    // PROGRAMMER SIGNUP
+    // ============================================
     programmer_signup: {
       back: '← Terug',
       title: 'Maak je Programmator Account',
       subtitle: 'Start je 7-daagse gratis proefperiode.',
-
+      
+      // Account Details
       account_details: 'Account Details',
       email: 'Email',
       password: 'Wachtwoord (min. 6 tekens)',
-
+      
+      // Organization Details
       organization_details: 'Organisatie Details',
       first_name: 'Voornaam',
       last_name: 'Achternaam',
@@ -112,24 +120,31 @@ const content_nl = {
       website: 'Website',
       website_placeholder: 'https://...',
       about_organization: 'Over Organisatie',
-
+      
+      // Notifications & Terms
       email_notifications: 'OK om email notificaties te ontvangen',
       terms_agree: 'Ik ga akkoord met de',
       terms_link: 'Algemene Voorwaarden',
-
+      
+      // Submit
       button: 'Start Gratis Proefperiode'
     }
   },
 
+  // ============================================
+  // SEARCH / ZOEKEN
+  // ============================================
   search: {
     title: 'Zoeken',
     results_count: '{count} gevonden',
-
+    
+    // Search inputs
     keywords_label: 'Keywords',
     keywords_placeholder: 'bijv. slam, poetry, rap..',
     name_placeholder: 'Zoek op naam...',
     location_placeholder: 'Locatie...',
-
+    
+    // Filter sections
     filters: {
       genre: 'Genre',
       themes: 'Themes',
@@ -137,10 +152,14 @@ const content_nl = {
       services: 'Diensten',
       languages: 'Talen'
     },
-
+    
+    // Empty state
     select_artist: 'Selecteer een artiest'
   },
 
+  // ============================================
+  // GENRES
+  // ============================================
   genres: {
     performance_poetry: 'Performance Poetry',
     slam_poetry: 'Slam Poetry',
@@ -156,6 +175,9 @@ const content_nl = {
     one_on_one: '1-op-1 Sessies'
   },
 
+  // ============================================
+  // THEMES / THEMA'S
+  // ============================================
   themes: {
     identity: 'Identity',
     social_justice: 'Social Justice',
@@ -166,12 +188,18 @@ const content_nl = {
     coming_of_age: 'Coming of Age'
   },
 
+  // ============================================
+  // VIBE / ENERGY
+  // ============================================
   vibe: {
     intiem: 'Intiem',
     interactief: 'Interactief',
     energiek: 'Energiek'
   },
 
+  // ============================================
+  // DIENSTEN / SERVICES
+  // ============================================
   services: {
     podiumperformance: 'Podiumperformance',
     workshops: 'Workshops',
@@ -179,6 +207,9 @@ const content_nl = {
     gedichten_op_maat: 'Gedichten op Maat'
   },
 
+  // ============================================
+  // TALEN / LANGUAGES
+  // ============================================
   languages: {
     nl: 'Nederlands',
     en: 'Engels',
@@ -187,6 +218,9 @@ const content_nl = {
     es: 'Spaans'
   },
 
+  // ============================================
+  // BETAALMETHODEN / PAYMENT
+  // ============================================
   payment: {
     factuur: 'Factuur',
     payrolling: 'Payrolling',
@@ -196,21 +230,27 @@ const content_nl = {
     anders: 'Anders'
   },
 
+  // ============================================
+  // AGENDA / CALENDAR
+  // ============================================
   agenda: {
     title: 'Agenda',
     subtitle: 'Ontdek waar artiesten binnenkort optreden',
-
+    
+    // View toggles
     day: 'Dag',
     month: 'Maand',
     list: 'Lijst',
     map: 'Kaart',
-
+    
+    // Filters
     filters_title: 'Filters',
     type_event: 'TYPE EVENT',
     region: 'REGIO',
     all_regions: "Alle regio's",
     clear_filters: 'Filters wissen',
-
+    
+    // Event types
     event_types: {
       slam_finales: 'Slam Finales',
       slams_battles: 'Slams & Battles',
@@ -220,50 +260,68 @@ const content_nl = {
       workshops: 'Workshops',
       features: 'Features'
     },
-
+    
+    // Attendance
     attending: '✓ Ik ga ook ({count})'
   },
 
+  // ============================================
+  // EVENEMENTEN (Artist view)
+  // ============================================
   events: {
     title: 'Evenementen',
     subtitle: 'Ontdek waar andere artiesten optreden'
   },
 
+  // ============================================
+  // PROGRAMMER PROFILE
+  // ============================================
   programmer_profile: {
     verified_badge: 'Verified Programmer',
     edit_profile: 'Edit Profile',
     view_public: 'View Public Profile',
-
+    
+    // Sections
     contact_info: 'Contact Information',
     about_organization: 'About Organization',
     not_specified: 'Not specified',
     no_description: 'No description available'
   },
 
+  // ============================================
+  // PROGRAMMER EDIT PROFILE
+  // ============================================
   programmer_edit: {
     title: 'Edit Profile',
-
+    
+    // Personal Details
     personal_details: 'Personal Details',
     change_photo: 'Change Photo',
     first_name: 'First Name',
     last_name: 'Last Name',
     phone_number: 'Phone Number',
     phone_placeholder: 'Enter phone number',
-
+    
+    // Organization Details
     organization_details: 'Organization Details',
     organization_name: 'Organization Name',
     website: 'Website',
     website_placeholder: 'https://example.com',
     about_organization: 'About Organization',
     about_placeholder: 'Describe your organization...',
-
+    
+    // Preferences
     preferences: 'Preferences',
     language: 'Language',
-
+    
+    // Buttons
     save: 'Save All Changes',
     cancel: 'Cancel'
   },
 
+  // ============================================
+  // PUBLIC PROFILE PREVIEW
+  // ============================================
   public_preview: {
     back: '‹ Back to Profile',
     title: 'Public Profile Preview',
@@ -271,11 +329,15 @@ const content_nl = {
     footer_note: 'Artists can view this information when you contact them or when they view your messages.'
   },
 
+  // ============================================
+  // ARTIST PROFILE (Own view)
+  // ============================================
   artist_profile: {
     media_gallery: 'Media Gallery',
     manage_profile: 'Profiel Beheren',
     edit_profile: 'Bewerk Profiel',
-
+    
+    // Info labels
     years_old: 'years old',
     genres: 'Genres',
     languages: 'Languages',
@@ -285,17 +347,22 @@ const content_nl = {
     recommendations_error: 'Kon recommendations niet laden.'
   },
 
+  // ============================================
+  // ARTIST EDIT PROFILE
+  // ============================================
   artist_edit: {
     title: 'Edit Artist Profile',
     subtitle: 'Update your information below.',
     cancel: 'Cancel',
-
+    
+    // Tabs
     tabs: {
       basics: 'Basics & Identity',
       media: 'Bio & Media',
       contact: 'Contact & Socials'
     },
-
+    
+    // Basics & Identity
     display_name: 'Display Name (Stage Name)',
     location: 'Location (City, Country)',
     genres: 'Genres',
@@ -305,7 +372,8 @@ const content_nl = {
     services_label: 'Diensten / Format (selecteer meerdere)',
     pitch: 'Short Pitch',
     pitch_hint: '(max 150 chars)',
-
+    
+    // Language options in edit
     lang_options: {
       nl: 'Dutch (NL)',
       en: 'English (EN)',
@@ -313,7 +381,8 @@ const content_nl = {
       de: 'German (DE)',
       es: 'Spanish (ES)'
     },
-
+    
+    // Bio & Media
     bio: 'Bio / Background Info',
     youtube_link: 'YouTube/Vimeo Link',
     spotify_link: 'Spotify/SoundCloud Link',
@@ -328,39 +397,50 @@ const content_nl = {
     youtube_videos: 'YouTube Videos',
     add_video: 'Add Video',
     no_videos: 'No videos added yet',
-
+    
+    // Contact & Socials
     phone_number: 'Phone Number',
     website: 'Website',
     payment_methods: 'Payment Methods',
     notification_settings: 'Notification Settings',
     email_notifications: 'Receive email notifications',
     sms_notifications: 'Receive SMS notifications',
-
+    
+    // Photo
     photo_hint: 'JPG, PNG or GIF. Max 5MB.',
     view_public: 'View Public Profile',
-
+    
+    // Save
     save: 'Save All Changes'
   },
 
+  // ============================================
+  // GIGS (Artist)
+  // ============================================
   gigs: {
     attendance_notice: '{count} persoon komt naar je shows!',
     view_names: 'Bekijk namen',
-
+    
     upcoming: 'Upcoming Gigs',
     gigs_planned: '{count} optredens gepland',
     add_gig: '+ Add Gig',
-
+    
+    // Event types
     types: {
       showcase: 'Showcase',
       feature: 'Feature',
       open_mic: 'Open Mic',
       workshop: 'Workshop'
     },
-
+    
+    // Tour poster
     make_poster: 'Maak Tour Poster',
     shows_count: '({count} shows)'
   },
 
+  // ============================================
+  // ADD GIG MODAL
+  // ============================================
   add_gig: {
     title: 'Nieuw Optreden',
     date: 'DATUM',
@@ -377,6 +457,9 @@ const content_nl = {
     submit: 'Toevoegen'
   },
 
+  // ============================================
+  // TOUR POSTER
+  // ============================================
   tour_poster: {
     title: 'Tour Poster',
     choose_style: 'Kies een stijl:',
@@ -386,6 +469,9 @@ const content_nl = {
     format_note: 'Perfect formaat voor Instagram Stories (1080x1920px)'
   },
 
+  // ============================================
+  // BERICHTEN / MESSAGES
+  // ============================================
   messages: {
     title: 'Berichten',
     search_placeholder: 'Zoek in berichten...',
@@ -395,16 +481,21 @@ const content_nl = {
     type_placeholder: 'Typ je bericht...'
   },
 
+  // ============================================
+  // ACCOUNT SETTINGS
+  // ============================================
   settings: {
     title: 'Account Settings',
     subtitle: 'Manage your email and password',
-
+    
+    // Change Email
     change_email: 'Change Email',
     change_email_subtitle: 'Update your account email address',
     new_email: 'New Email Address',
     current_password_email: 'Current Password (for verification)',
     update_email: 'Update Email',
-
+    
+    // Change Password
     change_password: 'Change Password',
     change_password_subtitle: 'Update your account password',
     current_password: 'Current Password',
@@ -416,6 +507,9 @@ const content_nl = {
     update_password: 'Update Password'
   },
 
+  // ============================================
+  // COMMON / ALGEMEEN
+  // ============================================
   common: {
     required: '*',
     loading: 'Laden...',
@@ -434,16 +528,19 @@ const content_nl = {
     search: 'Zoeken'
   },
 
+  // ============================================
+  // METADATA
+  // ============================================
   _meta: {
     version: '2.0.0',
     lastUpdated: new Date().toISOString()
   }
 };
 
-/**
- * English content - Complete v2 based on screenshots
- */
-const content_en = {
+// ============================================
+// ENGLISH TRANSLATIONS
+// ============================================
+export const cmsContentEN = {
   home: {
     hero: {
       title: 'SPOKEN WORD PLATFORM',
@@ -670,144 +767,3 @@ const content_en = {
     lastUpdated: new Date().toISOString()
   }
 };
-
-/**
- * Styles
- */
-const styles = {
-  gradient: {
-    from: '#667eea',
-    to: '#764ba2'
-  },
-  colors: {
-    primary: '#667eea',
-    secondary: '#764ba2',
-    accent: '#f59e0b',
-    success: '#10b981',
-    error: '#ef4444',
-    warning: '#f59e0b'
-  }
-};
-
-/**
- * Email templates
- */
-const email_templates = {
-  welcome_artist: {
-    subject: 'Welkom bij Community, {firstName}!',
-    body: `Hallo {firstName},
-
-Welkom bij Community! Je account is succesvol aangemaakt.
-
-Je kunt nu:
-- Je profiel aanvullen
-- Gezocht worden door programmeurs
-- Berichten ontvangen
-
-Veel succes!
-
-Het Community Team`
-  },
-  welcome_programmer: {
-    subject: 'Welkom bij Community, {firstName}!',
-    body: `Hallo {firstName},
-
-Welkom bij Community! Je {organizationName} account is succesvol aangemaakt.
-
-Je kunt nu:
-- Artiesten zoeken
-- Profielen bekijken
-- Contact opnemen
-
-Veel succes!
-
-Het Community Team`
-  },
-  booking_request: {
-    subject: 'Nieuwe boekingsaanvraag van {programmerName}',
-    body: `Hallo {artistName},
-
-{programmerName} van {organizationName} heeft interesse in een samenwerking.
-
-Bericht:
-{message}
-
-Log in om te reageren.
-
-Het Community Team`
-  },
-  booking_confirmed: {
-    subject: 'Boeking bevestigd: {eventTitle}',
-    body: `Hallo {artistName},
-
-Je boeking voor {eventTitle} is bevestigd!
-
-Datum: {eventDate}
-Locatie: {eventLocation}
-Programmeur: {programmerName}
-
-Meer details vind je in je dashboard.
-
-Het Community Team`
-  },
-  message_notification: {
-    subject: 'Nieuw bericht van {senderName}',
-    body: `Hallo {recipientName},
-
-Je hebt een nieuw bericht ontvangen van {senderName}:
-
-"{messagePreview}"
-
-Log in om te reageren.
-
-Het Community Team`
-  },
-  password_reset: {
-    subject: 'Wachtwoord reset aanvraag',
-    body: `Hallo {firstName},
-
-Je hebt een wachtwoord reset aangevraagd.
-
-Klik op de volgende link om je wachtwoord te resetten:
-{resetLink}
-
-Als je dit niet hebt aangevraagd, negeer dan deze email.
-
-Het Community Team`
-  }
-};
-
-/**
- * Seed the data
- */
-async function seedCMSData() {
-  try {
-    console.log('🌱 Seeding CMS data (v2.0.0)...');
-
-    // Create content_nl - Force overwrite
-    await db.collection('cms').doc('content_nl').set(content_nl);
-    console.log('✓ Created/Updated cms/content_nl');
-
-    // Create content_en - Force overwrite
-    await db.collection('cms').doc('content_en').set(content_en);
-    console.log('✓ Created/Updated cms/content_en');
-
-    // Create styles - Force overwrite
-    await db.collection('cms').doc('styles').set(styles);
-    console.log('✓ Created/Updated cms/styles');
-
-    // Create email_templates - Force overwrite
-    await db.collection('cms').doc('email_templates').set(email_templates);
-    console.log('✓ Created/Updated cms/email_templates');
-
-    console.log('✅ CMS data seeded successfully! (v2.0.0)');
-    process.exit(0);
-
-  } catch (error) {
-    console.error('❌ Error seeding CMS data:', error);
-    process.exit(1);
-  }
-}
-
-// Run the seed function
-seedCMSData();
