@@ -3,6 +3,8 @@
  * View rendering functies voor Gigs, Agenda en Evenementen pagina's
  */
 
+import { getCMSText } from '../../services/cms-service.js';
+
 /**
  * Shows the Gigs page for artists (their own gigs)
  */
@@ -95,8 +97,8 @@ export async function showAgendaPage() {
       <div class="max-w-6xl mx-auto px-4 py-6">
         <!-- Header -->
         <div class="mb-6">
-          <h1 class="text-2xl font-bold text-gray-900">Agenda</h1>
-          <p class="text-gray-500 mt-1">Ontdek waar artiesten binnenkort optreden</p>
+          <h1 class="text-2xl font-bold text-gray-900">${getCMSText('agenda.title', 'Agenda')}</h1>
+          <p class="text-gray-500 mt-1">${getCMSText('agenda.subtitle', 'Ontdek waar artiesten binnenkort optreden')}</p>
         </div>
 
         <!-- Main Content: Responsive Layout -->
@@ -148,11 +150,11 @@ export async function showAgendaPage() {
               <div class="flex gap-2">
                 <button id="view-mode-list" class="view-mode-btn px-3 py-1.5 text-sm font-medium rounded-lg bg-indigo-600 text-white">
                   <i data-lucide="list" class="w-4 h-4 inline-block mr-1"></i>
-                  Lijst
+                  ${getCMSText('agenda.list', 'Lijst')}
                 </button>
                 <button id="view-mode-map" class="view-mode-btn px-3 py-1.5 text-sm font-medium rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">
                   <i data-lucide="map" class="w-4 h-4 inline-block mr-1"></i>
-                  Kaart
+                  ${getCMSText('agenda.map', 'Kaart')}
                 </button>
               </div>
             </div>
@@ -226,8 +228,8 @@ export async function showEventsPage() {
       <div class="max-w-6xl mx-auto px-4 py-6">
         <!-- Header -->
         <div class="mb-6">
-          <h1 class="text-2xl font-bold text-gray-900">Evenementen</h1>
-          <p class="text-gray-500 mt-1">Ontdek waar andere artiesten optreden</p>
+          <h1 class="text-2xl font-bold text-gray-900">${getCMSText('agenda.title', 'Agenda')}</h1>
+          <p class="text-gray-500 mt-1">${getCMSText('agenda.subtitle', 'Ontdek waar artiesten binnenkort optreden')}</p>
         </div>
 
         <!-- Main Content: Responsive Layout -->
@@ -279,11 +281,11 @@ export async function showEventsPage() {
               <div class="flex gap-2">
                 <button id="view-mode-list" class="view-mode-btn px-3 py-1.5 text-sm font-medium rounded-lg bg-indigo-600 text-white">
                   <i data-lucide="list" class="w-4 h-4 inline-block mr-1"></i>
-                  Lijst
+                  ${getCMSText('agenda.list', 'Lijst')}
                 </button>
                 <button id="view-mode-map" class="view-mode-btn px-3 py-1.5 text-sm font-medium rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200">
                   <i data-lucide="map" class="w-4 h-4 inline-block mr-1"></i>
-                  Kaart
+                  ${getCMSText('agenda.map', 'Kaart')}
                 </button>
               </div>
             </div>

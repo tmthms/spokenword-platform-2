@@ -5,6 +5,7 @@
  */
 
 import { EVENT_TYPE_LABELS, formatEventDate, formatShortDate } from './calendar-service.js';
+import { getCMSText } from '../../services/cms-service.js';
 
 /**
  * Format date as YYYY-MM-DD using local timezone (not UTC)
@@ -743,17 +744,17 @@ export function renderAgendaFilters(activeFilters = { types: [], region: 'all' }
   const monthCalendarHtml = renderMonthCalendar(selectedDate, eventCounts);
 
   const eventTypes = [
-    { value: 'slam-finale', label: 'Slam Finales' },
-    { value: 'slam', label: 'Slams & Battles' },
-    { value: 'showcase', label: 'Showcases' },
-    { value: 'gig', label: 'Optredens' },
-    { value: 'open-mic', label: 'Open Mics' },
-    { value: 'workshop', label: 'Workshops' },
-    { value: 'feature', label: 'Features' }
+    { value: 'slam-finale', label: getCMSText('agenda.event_types.slam_finales', 'Slam Finales') },
+    { value: 'slam', label: getCMSText('agenda.event_types.slams_battles', 'Slams & Battles') },
+    { value: 'showcase', label: getCMSText('agenda.event_types.showcases', 'Showcases') },
+    { value: 'gig', label: getCMSText('agenda.event_types.gigs', 'Optredens') },
+    { value: 'open-mic', label: getCMSText('agenda.event_types.open_mics', 'Open Mics') },
+    { value: 'workshop', label: getCMSText('agenda.event_types.workshops', 'Workshops') },
+    { value: 'feature', label: getCMSText('agenda.event_types.features', 'Features') }
   ];
 
   const regions = [
-    { value: 'all', label: 'Alle regio\'s' },
+    { value: 'all', label: getCMSText('agenda.all_regions', 'Alle regio\'s') },
     { value: 'vlaanderen', label: 'Vlaanderen' },
     { value: 'nederland', label: 'Nederland' },
     { value: 'brussel', label: 'Brussel' }
@@ -762,11 +763,11 @@ export function renderAgendaFilters(activeFilters = { types: [], region: 'all' }
   return `
     ${monthCalendarHtml}
     <div class="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm">
-      <h3 class="text-lg font-bold text-gray-900 mb-4">Filters</h3>
+      <h3 class="text-lg font-bold text-gray-900 mb-4">${getCMSText('agenda.filters_title', 'Filters')}</h3>
 
       <!-- Event Type Checkboxes -->
       <div class="mb-6">
-        <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Type Event</p>
+        <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">${getCMSText('agenda.type_event', 'Type Event')}</p>
         <div class="space-y-2">
           ${eventTypes.map(type => `
             <label class="flex items-center gap-3 cursor-pointer group">
@@ -785,7 +786,7 @@ export function renderAgendaFilters(activeFilters = { types: [], region: 'all' }
 
       <!-- Region Dropdown -->
       <div>
-        <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Regio</p>
+        <p class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">${getCMSText('agenda.region', 'Regio')}</p>
         <select
           name="region-filter"
           class="w-full bg-gray-50 border border-gray-300 rounded-xl px-4 py-2.5 text-gray-700 focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
@@ -800,7 +801,7 @@ export function renderAgendaFilters(activeFilters = { types: [], region: 'all' }
 
       <!-- Clear Filters -->
       <button id="clear-filters-btn" class="mt-4 w-full px-4 py-2 text-sm text-gray-500 hover:text-gray-900 transition-colors">
-        Filters wissen
+        ${getCMSText('agenda.clear_filters', 'Filters wissen')}
       </button>
     </div>
   `;

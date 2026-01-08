@@ -10,6 +10,7 @@ import { loadArtistsData, calculateAge, isProgrammer } from './search-data.js';
 import { showArtistDetail } from './search-controller.js';
 import { getStore } from '../../utils/store.js';
 import { openMessageModal } from '../messaging/messaging-controller.js';
+import { getCMSText } from '../../services/cms-service.js';
 
 /**
  * Format genre name for display
@@ -49,10 +50,10 @@ export function renderArtistSearch() {
       <div id="mobile-search-layout" style="display: ${isDesktop ? 'none' : 'block'};">
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-          <h1 style="font-size: 24px; font-weight: 700; color: #1a1a2e; margin: 0;">Zoeken</h1>
+          <h1 style="font-size: 24px; font-weight: 700; color: #1a1a2e; margin: 0;">${getCMSText('search.title', 'Zoeken')}</h1>
           <button id="mobile-clear-filters-btn" type="button" style="padding: 8px 14px; background: none; border: 1px solid #e5e7eb; border-radius: 20px; font-size: 13px; font-weight: 500; color: #6b7280; cursor: pointer; display: flex; align-items: center; gap: 6px;">
             <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
-            Wis filters
+            ${getCMSText('agenda.clear_filters', 'Wis filters')}
           </button>
         </div>
 
@@ -75,7 +76,7 @@ export function renderArtistSearch() {
         <!-- Filter Panels -->
         <div id="filter-name" style="display: none; background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(128,90,213,0.1);">
           <div style="display: flex; gap: 8px;">
-            <input type="text" id="mobile-input-name" placeholder="Naam artiest..."
+            <input type="text" id="mobile-input-name" placeholder="${getCMSText('search.name_placeholder', 'Zoek op naam...')}"
                    style="flex: 1; padding: 12px 16px; background: #f9fafb; border-radius: 12px; border: none; font-size: 14px; outline: none;">
             <button data-action="apply-filter" data-target="name"
                     style="width: 44px; height: 44px; background: #805ad5; color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 18px;">✓</button>
@@ -84,7 +85,7 @@ export function renderArtistSearch() {
 
         <div id="filter-location" style="display: none; background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(128,90,213,0.1);">
           <div style="display: flex; gap: 8px;">
-            <input type="text" id="mobile-input-location" placeholder="Stad of regio..."
+            <input type="text" id="mobile-input-location" placeholder="${getCMSText('search.location_placeholder', 'Locatie...')}"
                    style="flex: 1; padding: 12px 16px; background: #f9fafb; border-radius: 12px; border: none; font-size: 14px; outline: none;">
             <button data-action="apply-filter" data-target="location"
                     style="width: 44px; height: 44px; background: #805ad5; color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 18px;">✓</button>
@@ -93,7 +94,7 @@ export function renderArtistSearch() {
 
         <div id="filter-keywords" style="display: none; background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px; box-shadow: 0 4px 20px rgba(128,90,213,0.1);">
           <div style="display: flex; gap: 8px;">
-            <input type="text" id="mobile-input-keywords" placeholder="bijv. slam, poetry, rap..."
+            <input type="text" id="mobile-input-keywords" placeholder="${getCMSText('search.keywords_placeholder', 'bijv. slam, poetry, rap...')}"
                    style="flex: 1; padding: 12px 16px; background: #f9fafb; border-radius: 12px; border: none; font-size: 14px; outline: none;">
             <button data-action="apply-filter" data-target="keywords"
                     style="width: 44px; height: 44px; background: #805ad5; color: white; border: none; border-radius: 50%; cursor: pointer; font-size: 18px;">✓</button>
@@ -106,7 +107,7 @@ export function renderArtistSearch() {
         <div class="filter-section" style="background: white; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden;">
           <button data-action="toggle-filter" data-target="genre"
                   style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 16px; background: none; border: none; cursor: pointer;">
-            <span style="font-size: 16px; font-weight: 600; color: #1a1a2e;">Genre</span>
+            <span style="font-size: 16px; font-weight: 600; color: #1a1a2e;">${getCMSText('search.filters.genre', 'Genre')}</span>
             <svg id="chevron-genre" style="width: 20px; height: 20px; color: #9ca3af; transition: transform 0.2s;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
@@ -153,7 +154,7 @@ export function renderArtistSearch() {
         <div class="filter-section" style="background: white; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden;">
           <button data-action="toggle-filter" data-target="themes"
                   style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 16px; background: none; border: none; cursor: pointer;">
-            <span style="font-size: 16px; font-weight: 600; color: #1a1a2e;">Themes</span>
+            <span style="font-size: 16px; font-weight: 600; color: #1a1a2e;">${getCMSText('search.filters.themes', 'Themes')}</span>
             <svg id="chevron-themes" style="width: 20px; height: 20px; color: #9ca3af; transition: transform 0.2s;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
@@ -196,7 +197,7 @@ export function renderArtistSearch() {
         <div class="filter-section" style="background: white; border-radius: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); overflow: hidden;">
           <button data-action="toggle-filter" data-target="vibe"
                   style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 16px; background: none; border: none; cursor: pointer;">
-            <span style="font-size: 16px; font-weight: 600; color: #1a1a2e;">Vibe</span>
+            <span style="font-size: 16px; font-weight: 600; color: #1a1a2e;">${getCMSText('search.filters.vibe', 'Vibe')}</span>
             <svg id="chevron-vibe" style="width: 20px; height: 20px; color: #9ca3af; transition: transform 0.2s;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
             </svg>
@@ -299,14 +300,14 @@ export function renderArtistSearch() {
 
         <!-- LEFT COLUMN: Filters -->
         <aside style="width: 220px; flex-shrink: 0;">
-          <h1 style="font-size: 28px; font-weight: 700; color: #1a1a2e; margin-bottom: 24px;">Zoeken</h1>
+          <h1 style="font-size: 28px; font-weight: 700; color: #1a1a2e; margin-bottom: 24px;">${getCMSText('search.title', 'Zoeken')}</h1>
 
           <div style="background: white; border-radius: 20px; padding: 24px; box-shadow: 0 4px 20px rgba(128, 90, 213, 0.08); border: 1px solid rgba(128, 90, 213, 0.1);">
 
             <!-- Keywords (moved to top) -->
             <div style="margin-bottom: 16px;">
-              <label style="font-size: 14px; font-weight: 600; color: #1a1a2e; display: block; margin-bottom: 8px;">Keywords</label>
-              <input id="desktop-input-keywords" type="text" placeholder="bijv. slam, poetry, rap..."
+              <label style="font-size: 14px; font-weight: 600; color: #1a1a2e; display: block; margin-bottom: 8px;">${getCMSText('search.keywords_label', 'Keywords')}</label>
+              <input id="desktop-input-keywords" type="text" placeholder="${getCMSText('search.keywords_placeholder', 'bijv. slam, poetry, rap...')}"
                      style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #e9e3f5; font-size: 14px; outline: none; box-sizing: border-box;">
             </div>
 
@@ -314,13 +315,13 @@ export function renderArtistSearch() {
 
             <!-- Name Search -->
             <div style="margin-bottom: 16px;">
-              <input id="desktop-input-name" type="text" placeholder="Zoek op naam..."
+              <input id="desktop-input-name" type="text" placeholder="${getCMSText('search.name_placeholder', 'Zoek op naam...')}"
                      style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #e9e3f5; font-size: 14px; outline: none; box-sizing: border-box;">
             </div>
 
             <!-- Location Search -->
             <div style="margin-bottom: 20px;">
-              <input id="desktop-input-location" type="text" placeholder="Locatie..."
+              <input id="desktop-input-location" type="text" placeholder="${getCMSText('search.location_placeholder', 'Locatie...')}"
                      style="width: 100%; padding: 12px 16px; border-radius: 12px; border: 1px solid #e9e3f5; font-size: 14px; outline: none; box-sizing: border-box;">
             </div>
 
@@ -330,7 +331,7 @@ export function renderArtistSearch() {
             <div style="background: white; border-radius: 12px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
               <button data-action="toggle-filter" data-target="desktop-genre"
                       style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: none; border: none; cursor: pointer;">
-                <span style="font-size: 14px; font-weight: 600; color: #1a1a2e;">Genre</span>
+                <span style="font-size: 14px; font-weight: 600; color: #1a1a2e;">${getCMSText('search.filters.genre', 'Genre')}</span>
                 <svg id="chevron-desktop-genre" style="width: 18px; height: 18px; color: #9ca3af; transition: transform 0.2s;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
@@ -377,7 +378,7 @@ export function renderArtistSearch() {
             <div style="background: white; border-radius: 12px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
               <button data-action="toggle-filter" data-target="desktop-themes"
                       style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: none; border: none; cursor: pointer;">
-                <span style="font-size: 14px; font-weight: 600; color: #1a1a2e;">Themes</span>
+                <span style="font-size: 14px; font-weight: 600; color: #1a1a2e;">${getCMSText('search.filters.themes', 'Themes')}</span>
                 <svg id="chevron-desktop-themes" style="width: 18px; height: 18px; color: #9ca3af; transition: transform 0.2s;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
@@ -420,7 +421,7 @@ export function renderArtistSearch() {
             <div style="background: white; border-radius: 12px; margin-bottom: 12px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
               <button data-action="toggle-filter" data-target="desktop-vibe"
                       style="width: 100%; display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; background: none; border: none; cursor: pointer;">
-                <span style="font-size: 14px; font-weight: 600; color: #1a1a2e;">Vibe</span>
+                <span style="font-size: 14px; font-weight: 600; color: #1a1a2e;">${getCMSText('search.filters.vibe', 'Vibe')}</span>
                 <svg id="chevron-desktop-vibe" style="width: 18px; height: 18px; color: #9ca3af; transition: transform 0.2s;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
