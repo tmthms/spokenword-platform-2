@@ -23,6 +23,9 @@ const db = admin.firestore();
  * Dutch content - Complete v2 based on screenshots
  */
 const content_nl = {
+  // ============================================
+  // HOMEPAGE
+  // ============================================
   home: {
     hero: {
       title: 'SPOKEN WORD PLATFORM',
@@ -37,17 +40,26 @@ const content_nl = {
     }
   },
 
+  // ============================================
+  // NAVIGATIE
+  // ============================================
   nav: {
+    // Programmer nav
     search: 'Zoeken',
     agenda: 'Agenda',
     edit_profile: 'Profiel bewerken',
     messages: 'Berichten',
+    // Artist nav
     gigs: 'Gigs',
     events: 'Evenementen',
+    // Common
     logout: 'Uitloggen',
     settings: 'Instellingen'
   },
 
+  // ============================================
+  // LOGIN
+  // ============================================
   auth: {
     login: {
       title: 'Welkom terug',
@@ -58,15 +70,20 @@ const content_nl = {
       back_home: '← Terug naar home'
     },
 
+    // ============================================
+    // ARTIST SIGNUP
+    // ============================================
     artist_signup: {
       back: '← Terug',
       title: 'Maak je Artiest Profiel',
       subtitle: 'Vul zoveel mogelijk in. Je kunt later meer toevoegen.',
 
+      // Account Details
       account_details: 'Account Details',
       email: 'Email',
       password: 'Wachtwoord (min. 6 tekens)',
 
+      // Personal Details
       personal_details: 'Persoonlijke Gegevens',
       first_name: 'Voornaam',
       last_name: 'Achternaam',
@@ -79,6 +96,7 @@ const content_nl = {
       location: 'Locatie',
       location_placeholder: 'bijv. Amsterdam, Nederland',
 
+      // Professional Details
       professional_details: 'Professionele Details',
       genres_label: 'Genres (selecteer meerdere)',
       languages_label: 'Talen (selecteer meerdere)',
@@ -87,23 +105,30 @@ const content_nl = {
       pitch: 'Pitch',
       pitch_placeholder: 'Korte samenvatting voor programmatoren',
 
+      // Notifications & Terms
       email_notifications: 'OK om email notificaties te ontvangen',
       sms_notifications: 'OK om SMS notificaties te ontvangen',
       terms_agree: 'Ik ga akkoord met de',
       terms_link: 'Algemene Voorwaarden',
 
+      // Submit
       button: 'Account Aanmaken'
     },
 
+    // ============================================
+    // PROGRAMMER SIGNUP
+    // ============================================
     programmer_signup: {
       back: '← Terug',
       title: 'Maak je Programmator Account',
       subtitle: 'Start je 7-daagse gratis proefperiode.',
 
+      // Account Details
       account_details: 'Account Details',
       email: 'Email',
       password: 'Wachtwoord (min. 6 tekens)',
 
+      // Organization Details
       organization_details: 'Organisatie Details',
       first_name: 'Voornaam',
       last_name: 'Achternaam',
@@ -113,23 +138,30 @@ const content_nl = {
       website_placeholder: 'https://...',
       about_organization: 'Over Organisatie',
 
+      // Notifications & Terms
       email_notifications: 'OK om email notificaties te ontvangen',
       terms_agree: 'Ik ga akkoord met de',
       terms_link: 'Algemene Voorwaarden',
 
+      // Submit
       button: 'Start Gratis Proefperiode'
     }
   },
 
+  // ============================================
+  // SEARCH / ZOEKEN
+  // ============================================
   search: {
     title: 'Zoeken',
     results_count: '{count} gevonden',
 
+    // Search inputs
     keywords_label: 'Keywords',
     keywords_placeholder: 'bijv. slam, poetry, rap..',
     name_placeholder: 'Zoek op naam...',
     location_placeholder: 'Locatie...',
 
+    // Filter sections
     filters: {
       genre: 'Genre',
       themes: 'Themes',
@@ -138,9 +170,13 @@ const content_nl = {
       languages: 'Talen'
     },
 
+    // Empty state
     select_artist: 'Selecteer een artiest'
   },
 
+  // ============================================
+  // GENRES
+  // ============================================
   genres: {
     performance_poetry: 'Performance Poetry',
     slam_poetry: 'Slam Poetry',
@@ -156,6 +192,9 @@ const content_nl = {
     one_on_one: '1-op-1 Sessies'
   },
 
+  // ============================================
+  // THEMES / THEMA'S
+  // ============================================
   themes: {
     identity: 'Identity',
     social_justice: 'Social Justice',
@@ -166,12 +205,18 @@ const content_nl = {
     coming_of_age: 'Coming of Age'
   },
 
+  // ============================================
+  // VIBE / ENERGY
+  // ============================================
   vibe: {
     intiem: 'Intiem',
     interactief: 'Interactief',
     energiek: 'Energiek'
   },
 
+  // ============================================
+  // DIENSTEN / SERVICES
+  // ============================================
   services: {
     podiumperformance: 'Podiumperformance',
     workshops: 'Workshops',
@@ -179,6 +224,9 @@ const content_nl = {
     gedichten_op_maat: 'Gedichten op Maat'
   },
 
+  // ============================================
+  // TALEN / LANGUAGES
+  // ============================================
   languages: {
     nl: 'Nederlands',
     en: 'Engels',
@@ -187,6 +235,9 @@ const content_nl = {
     es: 'Spaans'
   },
 
+  // ============================================
+  // BETAALMETHODEN / PAYMENT
+  // ============================================
   payment: {
     factuur: 'Factuur',
     payrolling: 'Payrolling',
@@ -196,21 +247,27 @@ const content_nl = {
     anders: 'Anders'
   },
 
+  // ============================================
+  // AGENDA / CALENDAR
+  // ============================================
   agenda: {
     title: 'Agenda',
     subtitle: 'Ontdek waar artiesten binnenkort optreden',
 
+    // View toggles
     day: 'Dag',
     month: 'Maand',
     list: 'Lijst',
     map: 'Kaart',
 
+    // Filters
     filters_title: 'Filters',
     type_event: 'TYPE EVENT',
     region: 'REGIO',
     all_regions: "Alle regio's",
     clear_filters: 'Filters wissen',
 
+    // Event types
     event_types: {
       slam_finales: 'Slam Finales',
       slams_battles: 'Slams & Battles',
@@ -221,127 +278,148 @@ const content_nl = {
       features: 'Features'
     },
 
+    // Attendance
     attending: '✓ Ik ga ook ({count})'
   },
 
+  // ============================================
+  // EVENEMENTEN (Artist view)
+  // ============================================
   events: {
     title: 'Evenementen',
     subtitle: 'Ontdek waar andere artiesten optreden'
   },
 
-  programmer_profile: {
-    verified_badge: 'Verified Programmer',
-    edit_profile: 'Edit Profile',
-    view_public: 'View Public Profile',
-
-    contact_info: 'Contact Information',
-    about_organization: 'About Organization',
-    not_specified: 'Not specified',
-    no_description: 'No description available'
-  },
-
-  programmer_edit: {
-    title: 'Edit Profile',
-
-    personal_details: 'Personal Details',
-    change_photo: 'Change Photo',
-    first_name: 'First Name',
-    last_name: 'Last Name',
-    phone_number: 'Phone Number',
-    phone_placeholder: 'Enter phone number',
-
-    organization_details: 'Organization Details',
-    organization_name: 'Organization Name',
-    website: 'Website',
-    website_placeholder: 'https://example.com',
-    about_organization: 'About Organization',
-    about_placeholder: 'Describe your organization...',
-
-    preferences: 'Preferences',
-    language: 'Language',
-
-    save: 'Save All Changes',
-    cancel: 'Cancel'
-  },
-
-  public_preview: {
-    back: '‹ Back to Profile',
-    title: 'Public Profile Preview',
-    subtitle: 'This is how artists see your profile when they view your organization information.',
-    footer_note: 'Artists can view this information when you contact them or when they view your messages.'
-  },
-
-  artist_profile: {
-    media_gallery: 'Media Gallery',
-    manage_profile: 'Profiel Beheren',
-    edit_profile: 'Bewerk Profiel',
-
-    years_old: 'years old',
-    genres: 'Genres',
-    languages: 'Languages',
-    biography: 'Biography',
-    pitch: 'Pitch',
-    recommendations: 'Recommendations',
-    recommendations_error: 'Kon recommendations niet laden.'
-  },
-
-  artist_edit: {
-    title: 'Edit Artist Profile',
-    subtitle: 'Update your information below.',
-    cancel: 'Cancel',
-
-    tabs: {
-      basics: 'Basics & Identity',
-      media: 'Bio & Media',
-      contact: 'Contact & Socials'
+  // ============================================
+  // PROFILE - ALLE PROFIEL TEKSTEN
+  // ============================================
+  profile: {
+    // === PROGRAMMER VIEW ===
+    programmer: {
+      verified_badge: 'Verified Programmer',
+      edit_profile: 'Edit Profile',
+      view_public: 'View Public Profile',
+      contact_info: 'Contact Information',
+      about_organization: 'About Organization',
+      not_specified: 'Not specified',
+      no_description: 'No description available'
     },
 
-    display_name: 'Display Name (Stage Name)',
-    location: 'Location (City, Country)',
-    genres: 'Genres',
-    languages: 'Languages',
-    themes_label: "Thema's (selecteer meerdere)",
-    vibe_label: 'Vibe (selecteer meerdere)',
-    services_label: 'Diensten / Format (selecteer meerdere)',
-    pitch: 'Short Pitch',
-    pitch_hint: '(max 150 chars)',
-
-    lang_options: {
-      nl: 'Dutch (NL)',
-      en: 'English (EN)',
-      fr: 'French (FR)',
-      de: 'German (DE)',
-      es: 'Spanish (ES)'
+    // === PROGRAMMER EDIT ===
+    programmer_edit: {
+      title: 'Edit Profile',
+      personal_details: 'Personal Details',
+      change_photo: 'Change Photo',
+      photo_hint: 'JPG, PNG or GIF. Max 5MB.',
+      first_name: 'First Name',
+      last_name: 'Last Name',
+      phone_number: 'Phone Number',
+      phone_placeholder: 'Enter phone number',
+      organization_details: 'Organization Details',
+      organization_name: 'Organization Name',
+      website: 'Website',
+      website_placeholder: 'https://example.com',
+      about_organization: 'About Organization',
+      about_placeholder: 'Describe your organization...',
+      preferences: 'Preferences',
+      language: 'Language',
+      save: 'Save All Changes',
+      cancel: 'Cancel'
     },
 
-    bio: 'Bio / Background Info',
-    youtube_link: 'YouTube/Vimeo Link',
-    spotify_link: 'Spotify/SoundCloud Link',
-    text_material: 'Text Material',
-    text_material_hint: '(up to 2000 words)',
-    documents: 'Documents (PDF, DOC, DOCX)',
-    add_document: '+ Add Document',
-    max_file_size: 'Maximum 10MB per file',
-    no_documents: 'No documents uploaded yet',
-    gallery_photos: 'Gallery Photos',
-    add_photo: '+ Add Photo',
-    youtube_videos: 'YouTube Videos',
-    add_video: 'Add Video',
-    no_videos: 'No videos added yet',
+    // === PROGRAMMER PUBLIC PREVIEW ===
+    programmer_public: {
+      back: '‹ Back to Profile',
+      title: 'Public Profile Preview',
+      subtitle: 'This is how artists see your profile when they view your organization information.',
+      footer_note: 'Artists can view this information when you contact them or when they view your messages.'
+    },
 
-    phone_number: 'Phone Number',
-    website: 'Website',
-    payment_methods: 'Payment Methods',
-    notification_settings: 'Notification Settings',
-    email_notifications: 'Receive email notifications',
-    sms_notifications: 'Receive SMS notifications',
+    // === ARTIST VIEW ===
+    artist: {
+      media_gallery: 'Media Gallery',
+      manage_profile: 'Profiel Beheren',
+      edit_profile: 'Bewerk Profiel',
+      years_old: 'years old',
+      female: 'Female',
+      male: 'Male',
+      genres: 'Genres',
+      languages: 'Languages',
+      biography: 'Biography',
+      pitch: 'Pitch',
+      recommendations: 'Recommendations',
+      recommendations_error: 'Kon recommendations niet laden.'
+    },
 
-    photo_hint: 'JPG, PNG or GIF. Max 5MB.',
-    view_public: 'View Public Profile',
+    // === ARTIST EDIT ===
+    artist_edit: {
+      title: 'Edit Artist Profile',
+      subtitle: 'Update your information below.',
+      cancel: 'Cancel',
 
-    save: 'Save All Changes'
+      // Tabs
+      tab_basics: 'Basics & Identity',
+      tab_media: 'Bio & Media',
+      tab_contact: 'Contact & Socials',
+
+      // Basics & Identity tab
+      display_name: 'Display Name (Stage Name)',
+      location: 'Location (City, Country)',
+      genres: 'Genres',
+      languages: 'Languages',
+      themes_label: "Thema's",
+      themes_hint: '(selecteer meerdere)',
+      vibe_label: 'Vibe',
+      vibe_hint: '(selecteer meerdere)',
+      services_label: 'Diensten / Format',
+      services_hint: '(selecteer meerdere)',
+      pitch: 'Short Pitch',
+      pitch_hint: '(max 150 chars)',
+
+      // Language chip labels
+      lang_nl: 'Dutch (NL)',
+      lang_en: 'English (EN)',
+      lang_fr: 'French (FR)',
+      lang_de: 'German (DE)',
+      lang_es: 'Spanish (ES)',
+
+      // Bio & Media tab
+      bio: 'Bio / Background Info',
+      youtube_link: 'YouTube/Vimeo Link',
+      spotify_link: 'Spotify/SoundCloud Link',
+      text_material: 'Text Material',
+      text_material_hint: '(up to 2000 words)',
+      documents: 'Documents (PDF, DOC, DOCX)',
+      add_document: '+ Add Document',
+      max_file_size: 'Maximum 10MB per file',
+      no_documents: 'No documents uploaded yet',
+      gallery_photos: 'Gallery Photos',
+      add_photo: '+ Add Photo',
+      youtube_videos: 'YouTube Videos',
+      add_video: 'Add Video',
+      no_videos: 'No videos added yet',
+
+      // Contact & Socials tab
+      phone_number: 'Phone Number',
+      website: 'Website',
+      payment_methods: 'Payment Methods',
+      notification_settings: 'Notification Settings',
+      email_notifications: 'Receive email notifications',
+      sms_notifications: 'Receive SMS notifications',
+
+      // Photo sidebar
+      change_photo: 'Change Photo',
+      photo_hint: 'JPG, PNG or GIF. Max 5MB.',
+      view_public: 'View Public Profile',
+
+      // Save
+      save: 'Save All Changes'
+    }
   },
 
+  // ============================================
+  // GIGS (Artist)
+  // ============================================
   gigs: {
     attendance_notice: '{count} persoon komt naar je shows!',
     view_names: 'Bekijk namen',
@@ -350,6 +428,7 @@ const content_nl = {
     gigs_planned: '{count} optredens gepland',
     add_gig: '+ Add Gig',
 
+    // Event types
     types: {
       showcase: 'Showcase',
       feature: 'Feature',
@@ -357,10 +436,14 @@ const content_nl = {
       workshop: 'Workshop'
     },
 
+    // Tour poster
     make_poster: 'Maak Tour Poster',
     shows_count: '({count} shows)'
   },
 
+  // ============================================
+  // ADD GIG MODAL
+  // ============================================
   add_gig: {
     title: 'Nieuw Optreden',
     date: 'DATUM',
@@ -377,6 +460,9 @@ const content_nl = {
     submit: 'Toevoegen'
   },
 
+  // ============================================
+  // TOUR POSTER
+  // ============================================
   tour_poster: {
     title: 'Tour Poster',
     choose_style: 'Kies een stijl:',
@@ -386,6 +472,9 @@ const content_nl = {
     format_note: 'Perfect formaat voor Instagram Stories (1080x1920px)'
   },
 
+  // ============================================
+  // BERICHTEN / MESSAGES
+  // ============================================
   messages: {
     title: 'Berichten',
     search_placeholder: 'Zoek in berichten...',
@@ -395,16 +484,21 @@ const content_nl = {
     type_placeholder: 'Typ je bericht...'
   },
 
+  // ============================================
+  // ACCOUNT SETTINGS
+  // ============================================
   settings: {
     title: 'Account Settings',
     subtitle: 'Manage your email and password',
 
+    // Change Email
     change_email: 'Change Email',
     change_email_subtitle: 'Update your account email address',
     new_email: 'New Email Address',
     current_password_email: 'Current Password (for verification)',
     update_email: 'Update Email',
 
+    // Change Password
     change_password: 'Change Password',
     change_password_subtitle: 'Update your account password',
     current_password: 'Current Password',
@@ -416,6 +510,9 @@ const content_nl = {
     update_password: 'Update Password'
   },
 
+  // ============================================
+  // COMMON / ALGEMEEN
+  // ============================================
   common: {
     required: '*',
     loading: 'Laden...',
@@ -434,15 +531,18 @@ const content_nl = {
     search: 'Zoeken'
   },
 
+  // ============================================
+  // METADATA
+  // ============================================
   _meta: {
     version: '2.0.0',
     lastUpdated: new Date().toISOString()
   }
 };
 
-/**
- * English content - Complete v2 based on screenshots
- */
+// ============================================
+// ENGLISH TRANSLATIONS
+// ============================================
 const content_en = {
   home: {
     hero: {
@@ -624,6 +724,151 @@ const content_en = {
     attending: "✓ I'm going ({count})"
   },
 
+  // ============================================
+  // PROFILE - ALL PROFILE TEXTS
+  // ============================================
+  profile: {
+    programmer: {
+      verified_badge: 'Verified Programmer',
+      edit_profile: 'Edit Profile',
+      view_public: 'View Public Profile',
+      contact_info: 'Contact Information',
+      about_organization: 'About Organization',
+      not_specified: 'Not specified',
+      no_description: 'No description available'
+    },
+    programmer_edit: {
+      title: 'Edit Profile',
+      personal_details: 'Personal Details',
+      change_photo: 'Change Photo',
+      photo_hint: 'JPG, PNG or GIF. Max 5MB.',
+      first_name: 'First Name',
+      last_name: 'Last Name',
+      phone_number: 'Phone Number',
+      phone_placeholder: 'Enter phone number',
+      organization_details: 'Organization Details',
+      organization_name: 'Organization Name',
+      website: 'Website',
+      website_placeholder: 'https://example.com',
+      about_organization: 'About Organization',
+      about_placeholder: 'Describe your organization...',
+      preferences: 'Preferences',
+      language: 'Language',
+      save: 'Save All Changes',
+      cancel: 'Cancel'
+    },
+    programmer_public: {
+      back: '‹ Back to Profile',
+      title: 'Public Profile Preview',
+      subtitle: 'This is how artists see your profile when they view your organization information.',
+      footer_note: 'Artists can view this information when you contact them or when they view your messages.'
+    },
+    artist: {
+      media_gallery: 'Media Gallery',
+      manage_profile: 'Manage Profile',
+      edit_profile: 'Edit Profile',
+      years_old: 'years old',
+      female: 'Female',
+      male: 'Male',
+      genres: 'Genres',
+      languages: 'Languages',
+      biography: 'Biography',
+      pitch: 'Pitch',
+      recommendations: 'Recommendations',
+      recommendations_error: 'Could not load recommendations.'
+    },
+    artist_edit: {
+      title: 'Edit Artist Profile',
+      subtitle: 'Update your information below.',
+      cancel: 'Cancel',
+      tab_basics: 'Basics & Identity',
+      tab_media: 'Bio & Media',
+      tab_contact: 'Contact & Socials',
+      display_name: 'Display Name (Stage Name)',
+      location: 'Location (City, Country)',
+      genres: 'Genres',
+      languages: 'Languages',
+      themes_label: 'Themes',
+      themes_hint: '(select multiple)',
+      vibe_label: 'Vibe',
+      vibe_hint: '(select multiple)',
+      services_label: 'Services / Format',
+      services_hint: '(select multiple)',
+      pitch: 'Short Pitch',
+      pitch_hint: '(max 150 chars)',
+      lang_nl: 'Dutch (NL)',
+      lang_en: 'English (EN)',
+      lang_fr: 'French (FR)',
+      lang_de: 'German (DE)',
+      lang_es: 'Spanish (ES)',
+      bio: 'Bio / Background Info',
+      youtube_link: 'YouTube/Vimeo Link',
+      spotify_link: 'Spotify/SoundCloud Link',
+      text_material: 'Text Material',
+      text_material_hint: '(up to 2000 words)',
+      documents: 'Documents (PDF, DOC, DOCX)',
+      add_document: '+ Add Document',
+      max_file_size: 'Maximum 10MB per file',
+      no_documents: 'No documents uploaded yet',
+      gallery_photos: 'Gallery Photos',
+      add_photo: '+ Add Photo',
+      youtube_videos: 'YouTube Videos',
+      add_video: 'Add Video',
+      no_videos: 'No videos added yet',
+      phone_number: 'Phone Number',
+      website: 'Website',
+      payment_methods: 'Payment Methods',
+      notification_settings: 'Notification Settings',
+      email_notifications: 'Receive email notifications',
+      sms_notifications: 'Receive SMS notifications',
+      change_photo: 'Change Photo',
+      photo_hint: 'JPG, PNG or GIF. Max 5MB.',
+      view_public: 'View Public Profile',
+      save: 'Save All Changes'
+    }
+  },
+
+  gigs: {
+    attendance_notice: '{count} person coming to your shows!',
+    view_names: 'View names',
+    upcoming: 'Upcoming Gigs',
+    gigs_planned: '{count} gigs planned',
+    add_gig: '+ Add Gig',
+    types: {
+      showcase: 'Showcase',
+      feature: 'Feature',
+      open_mic: 'Open Mic',
+      workshop: 'Workshop'
+    },
+    make_poster: 'Make Tour Poster',
+    shows_count: '({count} shows)'
+  },
+
+  add_gig: {
+    title: 'New Gig',
+    date: 'DATE',
+    date_placeholder: 'dd-mm-yyyy',
+    city: 'CITY',
+    city_placeholder: 'e.g. Ghent, Amsterdam',
+    venue: 'VENUE',
+    venue_placeholder: 'e.g. De Centrale, Paradiso',
+    type: 'TYPE',
+    type_placeholder: 'Select type...',
+    link: 'LINK (OPTIONAL)',
+    link_placeholder: 'https://tickets.example.com',
+    cancel: 'Cancel',
+    submit: 'Add'
+  },
+
+  tour_poster: {
+    title: 'Tour Poster',
+    choose_style: 'Choose a style:',
+    on_tour: 'ON TOUR',
+    download: 'Download PNG',
+    close: 'Close',
+    format_note: 'Perfect format for Instagram Stories (1080x1920px)'
+  },
+
   messages: {
     title: 'Messages',
     search_placeholder: 'Search messages...',
@@ -644,8 +889,11 @@ const content_en = {
     change_password: 'Change Password',
     change_password_subtitle: 'Update your account password',
     current_password: 'Current Password',
+    current_password_placeholder: 'Enter your current password',
     new_password: 'New Password',
+    new_password_placeholder: 'Enter new password (min. 6 characters)',
     confirm_password: 'Confirm New Password',
+    confirm_password_placeholder: 'Confirm new password',
     update_password: 'Update Password'
   },
 

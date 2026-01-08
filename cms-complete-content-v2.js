@@ -274,144 +274,130 @@ export const cmsContentNL = {
   },
 
   // ============================================
-  // PROGRAMMER PROFILE
+  // PROFILE - ALLE PROFIEL TEKSTEN
   // ============================================
-  programmer_profile: {
-    verified_badge: 'Verified Programmer',
-    edit_profile: 'Edit Profile',
-    view_public: 'View Public Profile',
-    
-    // Sections
-    contact_info: 'Contact Information',
-    about_organization: 'About Organization',
-    not_specified: 'Not specified',
-    no_description: 'No description available'
-  },
-
-  // ============================================
-  // PROGRAMMER EDIT PROFILE
-  // ============================================
-  programmer_edit: {
-    title: 'Edit Profile',
-    
-    // Personal Details
-    personal_details: 'Personal Details',
-    change_photo: 'Change Photo',
-    first_name: 'First Name',
-    last_name: 'Last Name',
-    phone_number: 'Phone Number',
-    phone_placeholder: 'Enter phone number',
-    
-    // Organization Details
-    organization_details: 'Organization Details',
-    organization_name: 'Organization Name',
-    website: 'Website',
-    website_placeholder: 'https://example.com',
-    about_organization: 'About Organization',
-    about_placeholder: 'Describe your organization...',
-    
-    // Preferences
-    preferences: 'Preferences',
-    language: 'Language',
-    
-    // Buttons
-    save: 'Save All Changes',
-    cancel: 'Cancel'
-  },
-
-  // ============================================
-  // PUBLIC PROFILE PREVIEW
-  // ============================================
-  public_preview: {
-    back: '‹ Back to Profile',
-    title: 'Public Profile Preview',
-    subtitle: 'This is how artists see your profile when they view your organization information.',
-    footer_note: 'Artists can view this information when you contact them or when they view your messages.'
-  },
-
-  // ============================================
-  // ARTIST PROFILE (Own view)
-  // ============================================
-  artist_profile: {
-    media_gallery: 'Media Gallery',
-    manage_profile: 'Profiel Beheren',
-    edit_profile: 'Bewerk Profiel',
-    
-    // Info labels
-    years_old: 'years old',
-    genres: 'Genres',
-    languages: 'Languages',
-    biography: 'Biography',
-    pitch: 'Pitch',
-    recommendations: 'Recommendations',
-    recommendations_error: 'Kon recommendations niet laden.'
-  },
-
-  // ============================================
-  // ARTIST EDIT PROFILE
-  // ============================================
-  artist_edit: {
-    title: 'Edit Artist Profile',
-    subtitle: 'Update your information below.',
-    cancel: 'Cancel',
-    
-    // Tabs
-    tabs: {
-      basics: 'Basics & Identity',
-      media: 'Bio & Media',
-      contact: 'Contact & Socials'
+  profile: {
+    // === PROGRAMMER VIEW ===
+    programmer: {
+      verified_badge: 'Verified Programmer',
+      edit_profile: 'Edit Profile',
+      view_public: 'View Public Profile',
+      contact_info: 'Contact Information',
+      about_organization: 'About Organization',
+      not_specified: 'Not specified',
+      no_description: 'No description available'
     },
     
-    // Basics & Identity
-    display_name: 'Display Name (Stage Name)',
-    location: 'Location (City, Country)',
-    genres: 'Genres',
-    languages: 'Languages',
-    themes_label: "Thema's (selecteer meerdere)",
-    vibe_label: 'Vibe (selecteer meerdere)',
-    services_label: 'Diensten / Format (selecteer meerdere)',
-    pitch: 'Short Pitch',
-    pitch_hint: '(max 150 chars)',
-    
-    // Language options in edit
-    lang_options: {
-      nl: 'Dutch (NL)',
-      en: 'English (EN)',
-      fr: 'French (FR)',
-      de: 'German (DE)',
-      es: 'Spanish (ES)'
+    // === PROGRAMMER EDIT ===
+    programmer_edit: {
+      title: 'Edit Profile',
+      personal_details: 'Personal Details',
+      change_photo: 'Change Photo',
+      photo_hint: 'JPG, PNG or GIF. Max 5MB.',
+      first_name: 'First Name',
+      last_name: 'Last Name',
+      phone_number: 'Phone Number',
+      phone_placeholder: 'Enter phone number',
+      organization_details: 'Organization Details',
+      organization_name: 'Organization Name',
+      website: 'Website',
+      website_placeholder: 'https://example.com',
+      about_organization: 'About Organization',
+      about_placeholder: 'Describe your organization...',
+      preferences: 'Preferences',
+      language: 'Language',
+      save: 'Save All Changes',
+      cancel: 'Cancel'
     },
     
-    // Bio & Media
-    bio: 'Bio / Background Info',
-    youtube_link: 'YouTube/Vimeo Link',
-    spotify_link: 'Spotify/SoundCloud Link',
-    text_material: 'Text Material',
-    text_material_hint: '(up to 2000 words)',
-    documents: 'Documents (PDF, DOC, DOCX)',
-    add_document: '+ Add Document',
-    max_file_size: 'Maximum 10MB per file',
-    no_documents: 'No documents uploaded yet',
-    gallery_photos: 'Gallery Photos',
-    add_photo: '+ Add Photo',
-    youtube_videos: 'YouTube Videos',
-    add_video: 'Add Video',
-    no_videos: 'No videos added yet',
+    // === PROGRAMMER PUBLIC PREVIEW ===
+    programmer_public: {
+      back: '‹ Back to Profile',
+      title: 'Public Profile Preview',
+      subtitle: 'This is how artists see your profile when they view your organization information.',
+      footer_note: 'Artists can view this information when you contact them or when they view your messages.'
+    },
     
-    // Contact & Socials
-    phone_number: 'Phone Number',
-    website: 'Website',
-    payment_methods: 'Payment Methods',
-    notification_settings: 'Notification Settings',
-    email_notifications: 'Receive email notifications',
-    sms_notifications: 'Receive SMS notifications',
+    // === ARTIST VIEW ===
+    artist: {
+      media_gallery: 'Media Gallery',
+      manage_profile: 'Profiel Beheren',
+      edit_profile: 'Bewerk Profiel',
+      years_old: 'years old',
+      female: 'Female',
+      male: 'Male',
+      genres: 'Genres',
+      languages: 'Languages',
+      biography: 'Biography',
+      pitch: 'Pitch',
+      recommendations: 'Recommendations',
+      recommendations_error: 'Kon recommendations niet laden.'
+    },
     
-    // Photo
-    photo_hint: 'JPG, PNG or GIF. Max 5MB.',
-    view_public: 'View Public Profile',
-    
-    // Save
-    save: 'Save All Changes'
+    // === ARTIST EDIT ===
+    artist_edit: {
+      title: 'Edit Artist Profile',
+      subtitle: 'Update your information below.',
+      cancel: 'Cancel',
+      
+      // Tabs
+      tab_basics: 'Basics & Identity',
+      tab_media: 'Bio & Media',
+      tab_contact: 'Contact & Socials',
+      
+      // Basics & Identity tab
+      display_name: 'Display Name (Stage Name)',
+      location: 'Location (City, Country)',
+      genres: 'Genres',
+      languages: 'Languages',
+      themes_label: "Thema's",
+      themes_hint: '(selecteer meerdere)',
+      vibe_label: 'Vibe',
+      vibe_hint: '(selecteer meerdere)',
+      services_label: 'Diensten / Format',
+      services_hint: '(selecteer meerdere)',
+      pitch: 'Short Pitch',
+      pitch_hint: '(max 150 chars)',
+      
+      // Language chip labels
+      lang_nl: 'Dutch (NL)',
+      lang_en: 'English (EN)',
+      lang_fr: 'French (FR)',
+      lang_de: 'German (DE)',
+      lang_es: 'Spanish (ES)',
+      
+      // Bio & Media tab
+      bio: 'Bio / Background Info',
+      youtube_link: 'YouTube/Vimeo Link',
+      spotify_link: 'Spotify/SoundCloud Link',
+      text_material: 'Text Material',
+      text_material_hint: '(up to 2000 words)',
+      documents: 'Documents (PDF, DOC, DOCX)',
+      add_document: '+ Add Document',
+      max_file_size: 'Maximum 10MB per file',
+      no_documents: 'No documents uploaded yet',
+      gallery_photos: 'Gallery Photos',
+      add_photo: '+ Add Photo',
+      youtube_videos: 'YouTube Videos',
+      add_video: 'Add Video',
+      no_videos: 'No videos added yet',
+      
+      // Contact & Socials tab
+      phone_number: 'Phone Number',
+      website: 'Website',
+      payment_methods: 'Payment Methods',
+      notification_settings: 'Notification Settings',
+      email_notifications: 'Receive email notifications',
+      sms_notifications: 'Receive SMS notifications',
+      
+      // Photo sidebar
+      change_photo: 'Change Photo',
+      photo_hint: 'JPG, PNG or GIF. Max 5MB.',
+      view_public: 'View Public Profile',
+      
+      // Save
+      save: 'Save All Changes'
+    }
   },
 
   // ============================================
@@ -719,6 +705,110 @@ export const cmsContentEN = {
       features: 'Features'
     },
     attending: "✓ I'm going ({count})"
+  },
+
+  // ============================================
+  // PROFILE - ALL PROFILE TEXTS
+  // ============================================
+  profile: {
+    programmer: {
+      verified_badge: 'Verified Programmer',
+      edit_profile: 'Edit Profile',
+      view_public: 'View Public Profile',
+      contact_info: 'Contact Information',
+      about_organization: 'About Organization',
+      not_specified: 'Not specified',
+      no_description: 'No description available'
+    },
+    programmer_edit: {
+      title: 'Edit Profile',
+      personal_details: 'Personal Details',
+      change_photo: 'Change Photo',
+      photo_hint: 'JPG, PNG or GIF. Max 5MB.',
+      first_name: 'First Name',
+      last_name: 'Last Name',
+      phone_number: 'Phone Number',
+      phone_placeholder: 'Enter phone number',
+      organization_details: 'Organization Details',
+      organization_name: 'Organization Name',
+      website: 'Website',
+      website_placeholder: 'https://example.com',
+      about_organization: 'About Organization',
+      about_placeholder: 'Describe your organization...',
+      preferences: 'Preferences',
+      language: 'Language',
+      save: 'Save All Changes',
+      cancel: 'Cancel'
+    },
+    programmer_public: {
+      back: '‹ Back to Profile',
+      title: 'Public Profile Preview',
+      subtitle: 'This is how artists see your profile when they view your organization information.',
+      footer_note: 'Artists can view this information when you contact them or when they view your messages.'
+    },
+    artist: {
+      media_gallery: 'Media Gallery',
+      manage_profile: 'Manage Profile',
+      edit_profile: 'Edit Profile',
+      years_old: 'years old',
+      female: 'Female',
+      male: 'Male',
+      genres: 'Genres',
+      languages: 'Languages',
+      biography: 'Biography',
+      pitch: 'Pitch',
+      recommendations: 'Recommendations',
+      recommendations_error: 'Could not load recommendations.'
+    },
+    artist_edit: {
+      title: 'Edit Artist Profile',
+      subtitle: 'Update your information below.',
+      cancel: 'Cancel',
+      tab_basics: 'Basics & Identity',
+      tab_media: 'Bio & Media',
+      tab_contact: 'Contact & Socials',
+      display_name: 'Display Name (Stage Name)',
+      location: 'Location (City, Country)',
+      genres: 'Genres',
+      languages: 'Languages',
+      themes_label: 'Themes',
+      themes_hint: '(select multiple)',
+      vibe_label: 'Vibe',
+      vibe_hint: '(select multiple)',
+      services_label: 'Services / Format',
+      services_hint: '(select multiple)',
+      pitch: 'Short Pitch',
+      pitch_hint: '(max 150 chars)',
+      lang_nl: 'Dutch (NL)',
+      lang_en: 'English (EN)',
+      lang_fr: 'French (FR)',
+      lang_de: 'German (DE)',
+      lang_es: 'Spanish (ES)',
+      bio: 'Bio / Background Info',
+      youtube_link: 'YouTube/Vimeo Link',
+      spotify_link: 'Spotify/SoundCloud Link',
+      text_material: 'Text Material',
+      text_material_hint: '(up to 2000 words)',
+      documents: 'Documents (PDF, DOC, DOCX)',
+      add_document: '+ Add Document',
+      max_file_size: 'Maximum 10MB per file',
+      no_documents: 'No documents uploaded yet',
+      gallery_photos: 'Gallery Photos',
+      add_photo: '+ Add Photo',
+      youtube_videos: 'YouTube Videos',
+      add_video: 'Add Video',
+      no_videos: 'No videos added yet',
+      phone_number: 'Phone Number',
+      website: 'Website',
+      payment_methods: 'Payment Methods',
+      notification_settings: 'Notification Settings',
+      email_notifications: 'Receive email notifications',
+      sms_notifications: 'Receive SMS notifications',
+      change_photo: 'Change Photo',
+      photo_hint: 'JPG, PNG or GIF. Max 5MB.',
+      view_public: 'View Public Profile',
+      save: 'Save All Changes'
+    }
   },
 
   messages: {
