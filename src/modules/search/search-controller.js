@@ -750,12 +750,21 @@ export async function showArtistDetail(artistId, pushHistory = true) {
     });
 
     // Toon de detail view en verberg de search results
-    document.getElementById('programmer-dashboard').style.display = 'none';
-    const detailView = document.getElementById('artist-detail-view');
-    detailView.style.display = 'block';
+    const dashboard = document.getElementById('programmer-dashboard');
+    if (dashboard) dashboard.style.display = 'none';
 
-    // Store artistId in detail view for later use
-    detailView.dataset.artistId = artistId;
+    // Also hide the search section
+    const searchSection = document.getElementById('artist-search-section');
+    if (searchSection) searchSection.style.display = 'none';
+
+    const detailView = document.getElementById('artist-detail-view');
+    if (detailView) {
+      detailView.style.display = 'block';
+      detailView.dataset.artistId = artistId;
+    } else {
+      console.error('[DETAIL] artist-detail-view not found');
+      return;
+    }
 
     // Load recommendations for this artist
     loadRecommendations(artistId);
