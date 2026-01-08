@@ -25,67 +25,104 @@ const db = admin.firestore();
 const content_nl = {
   home: {
     hero: {
-      title: 'Welkom bij Community',
-      subtitle: 'Verbind artiesten met programmeurs',
-      cta: 'Begin nu'
+      title: 'SPOKEN WORD PLATFORM',
+      subtitle: 'Find Your Voice.',
+      cta_artist: 'Registreer als Artiest',
+      cta_programmer: 'Registreer als Programmeur',
+      cta_login: 'Inloggen'
     }
   },
   auth: {
     login: {
-      title: 'Inloggen',
+      title: 'Welkom terug',
+      subtitle: 'Log in op je account',
       email: 'E-mailadres',
       password: 'Wachtwoord',
       button: 'Inloggen',
-      forgotPassword: 'Wachtwoord vergeten?',
-      noAccount: 'Nog geen account?',
-      signupLink: 'Registreren'
+      forgot_password: 'Wachtwoord vergeten?',
+      no_account: 'Nog geen account?',
+      register_link: 'Registreer hier'
     },
-    register: {
-      title: 'Registreren',
-      firstName: 'Voornaam',
-      lastName: 'Achternaam',
+    signup: {
+      title: 'Account aanmaken',
       email: 'E-mailadres',
       password: 'Wachtwoord',
-      confirmPassword: 'Bevestig wachtwoord',
-      button: 'Registreren',
-      hasAccount: 'Al een account?',
-      loginLink: 'Inloggen'
+      confirm_password: 'Bevestig wachtwoord',
+      role_artist: 'Artiest',
+      role_programmer: 'Programmeur',
+      button: 'Registreren'
     }
+  },
+  nav: {
+    home: 'Home',
+    search: 'Zoeken',
+    messages: 'Berichten',
+    profile: 'Profiel',
+    dashboard: 'Dashboard',
+    settings: 'Instellingen',
+    logout: 'Uitloggen'
+  },
+  dashboard: {
+    welcome: 'Welkom bij je Dashboard',
+    edit_profile: 'Profiel bewerken',
+    search_artists: 'Zoek artiesten'
   },
   search: {
     title: 'Zoek Artiesten',
-    placeholder: 'Zoek op naam, genre, locatie...',
-    filters: 'Filters',
-    noResults: 'Geen resultaten gevonden'
+    placeholder: 'Zoek op naam...',
+    location_placeholder: 'Locatie...',
+    filters_title: 'Filters',
+    apply_filters: 'Filters toepassen',
+    reset_filters: 'Reset',
+    no_results: 'Geen artiesten gevonden',
+    loading: 'Artiesten laden...',
+    genre: 'Genre',
+    language: 'Taal',
+    age: 'Leeftijd'
   },
   profile: {
     edit: 'Profiel bewerken',
-    save: 'Opslaan',
+    save: 'Wijzigingen opslaan',
     cancel: 'Annuleren',
-    about: 'Over mij',
+    basics: 'Basisgegevens',
+    media: 'Media',
     contact: 'Contact',
-    genres: 'Genres',
-    location: 'Locatie'
+    success: 'Profiel opgeslagen!',
+    error: 'Fout bij opslaan'
   },
   messages: {
     title: 'Berichten',
-    send: 'Versturen',
-    placeholder: 'Type een bericht...',
-    noConversations: 'Geen gesprekken',
-    newMessage: 'Nieuw bericht'
+    send: 'Verstuur',
+    placeholder: 'Typ je bericht...',
+    no_messages: 'Nog geen berichten',
+    no_conversations: 'Nog geen gesprekken'
+  },
+  settings: {
+    title: 'Account Instellingen',
+    language: 'Taal',
+    change_email: 'Email wijzigen',
+    change_password: 'Wachtwoord wijzigen',
+    current_password: 'Huidig wachtwoord',
+    new_password: 'Nieuw wachtwoord',
+    update_email: 'Email bijwerken',
+    update_password: 'Wachtwoord bijwerken'
   },
   common: {
     loading: 'Laden...',
     error: 'Er is een fout opgetreden',
-    success: 'Succesvol opgeslagen',
+    success: 'Gelukt!',
+    confirm: 'Bevestigen',
+    cancel: 'Annuleren',
+    save: 'Opslaan',
     delete: 'Verwijderen',
     edit: 'Bewerken',
     close: 'Sluiten',
-    save: 'Opslaan',
-    cancel: 'Annuleren',
-    search: 'Zoeken',
-    filter: 'Filteren'
-  }
+    back: 'Terug',
+    required: '*',
+    view: 'Bekijken',
+    search: 'Zoeken'
+  },
+  createdAt: new Date().toISOString()
 };
 
 /**
@@ -94,67 +131,42 @@ const content_nl = {
 const content_en = {
   home: {
     hero: {
-      title: 'Welcome to Community',
-      subtitle: 'Connect artists with programmers',
-      cta: 'Get started'
+      title: 'SPOKEN WORD PLATFORM',
+      subtitle: 'Find Your Voice.',
+      cta_artist: 'Register as Artist',
+      cta_programmer: 'Register as Programmer',
+      cta_login: 'Login'
     }
   },
   auth: {
     login: {
-      title: 'Login',
+      title: 'Welcome back',
       email: 'Email address',
       password: 'Password',
-      button: 'Login',
-      forgotPassword: 'Forgot password?',
-      noAccount: "Don't have an account?",
-      signupLink: 'Sign up'
+      button: 'Login'
     },
-    register: {
-      title: 'Register',
-      firstName: 'First name',
-      lastName: 'Last name',
-      email: 'Email address',
-      password: 'Password',
-      confirmPassword: 'Confirm password',
-      button: 'Register',
-      hasAccount: 'Already have an account?',
-      loginLink: 'Login'
+    signup: {
+      title: 'Create account',
+      button: 'Register'
     }
   },
-  search: {
-    title: 'Search Artists',
-    placeholder: 'Search by name, genre, location...',
-    filters: 'Filters',
-    noResults: 'No results found'
-  },
-  profile: {
-    edit: 'Edit profile',
-    save: 'Save',
-    cancel: 'Cancel',
-    about: 'About me',
-    contact: 'Contact',
-    genres: 'Genres',
-    location: 'Location'
-  },
-  messages: {
-    title: 'Messages',
-    send: 'Send',
-    placeholder: 'Type a message...',
-    noConversations: 'No conversations',
-    newMessage: 'New message'
+  nav: {
+    home: 'Home',
+    search: 'Search',
+    messages: 'Messages',
+    profile: 'Profile',
+    dashboard: 'Dashboard',
+    logout: 'Logout'
   },
   common: {
     loading: 'Loading...',
     error: 'An error occurred',
-    success: 'Successfully saved',
-    delete: 'Delete',
-    edit: 'Edit',
-    close: 'Close',
+    success: 'Success!',
     save: 'Save',
     cancel: 'Cancel',
-    search: 'Search',
-    filter: 'Filter'
-  }
+    close: 'Close'
+  },
+  createdAt: new Date().toISOString()
 };
 
 /**

@@ -270,6 +270,10 @@ export async function updateCMSStyles(styles) {
  */
 export function applyGlobalStyles(styles) {
   if (!styles) return;
+  if (typeof document === 'undefined' || !document.documentElement) {
+    console.warn('[CMS] DOM not ready, skipping styles');
+    return;
+  }
 
   const root = document.documentElement;
 
