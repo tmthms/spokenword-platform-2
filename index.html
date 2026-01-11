@@ -1,750 +1,504 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="nl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spoken Word Artist Database</title>
-    
-    <!-- Google Fonts (Inter) -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Spoken Word Platform</title>
+
+    <!-- Apple-inspired System Font Stack -->
+    <style>
+        :root {
+            --app-max-width: 1280px; /* Responsive: was 480px */
+            --primary-color: #6366f1; /* Indigo */
+            --bg-color: #F2F2F7; /* iOS Gray */
+            --text-primary: #000000;
+            --text-secondary: #8E8E93;
+            --nav-height: 72px;
+        }
+
+        * {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Mobile Container */
+        #app-container {
+            max-width: var(--app-max-width);
+            margin: 0 auto;
+            min-height: 100vh;
+            background: white;
+            position: relative;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.08);
+            overflow-x: hidden;
+        }
+
+        @media (min-width: 481px) {
+            body {
+                background: var(--bg-color);
+                padding: 20px 0;
+            }
+        }
+
+        /* Desktop Container Padding */
+        @media (min-width: 768px) {
+            #app-container {
+                padding: 0 2rem;
+            }
+        }
+
+        /* Glassmorphism Bottom Nav (Mobile Only) */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            max-width: var(--app-max-width);
+            width: 100%;
+            height: var(--nav-height);
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border-top: 0.5px solid rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1000;
+            safe-area-inset-bottom: env(safe-area-inset-bottom);
+        }
+
+        /* Hide bottom nav on desktop (>= 768px) */
+        @media (min-width: 768px) {
+            .bottom-nav {
+                display: none !important;
+            }
+        }
+
+        .bottom-nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .bottom-nav-item:active {
+            transform: scale(0.95);
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .bottom-nav-item.active {
+            color: var(--primary-color);
+        }
+
+        .bottom-nav-icon {
+            width: 24px;
+            height: 24px;
+            margin-bottom: 4px;
+        }
+
+        .bottom-nav-label {
+            font-size: 10px;
+            font-weight: 500;
+            letter-spacing: -0.2px;
+        }
+
+        /* Content padding for bottom nav */
+        .content-wrapper {
+            padding-bottom: calc(var(--nav-height) + 20px);
+        }
+
+        /* Button Press Effect */
+        .btn-press {
+            transition: transform 0.1s ease;
+        }
+
+        .btn-press:active {
+            transform: scale(0.95);
+        }
+
+        /* Badge for notifications - positioned at top-right of icon */
+        .notification-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #FF3B30;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            min-width: 18px;
+            height: 18px;
+            border-radius: 9px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0 4px;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Hide default scrollbar but keep functionality */
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+        }
+
+        *::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        *::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        *::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 2px;
+        }
+
+        /* Responsive Modal Behavior */
+        /* Mobile (< 768px): Bottom Sheet */
+        @media (max-width: 767px) {
+            .profile-modal {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                max-height: 90vh;
+                border-radius: 1.5rem 1.5rem 0 0;
+                transform: translateY(100%);
+                transition: transform 0.3s ease-out;
+                overflow-y: auto;
+            }
+
+            .profile-modal.active {
+                transform: translateY(0);
+            }
+        }
+
+        /* Desktop (>= 768px): Centered Modal */
+        @media (min-width: 768px) {
+            .profile-modal {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                max-width: 800px;
+                width: 90%;
+                max-height: 90vh;
+                border-radius: 1rem;
+                overflow-y: auto;
+            }
+
+            .profile-modal.active {
+                /* No animation needed on desktop */
+                display: block;
+            }
+        }
+
+        /* Search Module - Pill Filters (Mobile) */
+        .pill {
+            padding: 0.5rem 1rem;
+            background-color: #f3f4f6;
+            color: #374151;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            white-space: nowrap;
+            transition: background-color 0.2s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .pill:hover {
+            background-color: #e5e7eb;
+        }
+
+        .pill-active {
+            padding: 0.5rem 1rem;
+            background-color: #e0e7ff;
+            color: #4f46e5;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            white-space: nowrap;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* Mobile Filter Menu Slide-in */
+        .mobile-filter-menu-open {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top-left-radius: 1rem;
+            border-top-right-radius: 1rem;
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            padding: 1.5rem;
+            max-height: 70vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        /* Hide scrollbar for mobile pills container */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        /* Mobile Filter Bar - Horizontal Slide */
+        #mobile-filter-bar {
+            transform: translateY(-10px);
+            opacity: 0;
+            transition: all 0.3s ease-out;
+        }
+
+        #mobile-filter-bar:not(.hidden) {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        /* SAFETY: Prevent any profile image from becoming too large */
+        #desktop-profile-pic,
+        #programmer-overview-pic-desktop,
+        #programmer-overview-pic-mobile,
+        img[id*="profile-pic"] {
+            max-width: 200px !important;
+            max-height: 200px !important;
+        }
+
+        #desktop-profile-pic {
+            max-width: 32px !important;
+            max-height: 32px !important;
+        }
+
+        /* Selectable Chips */
+        .chip-label {
+            user-select: none;
+        }
+
+        .chip-input:checked + .chip-text {
+            color: white;
+        }
+
+        .chip-input:checked ~ .chip-text {
+            color: white;
+        }
+
+        .chip-label:has(.chip-input:checked) {
+            background-color: #7c3aed;
+            border-color: #7c3aed;
+            color: white;
+        }
+
+        .chip-label:has(.chip-input:checked):hover {
+            background-color: #6d28d9;
+            border-color: #6d28d9;
+        }
+
+        .chip-label:has(.chip-input:checked) .chip-text {
+            color: white;
+        }
+
+        /* Fallback voor browsers zonder :has() support */
+        .chip-selected {
+            background-color: #7c3aed !important;
+            border-color: #7c3aed !important;
+        }
+
+        .chip-selected .chip-text {
+            color: white !important;
+        }
+
+        /* Hide profile sections when search is active */
+        .search-mode #programmer-profile-desktop,
+        .search-mode #programmer-profile-mobile {
+            display: none !important;
+        }
+
+        /* Force hide profile on search page */
+        #programmer-profile-desktop.search-hidden,
+        #programmer-profile-mobile.search-hidden {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            overflow: hidden !important;
+        }
+    </style>
+
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
 
-    <!-- Link naar CSS (Vite zal dit automatisch injecteren) -->
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+
+    <!-- Tailwind CSS -->
     <link rel="stylesheet" href="/style.css">
-
 </head>
-<body class="bg-gray-50 text-gray-900 antialiased">
 
-    <!-- Main Navigation Bar -->
-    <nav class="bg-white shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <!-- Logo -->
-                <div class="flex-shrink-0 flex items-center">
-                    <svg class="h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M12 5 9 8h6l-3-3Z"/></svg>
-                    <span class="font-bold text-xl ml-2">SpokenWord DB</span>
-                </div>
-                <!-- Nav Links -->
-                <div class="hidden md:block">
-                    <div class="ml-10 flex items-baseline space-x-4">
-                        <button id="nav-home" class="nav-button text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium" data-i18n="nav_home">Home</button>
-                        <button id="nav-dashboard" class="nav-button hidden text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium">
-                            <span id="nav-dashboard-text" data-i18n="nav_dashboard">Dashboard</span>
-                        </button>
-                        <button id="nav-messages" class="nav-button hidden text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium relative">
-                            <span data-i18n="nav_messages">Messages</span>
-                            <span id="messages-badge" class="hidden absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
-                        </button>
-                    </div>
-                </div>
-                <!-- Auth Buttons -->
-                <div class="flex items-center">
-                    <div id="auth-links" class="hidden md:block">
-                        <button id="nav-login" class="nav-button text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-sm font-medium" data-i18n="nav_login">Login</button>
-                        <button id="nav-signup" class="nav-button ml-2 bg-indigo-600 text-white hover:bg-indigo-700 px-3 py-2 rounded-md text-sm font-medium" data-i18n="nav_signup">Sign Up</button>
-                    </div>
-                    <div id="user-menu" class="hidden relative items-center">
-                        <span id="user-email" class="text-sm text-gray-600 mr-3"></span>
-                        <button id="nav-settings" class="hidden bg-gray-200 text-gray-700 hover:bg-gray-300 px-3 py-2 rounded-md text-sm font-medium mr-2" data-i18n="nav_profile">Profiel</button>
-                        <button id="nav-logout" class="bg-red-500 text-white hover:bg-red-600 px-3 py-2 rounded-md text-sm font-medium" data-i18n="nav_logout">Logout</button>
-                    </div>
-                </div>
+<body class="bg-gray-50 text-gray-900 antialiased overflow-x-hidden">
+
+    <!-- Main App Container -->
+    <div id="app-container">
+
+        <!-- Desktop Navigation Container (rendered by navigation.js) -->
+        <div id="desktop-nav-container" class="hidden md:block"></div>
+
+        <!-- App Header (only shown when logged in on mobile) -->
+        <header id="app-header" class="md:hidden bg-white border-b border-gray-200 px-6 py-4 sticky top-0 z-40">
+            <div class="flex items-center justify-between">
+                <h1 class="text-lg font-bold text-gray-900 tracking-tight">SPOKEN WORD PLATFORM</h1>
+                <button id="nav-logout-mobile" class="text-red-500 text-sm font-semibold px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">
+                    Logout
+                </button>
             </div>
-        </div>
-    </nav>
+        </header>
 
-    <!-- Main Content Area -->
-    <div class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
 
-        <!-- Loading View -->
-        <div id="loading-view" class="page-section fixed inset-0 bg-white bg-opacity-75 flex justify-center items-center z-50">
-            <div class="loader"></div>
-        </div>
-
-        <!-- Homepage View -->
-        <div id="home-view" class="page-section">
-            <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-                <div class="md:flex">
-                    <div class="md:flex-shrink-0">
-                        <img class="h-48 w-full object-cover md:h-full md:w-64" src="https://placehold.co/600x400/6366f1/ffffff?text=Spoken+Word" alt="Spoken word artist performing">
-                    </div>
-                    <div class="p-8 md:p-12">
-                        <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Find Your Voice.</h1>
-                        <h2 class="text-2xl md:text-3xl font-semibold text-indigo-600">Book Your Artist.</h2>
-                        <p class="mt-4 text-lg text-gray-600">
-                            The central database connecting spoken word artists with programmers and event organizers. 
-                            Artists, create your profile. Programmers, find the perfect talent for your next event.
-                        </p>
-                        <div class="mt-8 flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4">
-                            <button id="home-cta-artist" class="w-full md:w-auto bg-indigo-600 text-white px-6 py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-indigo-700 transition duration-300">
-                                Ik ben een spoken word artiest: Meld je aan
-                            </button>
-                            <button id="home-cta-programmer" class="w-full md:w-auto bg-gray-800 text-white px-6 py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-gray-900 transition duration-300">
-                                I'm a Programmer: Start Gratis Proefperiode
-                            </button>
-                        </div>
-                    </div>
+            <!-- Loading View (shown during initial app load) -->
+            <div id="loading-view" class="fixed inset-0 bg-white flex justify-center items-center z-50">
+                <div class="text-center">
+                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mb-4"></div>
+                    <p class="text-gray-600 font-medium">Loading...</p>
                 </div>
             </div>
 
-            <!-- Featured Artists Section -->
-            <div class="mt-12">
-                <h3 class="text-2xl font-bold text-center text-gray-900">Featured Artists</h3>
-                <div class="mt-6 grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-                    <!-- Featured Artist 1 (Placeholder) -->
-                    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-                        <img class="h-56 w-full object-cover" src="https://placehold.co/400x300/a78bfa/ffffff?text=Artist+1" alt="Featured Artist 1">
-                        <div class="p-6">
-                            <h4 class="text-xl font-semibold">Artist Name</h4>
-                            <p class="text-indigo-600">Genre: Performance Poetry</p>
-                            <p class="text-gray-600 mt-2">Location: Amsterdam</p>
-                            <p class="mt-3 text-gray-700">"A truly captivating performance that left the audience speechless." - Programmer Weekly</p>
-                        </div>
-                    </div>
-                    <!-- Featured Artist 2 (Placeholder) -->
-                    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-                        <img class="h-56 w-full object-cover" src="https://placehold.co/400x300/fca5a5/ffffff?text=Artist+2" alt="Featured Artist 2">
-                        <div class="p-6">
-                            <h4 class="text-xl font-semibold">Stage Name</h4>
-                            <p class="text-indigo-600">Genre: Poetry Slam</p>
-                            <p class="text-gray-600 mt-2">Location: Brussels</p>
-                            <p class="mt-3 text-gray-700">"Incredible energy and powerful words. A must-book for any festival." - Event Today</p>
-                        </div>
-                    </div>
-                    <!-- Featured Artist 3 (Placeholder) -->
-                    <div class="bg-white shadow-lg rounded-lg overflow-hidden">
-                        <img class="h-56 w-full object-cover" src="https://placehold.co/400x300/fdba74/ffffff?text=Artist+3" alt="Featured Artist 3">
-                        <div class="p-6">
-                            <h4 class="text-xl font-semibold">Poet X</h4>
-                            <p class="text-indigo-600">Genre: Storytelling</p>
-                            <p class="text-gray-600 mt-2">Location: Ghent</p>
-                            <p class="mt-3 text-gray-700">"A master storyteller. We had them back three times!" - The Culture Hub</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Login View -->
-        <div id="login-view" class="page-section">
-            <div class="max-w-md mx-auto bg-white p-8 rounded-lg shadow-xl">
-                <h2 class="text-3xl font-bold text-center text-gray-900 mb-6" data-i18n="login_title">Login</h2>
-                <form id="login-form" class="space-y-6">
-                    <div>
-                        <label for="login-email" class="block text-sm font-medium text-gray-700">Email Address</label>
-                        <input id="login-email" name="email" type="email" autocomplete="email" required
-                            class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
-                    <div>
-                        <label for="login-password" class="block text-sm font-medium text-gray-700">Password</label>
-                        <input id="login-password" name="password" type="password" autocomplete="current-password" required
-                            class="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
-                    <button type="submit"
-                        class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Login
-                    </button>
-                    <p id="login-error" class="text-red-500 text-sm mt-2 text-center"></p>
-                </form>
-            </div>
-        </div>
-
-        <!-- Signup View (Choice) -->
-        <div id="signup-view" class="page-section">
-            <div class="max-w-lg mx-auto bg-white p-8 rounded-lg shadow-xl text-center">
-                <h2 class="text-3xl font-bold text-gray-900 mb-6">Join as...</h2>
-                <div class="flex flex-col space-y-4">
-                    <button id="signup-choice-artist" class="w-full py-4 px-4 rounded-md text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700">
-                        An Artist / Spoken Word Member
-                    </button>
-                    <button id="signup-choice-programmer" class="w-full py-4 px-4 rounded-md text-lg font-medium text-white bg-gray-800 hover:bg-gray-900">
-                        A Programmer / Organization
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Artist Signup Form View -->
-        <div id="artist-signup-view" class="page-section">
-            <div class="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-xl">
-                <h2 class="text-3xl font-bold text-center text-gray-900 mb-6">Create Your Artist Profile</h2>
-                <p class="text-center text-gray-600 mb-6">Fill in as much as possible. You can add media links and other details later from your dashboard.</p>
-                <form id="artist-signup-form" class="space-y-6">
-                    <!-- Account Credentials -->
-                    <div class="border-b border-gray-200 pb-6">
-                        <h3 class="text-xl font-semibold mb-4">Account Details</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label for="artist-email" class="block text-sm font-medium text-gray-700">Email Address *</label>
-                                <input id="artist-email" type="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                            <div>
-                                <label for="artist-password" class="block text-sm font-medium text-gray-700">Password (min. 6 chars) *</label>
-                                <input id="artist-password" type="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Personal Details -->
-                    <div class="border-b border-gray-200 pb-6">
-                        <h3 class="text-xl font-semibold mb-4">Personal Details</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label for="artist-firstname" class="block text-sm font-medium text-gray-700">First Name *</label>
-                                <input id="artist-firstname" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                            <div>
-                                <label for="artist-lastname" class="block text-sm font-medium text-gray-700">Last Name *</label>
-                                <input id="artist-lastname" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                            <div>
-                                <label for="artist-stagename" class="block text-sm font-medium text-gray-700">Stage Name (Optional)</label>
-                                <input id="artist-stagename" type="text" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                            <div>
-                                <label for="artist-phone" class="block text-sm font-medium text-gray-700">Phone Number *</label>
-                                <input id="artist-phone" type="tel" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                            <div>
-                                <label for="artist-dob" class="block text-sm font-medium text-gray-700">Date of Birth *</label>
-                                <input id="artist-dob" type="date" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                            <div>
-                                <label for="artist-gender" class="block text-sm font-medium text-gray-700">Gender *</label>
-                                <select id="artist-gender" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                                    <option value="">Select...</option>
-                                    <option value="f">Female</option>
-                                    <option value="m">Male</option>
-                                    <option value="x">Other / Prefer not to say</option>
-                                </select>
-                            </div>
-                            <div class="md:col-span-2">
-                                <label for="artist-location" class="block text-sm font-medium text-gray-700">Location (City, Country) *</label>
-                                <input id="artist-location" type="text" required placeholder="e.g. Amsterdam, Netherlands" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Professional Details with CHECKBOX GROUPS -->
-                    <div class="border-b border-gray-200 pb-6">
-                        <h3 class="text-xl font-semibold mb-4">Professional Details</h3>
-                        
-                        <!-- Genres as Checkboxes -->
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Genres (select all that apply) *</label>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                    <input type="checkbox" name="artist-genres" value="performance-poetry" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                    <span class="text-sm">Performance Poetry</span>
-                                </label>
-                                <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                    <input type="checkbox" name="artist-genres" value="poetry-slam" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                    <span class="text-sm">Poetry Slam</span>
-                                </label>
-                                <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                    <input type="checkbox" name="artist-genres" value="jazz-poetry" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                    <span class="text-sm">Jazz Poetry</span>
-                                </label>
-                                <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                    <input type="checkbox" name="artist-genres" value="rap" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                    <span class="text-sm">Rap</span>
-                                </label>
-                                <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                    <input type="checkbox" name="artist-genres" value="storytelling" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                    <span class="text-sm">Storytelling</span>
-                                </label>
-                                <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                    <input type="checkbox" name="artist-genres" value="comedy" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                    <span class="text-sm">Comedy</span>
-                                </label>
-                                <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                    <input type="checkbox" name="artist-genres" value="1-on-1" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                    <span class="text-sm">1-op-1 Sessies</span>
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <!-- Languages as Checkboxes -->
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Languages (select all that apply) *</label>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
-                                <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                    <input type="checkbox" name="artist-languages" value="nl" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                    <span class="text-sm">NL (Dutch)</span>
-                                </label>
-                                <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                    <input type="checkbox" name="artist-languages" value="en" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                    <span class="text-sm">EN (English)</span>
-                                </label>
-                                <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                    <input type="checkbox" name="artist-languages" value="fr" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                    <span class="text-sm">FR (French)</span>
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <!-- Payment Methods as Checkboxes -->
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Payment Methods (select all that apply) *</label>
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                    <input type="checkbox" name="artist-payment" value="invoice" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                    <span class="text-sm">Invoice</span>
-                                </label>
-                                <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                    <input type="checkbox" name="artist-payment" value="payrolling" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                    <span class="text-sm">Payrolling</span>
-                                </label>
-                                <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                    <input type="checkbox" name="artist-payment" value="sbk" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                    <span class="text-sm">Other (SBK)</span>
-                                </label>
-                                <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                    <input type="checkbox" name="artist-payment" value="volunteer-fee" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                    <span class="text-sm">Volunteer Fee</span>
-                                </label>
-                                <label class="flex items-center space-x-2 cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                    <input type="checkbox" name="artist-payment" value="other" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                    <span class="text-sm">Other</span>
-                                </label>
-                            </div>
-                        </div>
-                        
-                        <!-- Bio & Pitch -->
-                        <div class="grid grid-cols-1 gap-4">
-                            <div>
-                                <label for="artist-bio" class="block text-sm font-medium text-gray-700">Bio / Background Info *</label>
-                                <textarea id="artist-bio" rows="4" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-                            </div>
-                            <div>
-                                <label for="artist-pitch" class="block text-sm font-medium text-gray-700">Pitch (a short summary for programmers) *</label>
-                                <textarea id="artist-pitch" rows="2" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Notifications & Terms -->
-                    <div>
-                        <h3 class="text-xl font-semibold mb-4">Settings & Terms</h3>
-                        <div class="space-y-4">
-                            <div class="flex items-start">
-                                <input id="artist-notify-email" type="checkbox" checked class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                <label for="artist-notify-email" class="ml-3 block text-sm text-gray-700">OK to receive email notifications.</label>
-                            </div>
-                            <div class="flex items-start">
-                                <input id="artist-notify-sms" type="checkbox" class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                <label for="artist-notify-sms" class="ml-3 block text-sm text-gray-700">OK to receive SMS notifications (for direct messages from programmers only).</label>
-                            </div>
-                            <div class="flex items-start">
-                                <input id="artist-terms" type="checkbox" required class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                <label for="artist-terms" class="ml-3 block text-sm text-gray-700">I agree with the <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">Terms & Conditions</a>. *</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button type="submit"
-                        class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                        Create Artist Account
-                    </button>
-                    <p id="artist-signup-error" class="text-red-500 text-sm mt-2 text-center"></p>
-                </form>
-            </div>
-        </div>
-
-        <!-- Programmer Signup Form View -->
-        <div id="programmer-signup-view" class="page-section">
-            <div class="max-w-xl mx-auto bg-white p-8 rounded-lg shadow-xl">
-                <h2 class="text-3xl font-bold text-center text-gray-900 mb-6">Create Your Programmer Account</h2>
-                <p class="text-center text-gray-600 mb-6">Start your 7-day free trial. Your account will be reviewed by an admin before activation.</p>
-                <form id="programmer-signup-form" class="space-y-6">
-                    <!-- Account Credentials -->
-                    <div class="border-b border-gray-200 pb-6">
-                        <h3 class="text-xl font-semibold mb-4">Account Details</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label for="prog-email" class="block text-sm font-medium text-gray-700">Email Address *</label>
-                                <input id="prog-email" type="email" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                            <div>
-                                <label for="prog-password" class="block text-sm font-medium text-gray-700">Password (min. 6 chars) *</label>
-                                <input id="prog-password" type="password" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Organization Details -->
-                    <div class="border-b border-gray-200 pb-6">
-                        <h3 class="text-xl font-semibold mb-4">Your & Organization Details</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label for="prog-firstname" class="block text-sm font-medium text-gray-700">First Name *</label>
-                                <input id="prog-firstname" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                            <div>
-                                <label for="prog-lastname" class="block text-sm font-medium text-gray-700">Last Name *</label>
-                                <input id="prog-lastname" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                            <div class="md:col-span-2">
-                                <label for="prog-org-name" class="block text-sm font-medium text-gray-700">Organization Name *</label>
-                                <input id="prog-org-name" type="text" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                             <div>
-                                <label for="prog-phone" class="block text-sm font-medium text-gray-700">Phone Number *</label>
-                                <input id="prog-phone" type="tel" required class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                            <div>
-                                <label for="prog-website" class="block text-sm font-medium text-gray-700">Link Website</label>
-                                <input id="prog-website" type="url" placeholder="https://..." class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                            </div>
-                            <div class="md:col-span-2">
-                                <label for="prog-org-about" class="block text-sm font-medium text-gray-700">About Organization</label>
-                                <textarea id="prog-org-about" rows="3" class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Notifications & Terms -->
-                    <div>
-                        <h3 class="text-xl font-semibold mb-4">Settings & Terms</h3>
-                        <div class="space-y-4">
-                            <div class="flex items-start">
-                                <input id="prog-notify-email" type="checkbox" checked class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                <label for="prog-notify-email" class="ml-3 block text-sm text-gray-700">OK to receive email notifications.</label>
-                            </div>
-                            <div class="flex items-start">
-                                <input id="prog-terms" type="checkbox" required class="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
-                                <label for="prog-terms" class="ml-3 block text-sm text-gray-700">I agree with the <a href="#" class="font-medium text-indigo-600 hover:text-indigo-500">Terms & Conditions</a>. *</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <button type="submit"
-                        class="w-full flex justify-center py-3 px-4 border border-transparent rounded-md shadow-sm text-lg font-medium text-white bg-gray-800 hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
-                        Start Free Trial
-                    </button>
-                    <p id="programmer-signup-error" class="text-red-500 text-sm mt-2 text-center"></p>
-                </form>
-            </div>
-        </div>
-        
-        <!-- Dashboard View (Combined) -->
-        <div id="dashboard-view" class="page-section">
-            <h2 class="text-3xl font-bold mb-6" data-i18n="welcome_dashboard">Welcome to your Dashboard</h2>
-            
-            <!-- Artist Dashboard -->
-            <div id="artist-dashboard" class="hidden">
-                <!-- Content rendered by renderArtistDashboard() in artist-dashboard.js -->
-            </div>
-
-
-            <!-- Programmer Dashboard -->
-            <div id="programmer-dashboard" class="hidden">
-                <!-- Content rendered by renderProgrammerDashboard() in programmer-dashboard.js -->
-            </div>
-
-            <!-- Artist Detail View -->
-            <div id="artist-detail-view" class="hidden">
-                <div class="bg-white p-8 rounded-lg shadow-xl">
-                    <!-- Back Button -->
-                    <button id="back-to-search-btn" class="mb-6 text-indigo-600 hover:text-indigo-800 flex items-center font-medium">
-                        <svg class="h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
-                        Back to Search Results
-                    </button>
-
-                    <!-- Artist Header -->
-                    <div class="flex flex-col md:flex-row gap-8 mb-8">
-                        <!-- Profile Picture -->
-                        <div class="flex-shrink-0">
-                            <img id="detail-profile-pic" class="h-64 w-64 object-cover rounded-lg shadow-lg" src="https://placehold.co/400x400/e0e7ff/6366f1?text=Artist" alt="Artist Photo">
-                        </div>
-                        
-                        <!-- Basic Info -->
-                        <div class="flex-1">
-                            <h2 id="detail-artist-name" class="text-4xl font-bold text-gray-900 mb-2">Artist Name</h2>
-                            <p id="detail-stage-name" class="text-2xl text-indigo-600 font-semibold mb-4">Stage Name</p>
-                            
-                            <div class="space-y-2 text-gray-700">
-                                <div class="flex items-center">
-                                    <i data-lucide="map-pin" class="h-5 w-5 mr-2 text-indigo-600"></i>
-                                    <span id="detail-location">Location</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <i data-lucide="user" class="h-5 w-5 mr-2 text-indigo-600"></i>
-                                    <span id="detail-gender">Gender</span>
-                                </div>
-                                <div class="flex items-center">
-                                    <i data-lucide="calendar" class="h-5 w-5 mr-2 text-indigo-600"></i>
-                                    <span id="detail-age">Age</span>
-                                </div>
-                            </div>
-                            
-                            <!-- Genres & Languages -->
-                            <div class="mt-6">
-                                <div class="mb-3">
-                                    <span class="font-semibold text-gray-700">Genres:</span>
-                                    <div id="detail-genres" class="inline-flex flex-wrap gap-2 ml-2">
-                                        <!-- Genre badges will be added here -->
-                                    </div>
-                                </div>
-                                <div class="mb-3">
-                                    <span class="font-semibold text-gray-700">Languages:</span>
-                                    <div id="detail-languages" class="inline-flex flex-wrap gap-2 ml-2">
-                                        <!-- Language badges will be added here -->
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Bio & Pitch -->
-                    <div class="mb-8">
-                        <h3 class="text-2xl font-semibold mb-3">Bio</h3>
-                        <p id="detail-bio" class="text-gray-700 whitespace-pre-line">Bio content will appear here</p>
-                    </div>
-                    
-                    <div class="mb-8">
-                        <h3 class="text-2xl font-semibold mb-3">Pitch</h3>
-                        <p id="detail-pitch" class="text-gray-700 whitespace-pre-line">Pitch content will appear here</p>
-                    </div>
-                    
-                    <!-- Video Material -->
-                    <div id="detail-video-section" class="mb-8 hidden">
-                        <h3 class="text-2xl font-semibold mb-3">Video Material</h3>
-                        <div id="detail-video-container" class="aspect-video bg-gray-100 rounded-lg overflow-hidden">
-                            <!-- Embedded video or link will go here -->
-                        </div>
-                    </div>
-                    
-                    <!-- Audio Material -->
-                    <div id="detail-audio-section" class="mb-8 hidden">
-                        <h3 class="text-2xl font-semibold mb-3">Audio Material</h3>
-                        <div id="detail-audio-container" class="bg-gray-100 rounded-lg p-4">
-                            <!-- Embedded audio or link will go here -->
-                        </div>
-                    </div>
-                    
-                    <!-- Text Material -->
-                    <div id="detail-text-section" class="mb-8 hidden">
-                        <h3 class="text-2xl font-semibold mb-3">Text Material</h3>
-                        <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                            <p id="detail-text-content" class="text-gray-700 whitespace-pre-line">Text content will appear here</p>
-                        </div>
-                    </div>
-                    
-                    <!-- NEW: Document Material -->
-                    <div id="detail-document-section" class="mb-8 hidden">
-                        <h3 class="text-2xl font-semibold mb-3">Document Material</h3>
-                        <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                            <div class="flex items-center space-x-3">
-                                <i data-lucide="file-text" class="h-8 w-8 text-indigo-600"></i>
-                                <div>
-                                    <p class="font-semibold text-gray-900">Document Available</p>
-                                    <a id="detail-document-link" href="#" target="_blank" class="text-indigo-600 hover:text-indigo-800 underline">Download/View Document</a>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Contact Information -->
-                    <div class="mt-8 p-6 bg-gray-50 rounded-lg">
-                        <h3 class="text-2xl font-semibold mb-4">Contact Information</h3>
-                        
-                        <!-- Trial Message -->
-                        <div id="detail-trial-message" class="hidden p-4 bg-yellow-100 text-yellow-800 rounded-md mb-4">
-                            <p class="font-medium">🔒 Upgrade to PRO to view contact details and send messages to artists.</p>
-                        </div>
-                        
-                        <!-- Contact Info (for Pro users) -->
-                        <div id="detail-contact-info" class="hidden">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                                <div>
-                                    <p class="font-semibold text-gray-700">Email:</p>
-                                    <a id="detail-email" href="mailto:" class="text-indigo-600 hover:text-indigo-800">email@example.com</a>
-                                </div>
-                                <div>
-                                    <p class="font-semibold text-gray-700">Phone:</p>
-                                    <a id="detail-phone" href="tel:" class="text-indigo-600 hover:text-indigo-800">+31 6 12345678</a>
-                                </div>
-                            </div>
-                            <button id="send-message-btn" class="bg-indigo-600 text-white px-6 py-3 rounded-md font-medium hover:bg-indigo-700">
-                                Send Message
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Recommendations Section -->
-                    <div class="mt-8">
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-2xl font-semibold" data-i18n="recommendations">Recommendations</h3>
-                            <button id="write-recommendation-btn" class="hidden bg-indigo-600 text-white px-4 py-2 rounded-md font-medium hover:bg-indigo-700" data-i18n="write_recommendation">
-                                Write Recommendation
-                            </button>
-                        </div>
-
-                        <!-- Loading state -->
-                        <div id="recommendations-loading" class="text-center py-8">
-                            <p class="text-gray-500" data-i18n="loading">Loading...</p>
-                        </div>
-
-                        <!-- Empty state -->
-                        <div id="recommendations-empty" class="hidden text-center py-8 bg-gray-50 rounded-lg">
-                            <p class="text-gray-500" data-i18n="no_recommendations_yet">No recommendations yet. Be the first to recommend this artist!</p>
-                        </div>
-
-                        <!-- Recommendations list -->
-                        <div id="recommendations-list" class="space-y-4 hidden">
-                            <!-- Recommendations will be loaded here -->
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- Main App Content Container - all views rendered here dynamically -->
+            <main id="app-content" class="min-h-screen"></main>
 
         </div>
 
-        <!-- Recommendation Modal -->
-        <div id="recommendation-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
-            <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full m-4">
-                <div class="p-6 border-b border-gray-200">
-                    <div class="flex justify-between items-center">
-                        <h3 class="text-2xl font-semibold" data-i18n="write_recommendation_for">Write Recommendation for</h3>
-                        <button id="close-recommendation-modal" class="text-gray-400 hover:text-gray-600">
-                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                        </button>
-                    </div>
-                    <p id="recommendation-artist-name" class="text-lg text-indigo-600 font-semibold mt-2">Artist Name</p>
-                </div>
-
-                <form id="recommendation-form" class="p-6 space-y-4">
-                    <div>
-                        <label for="recommendation-text" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="your_recommendation">Your Recommendation</label>
-                        <textarea
-                            id="recommendation-text"
-                            rows="6"
-                            required
-                            minlength="10"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
-                            data-i18n="recommendation_placeholder"
-                            placeholder="Share your positive experience working with this artist..."></textarea>
-                        <p class="mt-1 text-sm text-gray-500" data-i18n="recommendation_help">Minimum 10 characters. Be specific and positive!</p>
-                    </div>
-
-                    <div id="recommendation-error" class="hidden p-3 bg-red-100 text-red-700 rounded-md text-sm"></div>
-                    <div id="recommendation-success" class="hidden p-3 bg-green-100 text-green-700 rounded-md text-sm"></div>
-
-                    <div class="flex justify-end space-x-3">
-                        <button type="button" id="cancel-recommendation-btn" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50" data-i18n="cancel">
-                            Cancel
-                        </button>
-                        <button type="submit" class="px-6 py-2 bg-indigo-600 text-white rounded-md font-medium hover:bg-indigo-700" data-i18n="submit_recommendation">
-                            Submit Recommendation
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <!-- Messages View -->
-        <div id="messages-view" class="page-section">
-            <div class="bg-white shadow-lg rounded-lg overflow-hidden flex flex-col" style="height: calc(100vh - 200px);">
-                <div class="p-6 border-b border-gray-200">
-                    <h2 class="text-3xl font-bold text-gray-900" data-i18n="messages_title">Messages</h2>
-                </div>
-                
-                <div class="flex flex-1 min-h-0">
-                    <!-- Conversation List -->
-                    <div class="w-full md:w-1/3 border-r border-gray-200 overflow-y-auto">
-                        <div id="conversations-loading" class="p-4 text-gray-500 text-center">
-                            Loading conversations...
-                        </div>
-                        <div id="conversations-empty" class="p-4 text-gray-500 text-center hidden">
-                            No conversations yet. Send a message to an artist to start a conversation!
-                        </div>
-                        <div id="conversations-list" class="divide-y divide-gray-200 hidden">
-                            <!-- Conversations will be loaded here -->
-                        </div>
-                    </div>
-                    
-                    <!-- Chat Area -->
-                    <div class="hidden md:flex md:w-2/3 flex-col min-h-0">
-                        <div id="chat-placeholder" class="flex-1 flex items-center justify-center text-gray-500">
-                            <p>Select a conversation to start messaging</p>
-                        </div>
-                        
-                        <div id="chat-container" class="hidden flex-1 flex flex-col min-h-0">
-                            <!-- Chat Header -->
-                            <div id="chat-header" class="p-4 border-b border-gray-200 bg-gray-50">
-                                <h3 class="text-lg font-semibold text-gray-900">Conversation</h3>
-                            </div>
-                            
-                            <!-- Messages -->
-                            <div id="messages-container" class="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50 scroll-smooth">
-                                <!-- Messages will be inserted here -->
-                            </div>
-                            
-                            <!-- Message Input -->
-                            <div class="p-4 border-t border-gray-200 bg-white flex-shrink-0">
-                                <form id="message-form" class="flex space-x-2">
-                                    <input id="message-input" type="text" placeholder="Type your message..." 
-                                        class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
-                                    <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-indigo-700">
-                                        Send
-                                    </button>
-                                </form>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <!-- Mobile Navigation Container (rendered by navigation.js) -->
+        <div id="mobile-nav-container" class="hidden"></div>
 
     </div>
 
-    <!-- Message Modal (for starting new conversations) -->
-    <div id="message-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
-        <div class="bg-white rounded-lg shadow-xl max-w-md w-full m-4">
+    <!-- Modals (keep existing modals) -->
+
+    <!-- Recommendation Modal -->
+    <div id="recommendation-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full">
             <div class="p-6 border-b border-gray-200">
-                <h3 class="text-xl font-semibold" data-i18n="send_message">Send Message</h3>
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-bold">Schrijf Aanbeveling</h3>
+                    <button id="close-recommendation-modal" class="text-gray-400 hover:text-gray-600">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <p id="recommendation-artist-name" class="text-base text-indigo-600 font-semibold mt-2">Artist Name</p>
+            </div>
+
+            <form id="recommendation-form" class="p-6 space-y-4">
+                <div>
+                    <label for="recommendation-text" class="block text-sm font-semibold text-gray-700 mb-2">Je Aanbeveling</label>
+                    <textarea
+                        id="recommendation-text"
+                        rows="6"
+                        required
+                        minlength="10"
+                        class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder="Deel je positieve ervaring met deze artiest..."></textarea>
+                    <p class="mt-1 text-xs text-gray-500">Minimum 10 karakters.</p>
+                </div>
+
+                <div id="recommendation-error" class="hidden p-3 bg-red-100 text-red-700 rounded-xl text-sm"></div>
+                <div id="recommendation-success" class="hidden p-3 bg-green-100 text-green-700 rounded-xl text-sm"></div>
+
+                <div class="flex justify-end space-x-3">
+                    <button type="button" id="cancel-recommendation-btn" class="btn-press px-4 py-2 bg-gray-100 rounded-xl text-gray-700 hover:bg-gray-200 font-medium">
+                        Annuleren
+                    </button>
+                    <button type="submit" class="btn-press px-6 py-2 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700">
+                        Versturen
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Message Modal -->
+    <div id="message-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full">
+            <div class="p-6 border-b border-gray-200">
+                <div class="flex justify-between items-center">
+                    <h3 class="text-xl font-bold">Verstuur Bericht</h3>
+                    <button id="close-message-modal" class="text-gray-400 hover:text-gray-600">
+                        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+                <p class="text-base text-gray-700 mt-2">Verstuur een bericht naar <strong id="message-artist-name"></strong></p>
             </div>
             <div class="p-6">
-                <p class="mb-4">Send a message to <strong id="message-modal-artist-name"></strong></p>
-                <form id="new-message-form">
-                    <div class="mb-4">
-                        <label for="message-subject" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="message_subject">Subject</label>
-                        <input id="message-subject" type="text" required 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                <form id="send-message-form" class="space-y-4">
+                    <div>
+                        <label for="message-subject" class="block text-sm font-semibold text-gray-700 mb-2">Onderwerp</label>
+                        <input id="message-subject" type="text" required
+                            class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     </div>
-                    <div class="mb-4">
-                        <label for="message-text" class="block text-sm font-medium text-gray-700 mb-2" data-i18n="message_text">Message</label>
-                        <textarea id="message-text" rows="4" required 
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    <div>
+                        <label for="message-text" class="block text-sm font-semibold text-gray-700 mb-2">Bericht</label>
+                        <textarea id="message-text" rows="4" required
+                            class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
                     </div>
+
+                    <div id="message-error" class="hidden p-3 bg-red-100 text-red-700 rounded-xl text-sm"></div>
+                    <div id="message-success" class="hidden p-3 bg-green-100 text-green-700 rounded-xl text-sm"></div>
+
                     <div class="flex justify-end space-x-3">
-                        <button type="button" id="close-message-modal" 
-                            class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
-                            Cancel
+                        <button type="button" id="cancel-message-btn"
+                            class="btn-press px-4 py-2 bg-gray-100 rounded-xl text-gray-700 hover:bg-gray-200 font-medium">
+                            Annuleren
                         </button>
-                        <button type="submit" 
-                            class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                            Send Message
+                        <button type="submit"
+                            class="btn-press px-6 py-2 bg-indigo-600 text-white rounded-xl font-semibold hover:bg-indigo-700">
+                            <i data-lucide="send" class="h-4 w-4 inline mr-2"></i>
+                            Versturen
                         </button>
                     </div>
-                    <p id="message-modal-error" class="text-red-500 text-sm mt-2"></p>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- Profile View Modal (for viewing profiles from chat) -->
-    <div id="profile-view-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50 overflow-y-auto">
-        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full m-4 my-8">
+    <!-- Profile View Modal -->
+    <div id="profile-view-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50 overflow-y-auto p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full my-8">
             <div class="p-6 border-b border-gray-200 flex justify-between items-center">
-                <h3 class="text-xl font-semibold" data-i18n="profile">Profile</h3>
+                <h3 class="text-xl font-bold">Profiel</h3>
                 <button id="close-profile-modal" class="text-gray-500 hover:text-gray-700">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
@@ -756,10 +510,10 @@
     </div>
 
     <!-- User Settings Modal -->
-    <div id="user-settings-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50 overflow-y-auto">
-        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full m-4 my-8">
+    <div id="user-settings-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden items-center justify-center z-50 overflow-y-auto p-4">
+        <div class="bg-white rounded-2xl shadow-xl max-w-lg w-full my-8">
             <div class="p-6 border-b border-gray-200 flex justify-between items-center">
-                <h3 class="text-xl font-semibold" data-i18n="user_settings_title">Account Settings</h3>
+                <h3 class="text-xl font-bold">Account Instellingen</h3>
                 <button id="close-settings-modal" class="text-gray-500 hover:text-gray-700">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                 </button>
@@ -767,27 +521,27 @@
             <div class="p-6 space-y-6">
                 <!-- Language Selection -->
                 <div class="border-b border-gray-200 pb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-2" data-i18n="settings_language">Language</label>
-                    <select id="settings-language-select" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                    <label class="block text-sm font-semibold text-gray-700 mb-2">Taal</label>
+                    <select id="settings-language-select" class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         <option value="nl">Nederlands</option>
                         <option value="en">English</option>
                     </select>
-                    <p class="mt-1 text-sm text-gray-500" data-i18n="settings_language_help">Choose your preferred language for the interface</p>
+                    <p class="mt-1 text-xs text-gray-500">Kies je voorkeurstaal voor de interface</p>
                 </div>
 
                 <!-- Change Email -->
                 <div class="border-b border-gray-200 pb-6">
-                    <h4 class="text-sm font-medium text-gray-700 mb-3" data-i18n="settings_change_email">Change Email Address</h4>
+                    <h4 class="text-sm font-semibold text-gray-700 mb-3">Email Wijzigen</h4>
                     <div class="space-y-3">
                         <div>
-                            <label for="settings-current-password-email" class="block text-sm text-gray-600 mb-1" data-i18n="settings_current_password">Current Password</label>
-                            <input id="settings-current-password-email" type="password" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <label for="settings-current-password-email" class="block text-xs text-gray-600 mb-1">Huidig Wachtwoord</label>
+                            <input id="settings-current-password-email" type="password" class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         </div>
                         <div>
-                            <label for="settings-new-email" class="block text-sm text-gray-600 mb-1" data-i18n="settings_new_email">New Email Address</label>
-                            <input id="settings-new-email" type="email" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <label for="settings-new-email" class="block text-xs text-gray-600 mb-1">Nieuw Email Adres</label>
+                            <input id="settings-new-email" type="email" class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         </div>
-                        <button id="settings-update-email-btn" class="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 font-medium" data-i18n="settings_update_email">Update Email</button>
+                        <button id="settings-update-email-btn" class="btn-press w-full bg-indigo-600 text-white px-4 py-3 rounded-xl hover:bg-indigo-700 font-semibold">Email Bijwerken</button>
                         <p id="settings-email-error" class="text-red-500 text-sm hidden"></p>
                         <p id="settings-email-success" class="text-green-600 text-sm hidden"></p>
                     </div>
@@ -795,21 +549,21 @@
 
                 <!-- Change Password -->
                 <div>
-                    <h4 class="text-sm font-medium text-gray-700 mb-3" data-i18n="settings_change_password">Change Password</h4>
+                    <h4 class="text-sm font-semibold text-gray-700 mb-3">Wachtwoord Wijzigen</h4>
                     <div class="space-y-3">
                         <div>
-                            <label for="settings-current-password-pw" class="block text-sm text-gray-600 mb-1" data-i18n="settings_current_password">Current Password</label>
-                            <input id="settings-current-password-pw" type="password" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <label for="settings-current-password-pw" class="block text-xs text-gray-600 mb-1">Huidig Wachtwoord</label>
+                            <input id="settings-current-password-pw" type="password" class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         </div>
                         <div>
-                            <label for="settings-new-password" class="block text-sm text-gray-600 mb-1" data-i18n="settings_new_password">New Password</label>
-                            <input id="settings-new-password" type="password" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <label for="settings-new-password" class="block text-xs text-gray-600 mb-1">Nieuw Wachtwoord</label>
+                            <input id="settings-new-password" type="password" class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         </div>
                         <div>
-                            <label for="settings-confirm-password" class="block text-sm text-gray-600 mb-1" data-i18n="settings_confirm_password">Confirm New Password</label>
-                            <input id="settings-confirm-password" type="password" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                            <label for="settings-confirm-password" class="block text-xs text-gray-600 mb-1">Bevestig Nieuw Wachtwoord</label>
+                            <input id="settings-confirm-password" type="password" class="w-full px-4 py-3 bg-gray-50 border-0 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500">
                         </div>
-                        <button id="settings-update-password-btn" class="w-full bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 font-medium" data-i18n="settings_update_password">Update Password</button>
+                        <button id="settings-update-password-btn" class="btn-press w-full bg-indigo-600 text-white px-4 py-3 rounded-xl hover:bg-indigo-700 font-semibold">Wachtwoord Bijwerken</button>
                         <p id="settings-password-error" class="text-red-500 text-sm hidden"></p>
                         <p id="settings-password-success" class="text-green-600 text-sm hidden"></p>
                     </div>
@@ -818,8 +572,20 @@
         </div>
     </div>
 
-    <!-- Link naar het hoofd JS-bestand (Vite zal dit automatisch bundelen) -->
+    <!-- Scripts -->
     <script type="module" src="/main.js"></script>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+    <!-- Initialize Lucide Icons -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
+    </script>
 
 </body>
 </html>

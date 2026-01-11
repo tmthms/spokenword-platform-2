@@ -52,3 +52,139 @@ select[multiple] {
     border: 2px solid #e2e8f0; /* Lichte rand */
 }
 
+/* Search Pattern Background */
+.search-pattern {
+  min-height: 100vh;
+  padding: 24px;
+  position: relative;
+  background: linear-gradient(180deg, #F8F9FA 0%, #F3EFFF 100%);
+}
+
+.search-pattern::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  opacity: 0.08;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Cg fill='none' stroke='%23A78BFA' stroke-width='0.5'%3E%3Cpath d='M0 0 L100 50 L0 100'/%3E%3Cpath d='M100 50 L200 0 L200 100 L100 50'/%3E%3Cpath d='M200 0 L300 50 L200 100'/%3E%3Cpath d='M300 50 L400 0 L400 100 L300 50'/%3E%3Cpath d='M0 100 L100 50 L100 150 L0 100'/%3E%3Cpath d='M100 150 L200 100 L200 200 L100 150'/%3E%3Cpath d='M200 100 L300 50 L300 150 L200 100'/%3E%3Cpath d='M300 150 L400 100 L400 200 L300 150'/%3E%3Cpath d='M0 200 L100 150 L100 250 L0 200'/%3E%3Cpath d='M100 250 L200 200 L200 300 L100 250'/%3E%3Cpath d='M200 200 L300 150 L300 250 L200 200'/%3E%3Cpath d='M300 250 L400 200 L400 300 L300 250'/%3E%3Cpath d='M0 300 L100 250 L100 350 L0 300'/%3E%3Cpath d='M100 350 L200 300 L200 400 L100 350'/%3E%3Cpath d='M200 300 L300 250 L300 350 L200 300'/%3E%3Cpath d='M300 350 L400 300 L400 400 L300 350'/%3E%3Cline x1='0' y1='0' x2='400' y2='400'/%3E%3Cline x1='400' y1='0' x2='0' y2='400'/%3E%3Cline x1='200' y1='0' x2='200' y2='400'/%3E%3Cline x1='0' y1='200' x2='400' y2='200'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 400px 400px;
+  z-index: 0;
+}
+
+.search-pattern > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Hide scrollbar for filter pills */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Artist Detail Pattern Background */
+.artist-detail-pattern {
+  position: relative;
+  background: linear-gradient(180deg, #F8F9FA 0%, #F3EFFF 100%);
+}
+
+.artist-detail-pattern::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  opacity: 0.08;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400' viewBox='0 0 400 400'%3E%3Cg fill='none' stroke='%23A78BFA' stroke-width='0.5'%3E%3Cpath d='M0 0 L100 50 L0 100'/%3E%3Cpath d='M100 50 L200 0 L200 100 L100 50'/%3E%3Cpath d='M200 0 L300 50 L200 100'/%3E%3Cpath d='M300 50 L400 0 L400 100 L300 50'/%3E%3Cpath d='M0 100 L100 50 L100 150 L0 100'/%3E%3Cpath d='M100 150 L200 100 L200 200 L100 150'/%3E%3Cpath d='M200 100 L300 50 L300 150 L200 100'/%3E%3Cpath d='M300 150 L400 100 L400 200 L300 150'/%3E%3Cpath d='M0 200 L100 150 L100 250 L0 200'/%3E%3Cpath d='M100 250 L200 200 L200 300 L100 250'/%3E%3Cpath d='M200 200 L300 150 L300 250 L200 200'/%3E%3Cpath d='M300 250 L400 200 L400 300 L300 250'/%3E%3Cpath d='M0 300 L100 250 L100 350 L0 300'/%3E%3Cpath d='M100 350 L200 300 L200 400 L100 350'/%3E%3Cpath d='M200 300 L300 250 L300 350 L200 300'/%3E%3Cpath d='M300 350 L400 300 L400 400 L300 350'/%3E%3Cline x1='0' y1='0' x2='400' y2='400'/%3E%3Cline x1='400' y1='0' x2='0' y2='400'/%3E%3Cline x1='200' y1='0' x2='200' y2='400'/%3E%3Cline x1='0' y1='200' x2='400' y2='200'/%3E%3C/g%3E%3C/svg%3E");
+  background-size: 400px 400px;
+  z-index: 0;
+}
+
+.artist-detail-pattern > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* Chat message bubbles */
+.chat-message-own {
+  align-self: flex-end;
+  background: linear-gradient(135deg, #805ad5 0%, #6b46c1 100%);
+  color: white;
+  padding: 12px 16px;
+  border-radius: 16px 16px 4px 16px;
+  max-width: 80%;
+}
+
+.chat-message-other {
+  align-self: flex-start;
+  background: #f3f4f6;
+  color: #1a1a2e;
+  padding: 12px 16px;
+  border-radius: 16px 16px 16px 4px;
+  max-width: 80%;
+}
+
+.chat-message-name {
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  opacity: 0.7;
+}
+
+.chat-message-text {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Screen reader only - hides elements visually but keeps them accessible */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+/* Custom Map Markers */
+.custom-map-marker {
+  background: transparent;
+  border: none;
+  pointer-events: auto !important;
+  cursor: pointer;
+}
+
+.custom-map-marker > div {
+  pointer-events: auto;
+}
+
+.custom-map-popup .leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  padding: 0;
+}
+
+.custom-map-popup .leaflet-popup-content {
+  margin: 12px;
+}
+
+.custom-map-popup .leaflet-popup-tip {
+  background: white;
+}
+
+/* Map container */
+#community-map {
+  border-radius: 16px;
+  overflow: hidden;
+}
+

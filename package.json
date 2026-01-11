@@ -9,7 +9,13 @@
     "build:staging": "node scripts/validate-env.cjs staging && vite build --mode staging",
     "build:prod": "node scripts/validate-env.cjs production && vite build --mode production",
     "preview": "vite preview",
-    "deploy": "npm run build && node deploy.js"
+    "deploy": "npm run build && node deploy.js",
+    "// --- NIEUWE VEILIGHEIDS SCRIPTS ---": "",
+    "check:staging": "if grep -q 'VITE_APP_ENV=staging' .env.staging; then echo '✅ Environment is Staging'; else echo '❌ FOUT: Verkeerde env file!'; exit 1; fi",
+    "check:prod": "if grep -q 'VITE_APP_ENV=production' .env.production; then echo '✅ Environment is Production'; else echo '❌ FOUT: Verkeerde env file!'; exit 1; fi",
+    "// --- AUTOMATED DEPLOYMENT (Bespaart AI Tokens) ---": "",
+    "release:staging": "npm run check:staging && npm run build:staging && firebase deploy --only hosting --project ddd-spark",
+    "release:prod": "npm run check:prod && npm run build:prod && firebase deploy --only hosting --project dans-dichter-db"
   },
   "devDependencies": {
     "autoprefixer": "^10.4.19",
@@ -21,6 +27,6 @@
   },
   "dependencies": {
     "firebase": "^10.7.0",
-    "firebase-admin": "^13.5.0"
+    "firebase-admin": "^13.6.0"
   }
 }

@@ -29,47 +29,50 @@ window.addEventListener('unhandledrejection', (event) => {
 });
 
 // Importeer de initialisatie-functies van onze modules
-import { initAuth, monitorAuthState } from './auth.js';
-import { initNavigation, showPage } from './ui.js';
-import { getArtistSignupData, validateArtistSignupData } from './artist-signup-helpers.js';
-import { setupProgrammerProfile } from './programmer-profile.js';
-import { setupArtistSearch } from './artist-search.js'; // Artist search & detail view
-import { setupMessaging } from './messaging.js';
-import { initTranslations } from './translations.js';
-import { setupRecommendations } from './recommendations.js';
-import { setupUserSettings } from './user-settings.js';
+import { monitorAuthState } from './src/services/auth.js';
+import { initNavigation, setupGlobalFormHandlers, showPage, showDashboard, showMessages, showAccountSettings, showProgrammerSettings } from './src/ui/ui.js';
+import { getStore } from './src/utils/store.js';
+import { setupProgrammerProfile } from './src/modules/programmer/programmer-profile.js';
+// ✅ setupArtistSearch moved to ui.js (imported there)
+import { setupMessaging } from './src/modules/messaging/messaging-controller.js';
+import { setupRecommendations } from './src/modules/recommendations/recommendations.js';
+import { setupUserSettings } from './src/modules/settings/user-settings.js';
+import { renderDesktopNav, renderMobileNav } from './src/modules/navigation/navigation.js';
+import { initCMS } from './src/services/cms-service.js';
 
 /**
  * initApp
  * De hoofdfunctie die de hele applicatie initialiseert.
  */
-function initApp() {
+async function initApp() {
   try {
     console.log("=".repeat(60));
     console.log("🚀 Starting application initialization...");
     console.log("=".repeat(60));
 
-    // Initialize translations (default to Dutch)
-    initTranslations();
+    // Setup global form handlers first (before any UI rendering)
+    // This ensures login/signup forms work regardless of when they're rendered
+    setupGlobalFormHandlers();
+
+    // Initialize CMS (load content, styles, email templates)
+    await initCMS('nl');
+
+    // Render navigation components (will be hidden until user logs in)
+    renderDesktopNav();
+    renderMobileNav();
 
     // Stel de navigatieknoppen in (Login, Home, etc.)
     initNavigation();
-
-    // Stel de auth-formulieren in (Login, Signup, Logout knoppen)
-    initAuth();
 
     // Stel de listener in die kijkt of we in- of uitgelogd zijn
     // Deze verbergt ook de lader en toont de homepagina
     monitorAuthState();
 
-    // ⭐ NOTE: setupArtistDashboard() and setupProgrammerDashboard() are now called
-    // in ui.js showDashboard() AFTER the HTML is rendered, so event listeners can attach
-
     // Stel de listeners in voor het programmeurs-profiel (edit profile)
     setupProgrammerProfile();
 
-    // Stel de listeners in voor de artiest-zoekfunctie (filters, search, detail view)
-    setupArtistSearch();
+    // ✅ FIX: setupArtistSearch() moved to ui.js after renderArtistSearch()
+    // This ensures event listeners attach after HTML is rendered
 
     // Stel de messaging listeners in (send message button, modal)
     setupMessaging();
@@ -79,6 +82,9 @@ function initApp() {
 
     // Stel de user settings listeners in (modal, language, email, password)
     setupUserSettings();
+
+    // Setup browser back/forward button handler
+    setupBrowserNavigation();
 
     console.log("=".repeat(60));
     console.log("✅ Application initialization complete!");
@@ -98,6 +104,138 @@ function initApp() {
         </div>
       `;
     }
+  }
+}
+
+/**
+ * Setup browser navigation (back/forward buttons)
+ * Handles URL hash changes and browser history
+ */
+function setupBrowserNavigation() {
+  // Handle browser back/forward buttons
+  window.addEventListener('popstate', async (event) => {
+    console.log('[BROWSER NAV] Popstate event triggered:', event.state);
+
+    const currentUser = getStore('currentUser');
+    const currentUserData = getStore('currentUserData');
+    const hash = window.location.hash.replace('#', '');
+
+    // Auth guard: redirect to login if not authenticated
+    const protectedRoutes = ['profile', 'edit-profile', 'messages', 'account-settings', 'profile-settings', 'dashboard', 'search'];
+    if (protectedRoutes.includes(hash) && !currentUser) {
+      console.warn('[BROWSER NAV] Protected route accessed without auth, redirecting to home');
+      showPage('home-view', false);
+      return;
+    }
+
+    // Route based on hash
+    switch(hash) {
+      case 'profile':
+        if (currentUserData?.role === 'artist') {
+          const uiModule = await import('./src/ui/ui.js');
+          uiModule.showArtistOwnProfile();
+        } else if (currentUserData?.role === 'programmer') {
+          const uiModule = await import('./src/ui/ui.js');
+          uiModule.showProgrammerProfile();
+        } else {
+          showDashboard();
+        }
+        break;
+
+      case 'edit-profile':
+        if (currentUserData?.role === 'artist') {
+          const uiModule = await import('./src/ui/ui.js');
+          uiModule.showArtistEditProfile();
+        } else if (currentUserData?.role === 'programmer') {
+          const uiModule = await import('./src/ui/ui.js');
+          uiModule.showEditProfile();
+        }
+        break;
+
+      case 'search':
+        if (currentUserData?.role === 'programmer') {
+          const uiModule = await import('./src/ui/ui.js');
+          uiModule.showSearch();
+        } else {
+          console.warn('[BROWSER NAV] Only programmers can access search');
+          showDashboard();
+        }
+        break;
+
+      case 'messages':
+        showMessages();
+        break;
+
+      case 'account-settings':
+        showAccountSettings();
+        break;
+
+      case 'cms':
+        const uiModuleCMS = await import('./src/ui/ui.js');
+        const { showCMSDashboard: showCMS } = await import('./src/modules/cms/cms-dashboard.js');
+        showCMS();
+        break;
+
+      case 'dashboard':
+        showDashboard();
+        break;
+
+      case 'login':
+        showPage('login-view', false);
+        break;
+
+      case 'signup':
+        showPage('signup-view', false);
+        break;
+
+      case 'home':
+      case '':
+        showPage('home-view', false);
+        break;
+
+      default:
+        console.warn('[BROWSER NAV] Unknown route:', hash);
+        showPage('home-view', false);
+    }
+
+    // CRITICAL: Always restore navigation after any route change
+    if (currentUser && currentUserData) {
+      await restoreNavigation();
+    }
+  });
+
+  // Handle initial hash on page load
+  const initialHash = window.location.hash.replace('#', '');
+  if (initialHash) {
+    console.log('[BROWSER NAV] Initial hash detected:', initialHash);
+    // Let monitorAuthState handle the initial routing
+  }
+
+  console.log('[BROWSER NAV] Browser navigation setup complete');
+}
+
+/**
+ * Restore navigation bars after browser navigation
+ */
+async function restoreNavigation() {
+  try {
+    const navModule = await import('./src/modules/navigation/navigation.js');
+
+    // Ensure containers are visible
+    navModule.setNavigationVisibility(true);
+
+    // Re-render navigation
+    navModule.renderDesktopNav();
+    navModule.renderMobileNav();
+
+    // Re-initialize icons
+    if (window.lucide) {
+      setTimeout(() => lucide.createIcons(), 100);
+    }
+
+    console.log('[BROWSER NAV] Navigation restored');
+  } catch (err) {
+    console.error('[BROWSER NAV] Failed to restore navigation:', err);
   }
 }
 
