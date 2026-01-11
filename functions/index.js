@@ -13,6 +13,7 @@ const { onDocumentCreated, onDocumentUpdated } = require("firebase-functions/v2/
 const { onRequest } = require("firebase-functions/v2/https");
 const { getFirestore } = require("firebase-admin/firestore");
 const { initializeApp } = require("firebase-admin/app");
+const fetch = require('node-fetch');
 
 // Initialize the Firebase Admin SDK
 initializeApp();
@@ -438,3 +439,66 @@ exports.onNewMessage = onDocumentCreated({
     return null;
   }
 });
+
+
+/**
+ * UiT API Proxy - omzeilt CORS voor browser requests
+ */
+exports.searchUitEvents = onRequest(
+  {
+    region: "europe-west1",
+    cors: true,
+    secrets: ["UIT_API_KEY"]
+  },
+  async (req, res) => {
+    const apiKey = process.env.UIT_API_KEY;
+
+    if (!apiKey) {
+      res.status(500).json({ error: "UIT_API_KEY not configured" });
+      return;
+    }
+
+    const { q, labels, limit = "20" } = req.query;
+
+    // TEST endpoint
+    const baseUrl = "https://search-test.uitdatabank.be";
+    const url = new URL(`${baseUrl}/events/`);
+
+    url.searchParams.set("embed", "true");
+    url.searchParams.set("limit", limit);
+    url.searchParams.set("dateFrom", new Date().toISOString());
+
+    if (q) url.searchParams.set("q", q);
+
+    if (labels) {
+      labels.split(",").forEach(label => {
+        url.searchParams.append("labels[]", label.trim());
+      });
+    }
+
+    console.log("[UIT-PROXY] Fetching:", url.toString());
+
+    try {
+      const response = await fetch(url.toString(), {
+        headers: {
+          "X-Api-Key": apiKey,
+          "Accept": "application/ld+json"
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("[UIT-PROXY] API Error:", response.status, errorText);
+        res.status(response.status).json({ error: errorText });
+        return;
+      }
+
+      const data = await response.json();
+      res.json(data);
+
+    } catch (error) {
+      console.error("[UIT-PROXY] Error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  }
+);
