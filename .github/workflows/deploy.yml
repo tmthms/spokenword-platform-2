@@ -1,34 +1,36 @@
 name: Deploy to Firebase Hosting
-
 on:
   push:
     branches:
       - main
-
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     steps:
-      # Stap 1: Haal de code op uit je GitHub repo
       - name: Check out code
         uses: actions/checkout@v4
 
-      # Stap 2: Setup Node.js (Nodig voor de build-stap)
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20' # Of '18' als je dat liever hebt
+          node-version: '20'
           cache: 'npm'
 
-      # Stap 3: Installeer de dependencies
       - name: Install dependencies
         run: npm ci
 
-      # Stap 4: Bouw het project (dit maakt de 'dist' map aan)
+      - name: Create .env file
+        run: |
+          echo "VITE_FIREBASE_API_KEY=${{ secrets.VITE_FIREBASE_API_KEY }}" >> .env
+          echo "VITE_FIREBASE_AUTH_DOMAIN=${{ secrets.VITE_FIREBASE_AUTH_DOMAIN }}" >> .env
+          echo "VITE_FIREBASE_PROJECT_ID=${{ secrets.VITE_FIREBASE_PROJECT_ID }}" >> .env
+          echo "VITE_FIREBASE_STORAGE_BUCKET=${{ secrets.VITE_FIREBASE_STORAGE_BUCKET }}" >> .env
+          echo "VITE_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}" >> .env
+          echo "VITE_FIREBASE_APP_ID=${{ secrets.VITE_FIREBASE_APP_ID }}" >> .env
+
       - name: Build project
         run: npm run build
 
-      # Stap 5: Publiceer naar Firebase
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
